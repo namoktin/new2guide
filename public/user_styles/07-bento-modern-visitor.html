@@ -1,0 +1,1657 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#070b14">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>🎧 [Style #07 - Bento Box Modern Visitor] • 2Guide Trợ Lý Du Khách</title>
+
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <!-- Master Stylesheet -->
+  <link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="../css/style.css" />
+
+  <style>
+    :root {
+      --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+
+      --bg-dark-0: #060913;
+      --bg-dark-1: #0b1120;
+      --bg-dark-2: #111a30;
+      --bg-glass-1: rgba(11, 17, 32, 0.82);
+      --bg-glass-2: rgba(17, 26, 48, 0.90);
+      
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-focus: rgba(56, 189, 248, 0.45);
+      --border-glow: rgba(6, 182, 212, 0.5);
+
+      --color-cyan: #06b6d4;
+      --color-cyan-light: #38bdf8;
+      --color-blue: #3b82f6;
+      --color-blue-dark: #1d4ed8;
+      --color-amber: #f59e0b;
+      --color-amber-light: #fbbf24;
+      --color-emerald: #10b981;
+      --color-rose: #f43f5e;
+      --color-red: #ef4444;
+
+      --text-white: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-lg: 18px;
+      --radius-full: 9999px;
+
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
+      --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.6);
+      --shadow-glow-cyan: 0 0 20px rgba(6, 182, 212, 0.25);
+      --shadow-glow-amber: 0 0 20px rgba(245, 158, 11, 0.3);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+      height: 100vh;
+      height: 100dvh;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      font-family: var(--font-main);
+      background: var(--bg-dark-0);
+      color: var(--text-white);
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* EMERGENCY BANNER */
+    .emergency-banner {
+      background: linear-gradient(90deg, #991b1b, #ef4444, #991b1b);
+      background-size: 200% 100%;
+      animation: alertPulse 3s linear infinite;
+      color: #fff;
+      padding: 9px 14px;
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 0.3px;
+      text-align: center;
+      display: none;
+      z-index: 3000;
+      box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4);
+    }
+    @keyframes alertPulse {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* ============================================================
+       TOP HEADER BAR - MODERN GLASSMORPHISM 2.0
+       ============================================================ */
+    .user-header {
+      background: var(--bg-glass-1);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 1000;
+      flex-shrink: 0;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+    }
+
+    .user-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .header-brand-block {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .brand-icon-wrap {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, rgba(6, 182, 212, 0.25), rgba(59, 130, 246, 0.25));
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 0 12px rgba(6, 182, 212, 0.2);
+    }
+
+    .brand-titles-col {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .group-badge-title {
+      font-weight: 800;
+      color: #fff;
+      font-size: 0.94rem;
+      letter-spacing: -0.2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .site-sub-badge {
+      font-size: 0.70rem;
+      color: var(--text-dim);
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* HUB INPUT CARD PILL */
+    .hub-input-group {
+      display: flex;
+      align-items: center;
+      background: rgba(17, 26, 48, 0.7);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      border-radius: var(--radius-full);
+      padding: 3px 5px 3px 10px;
+      gap: 6px;
+      flex-shrink: 0;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      transition: all 0.2s ease;
+    }
+    .hub-input-group:focus-within {
+      border-color: var(--color-amber);
+      box-shadow: var(--shadow-glow-amber);
+    }
+
+    .hub-input-label {
+      font-size: 0.70rem;
+      color: var(--color-amber-light);
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .hub-input-field {
+      width: 68px;
+      background: transparent;
+      border: none;
+      color: var(--color-amber);
+      font-family: var(--font-mono);
+      font-weight: 800;
+      font-size: 0.86rem;
+      text-transform: uppercase;
+      outline: none;
+      text-align: center;
+      padding: 0;
+    }
+
+    .btn-hub-change {
+      background: linear-gradient(135deg, var(--color-amber), #d97706);
+      border: none;
+      color: #0b1120;
+      font-size: 0.68rem;
+      font-weight: 800;
+      padding: 4px 9px;
+      border-radius: var(--radius-full);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: transform 0.15s ease, filter 0.2s ease;
+      font-family: var(--font-main);
+    }
+    .btn-hub-change:hover {
+      filter: brightness(1.1);
+    }
+    .btn-hub-change:active {
+      transform: scale(0.92);
+    }
+
+    /* SEARCH & LIVE ROW */
+    .user-tools-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .search-box-wrapper {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      position: relative;
+    }
+
+    .search-icon-prefix {
+      position: absolute;
+      left: 11px;
+      color: var(--text-dim);
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .search-input {
+      width: 100%;
+      background: rgba(17, 26, 48, 0.65);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-full);
+      color: #fff;
+      font-family: var(--font-main);
+      font-size: 0.80rem;
+      padding: 7px 32px 7px 34px;
+      outline: none;
+      min-height: 36px;
+      transition: all 0.25s ease;
+    }
+    .search-input:focus {
+      border-color: var(--color-cyan);
+      background: rgba(17, 26, 48, 0.95);
+      box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.15);
+    }
+    .search-input::placeholder {
+      color: var(--text-dim);
+      font-size: 0.78rem;
+    }
+
+    .btn-clear-search {
+      position: absolute;
+      right: 96px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      color: var(--text-muted);
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      font-size: 11px;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+    .btn-clear-search:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #fff;
+    }
+
+    .btn-search-hub {
+      position: absolute;
+      right: 3px;
+      top: 3px;
+      bottom: 3px;
+      background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(59, 130, 246, 0.25));
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      color: var(--color-cyan-light);
+      font-size: 0.74rem;
+      font-weight: 700;
+      padding: 0 12px;
+      border-radius: var(--radius-full);
+      cursor: pointer;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s ease;
+    }
+    .btn-search-hub:hover {
+      background: linear-gradient(135deg, var(--color-cyan), var(--color-blue));
+      color: #fff;
+      box-shadow: var(--shadow-glow-cyan);
+    }
+    .btn-search-hub:active {
+      transform: scale(0.95);
+    }
+
+    .live-status-pill {
+      font-size: 0.70rem;
+      font-weight: 700;
+      color: var(--color-emerald);
+      white-space: nowrap;
+      padding: 4px 10px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: var(--radius-full);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .live-pulse-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--color-emerald);
+      box-shadow: 0 0 8px var(--color-emerald);
+      animation: pulseGreen 2s infinite;
+    }
+    @keyframes pulseGreen {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.3); }
+    }
+
+    /* ============================================================
+       MAP CONTAINER & OVERLAYS
+       ============================================================ */
+    .user-map-container {
+      flex: 1;
+      position: relative;
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    #user-map {
+      width: 100%;
+      height: 100%;
+      background: #060913;
+    }
+
+    /* LEAFLET ZOOM IN BOTTOM-LEFT */
+    .leaflet-bottom.leaflet-left {
+      bottom: max(18px, env(safe-area-inset-bottom, 18px)) !important;
+      left: 12px !important;
+      z-index: 480;
+    }
+
+    .leaflet-control-zoom {
+      border: 1px solid var(--border-subtle) !important;
+      border-radius: var(--radius-md) !important;
+      overflow: hidden;
+      box-shadow: var(--shadow-lg) !important;
+      background: var(--bg-glass-2) !important;
+      backdrop-filter: blur(12px) !important;
+    }
+
+    .leaflet-control-zoom a {
+      width: 36px !important;
+      height: 36px !important;
+      line-height: 36px !important;
+      font-size: 16px !important;
+      background: transparent !important;
+      color: var(--color-cyan-light) !important;
+      border-bottom: 1px solid var(--border-subtle) !important;
+      transition: all 0.15s ease !important;
+    }
+    .leaflet-control-zoom a:hover {
+      background: rgba(56, 189, 248, 0.15) !important;
+      color: #fff !important;
+    }
+
+    /* LEAFLET CONTROL LAYERS */
+    .leaflet-top.leaflet-right {
+      top: 10px !important;
+      right: 10px !important;
+      z-index: 470;
+    }
+    .leaflet-control-layers {
+      border: 1px solid var(--border-subtle) !important;
+      border-radius: var(--radius-md) !important;
+      background: var(--bg-glass-2) !important;
+      backdrop-filter: blur(14px) !important;
+      -webkit-backdrop-filter: blur(14px) !important;
+      box-shadow: var(--shadow-lg) !important;
+      color: #fff !important;
+      overflow: hidden;
+    }
+    .leaflet-control-layers-toggle {
+      width: 36px !important;
+      height: 36px !important;
+      background-size: 20px 20px !important;
+    }
+
+    /* ============================================================
+       MEMBERS SCROLL BAR (MESH NETWORK)
+       Clean positioning at the top with NO overlap!
+       ============================================================ */
+    .members-scroll-bar {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      right: 56px;
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      white-space: nowrap;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      z-index: 450;
+      padding: 5px 8px;
+      background: rgba(11, 17, 32, 0.78);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border-subtle);
+      box-shadow: var(--shadow-md);
+    }
+    .members-scroll-bar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .member-chip {
+      background: rgba(17, 26, 48, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-white);
+      padding: 4px 12px;
+      border-radius: var(--radius-full);
+      font-size: 0.72rem;
+      font-weight: 700;
+      white-space: nowrap;
+      cursor: pointer;
+      flex-shrink: 0;
+      min-height: 28px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .member-chip:hover {
+      border-color: var(--color-cyan-light);
+      transform: translateY(-1px);
+    }
+    .member-chip:active {
+      transform: scale(0.95);
+    }
+    .member-chip.active-self {
+      border-color: var(--color-amber);
+      color: #fff;
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.3), rgba(217, 119, 6, 0.2));
+      box-shadow: 0 0 12px rgba(245, 158, 11, 0.3);
+      font-weight: 800;
+    }
+
+    /* ============================================================
+       3D SPATIAL AUDIO PILL & HUD
+       Placed at top: 58px right: 12px - Zero collision with members bar!
+       ============================================================ */
+    #spatial-audio-bar {
+      position: absolute;
+      top: 56px;
+      right: 10px;
+      z-index: 460;
+      background: var(--bg-glass-2);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      border-radius: var(--radius-full);
+      padding: 5px 12px;
+      box-shadow: var(--shadow-md);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.76rem;
+      transition: all 0.2s ease;
+    }
+    #spatial-audio-bar:hover {
+      border-color: var(--color-cyan);
+      box-shadow: var(--shadow-glow-cyan);
+    }
+
+    .audio-3d-toggle-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .audio-3d-label {
+      font-weight: 800;
+      color: var(--color-cyan-light);
+      font-size: 0.72rem;
+      letter-spacing: 0.5px;
+    }
+
+    .audio-slider-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    #slider-master-volume {
+      width: 68px;
+      height: 4px;
+      accent-color: var(--color-cyan);
+      cursor: pointer;
+      border-radius: 2px;
+    }
+
+    #display-master-vol {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: #f1f5f9;
+      min-width: 30px;
+      font-size: 0.72rem;
+    }
+
+    /* 3D HUD CARD (When active target locked) */
+    #spatial-audio-hud {
+      display: none;
+      position: absolute;
+      top: 100px;
+      right: 10px;
+      z-index: 460;
+      background: var(--bg-glass-2);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      font-size: 0.75rem;
+      color: var(--text-white);
+      box-shadow: var(--shadow-lg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      max-width: 280px;
+      animation: fadeInScale 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes fadeInScale {
+      from { opacity: 0; transform: scale(0.95) translateY(-6px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    /* TOAST FEEDBACK */
+    .search-feedback-toast {
+      position: absolute;
+      top: 56px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(11, 17, 32, 0.94);
+      border: 1px solid var(--color-cyan);
+      color: var(--color-cyan-light);
+      padding: 7px 18px;
+      border-radius: var(--radius-full);
+      font-size: 0.78rem;
+      font-weight: 700;
+      z-index: 550;
+      display: none;
+      box-shadow: var(--shadow-lg);
+      white-space: nowrap;
+      pointer-events: none;
+      backdrop-filter: blur(12px);
+      animation: toastIn 0.25s ease;
+    }
+    .search-feedback-toast.warning {
+      border-color: var(--color-amber);
+      color: var(--color-amber-light);
+    }
+    .search-feedback-toast.success {
+      border-color: var(--color-emerald);
+      color: #4ade80;
+    }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translate(-50%, -8px); }
+      to { opacity: 1; transform: translate(-50%, 0); }
+    }
+
+    /* ============================================================
+       FLOATING ACTION BUTTONS (FABs)
+       ============================================================ */
+    .user-fab-container {
+      position: absolute;
+      bottom: max(20px, env(safe-area-inset-bottom, 20px));
+      right: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 490;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+    .user-fab-container.hidden-by-sheet {
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(18px);
+    }
+
+    .fab-btn {
+      background: var(--bg-glass-2);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid var(--border-subtle);
+      color: #fff;
+      padding: 10px 16px;
+      border-radius: var(--radius-full);
+      font-family: var(--font-main);
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: var(--shadow-lg);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      min-height: 42px;
+      white-space: nowrap;
+      touch-action: manipulation;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .fab-btn:hover {
+      border-color: var(--border-focus);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    }
+    .fab-btn:active {
+      transform: scale(0.95);
+    }
+
+    .fab-ai {
+      background: linear-gradient(135deg, #1d4ed8, #2563eb);
+      border-color: #60a5fa;
+      color: #fff;
+      font-weight: 800;
+      box-shadow: 0 4px 18px rgba(37, 99, 235, 0.45);
+    }
+    .fab-ai:hover {
+      box-shadow: 0 6px 24px rgba(37, 99, 235, 0.65);
+    }
+
+    .fab-self {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #0b1120;
+      border-color: #fde68a;
+      font-weight: 800;
+      box-shadow: 0 4px 18px rgba(245, 158, 11, 0.35);
+    }
+    .fab-self:hover {
+      box-shadow: 0 6px 24px rgba(245, 158, 11, 0.55);
+    }
+
+    /* ============================================================
+       AI CHAT DRAWER - ULTRA MODERN CHAT EXPERIENCE
+       ============================================================ */
+    .ai-chat-drawer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      width: 100%;
+      height: 78vh;
+      height: 78dvh;
+      max-width: 600px;
+      margin: 0 auto;
+      background: var(--bg-dark-1);
+      border-top: 1px solid rgba(56, 189, 248, 0.35);
+      border-radius: 24px 24px 0 0;
+      padding: 12px 16px;
+      padding-bottom: max(16px, env(safe-area-inset-bottom, 16px));
+      box-shadow: 0 -16px 40px rgba(0, 0, 0, 0.85);
+      z-index: 1100;
+      transform: translateY(100%);
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      pointer-events: none;
+    }
+    .ai-chat-drawer.open {
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .sheet-drag-handle {
+      width: 40px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 2px;
+      margin: 0 auto 10px auto;
+      cursor: pointer;
+    }
+
+    .chat-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 10px;
+    }
+
+    .chat-ai-profile {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .chat-avatar-glow {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--color-cyan), var(--color-blue));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 14px rgba(6, 182, 212, 0.4);
+    }
+
+    .chat-title-group h4 {
+      font-size: 0.90rem;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .chat-title-group span {
+      font-size: 0.70rem;
+      color: var(--text-muted);
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin: 10px 0;
+      padding: 4px 2px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .chat-messages::-webkit-scrollbar {
+      width: 4px;
+    }
+    .chat-messages::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+    }
+
+    .chat-bubble {
+      padding: 10px 14px;
+      border-radius: 16px;
+      font-size: 0.84rem;
+      line-height: 1.52;
+      max-width: 88%;
+      word-break: break-word;
+      animation: bubbleSlide 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes bubbleSlide {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .chat-bubble.user {
+      align-self: flex-end;
+      background: linear-gradient(135deg, #1d4ed8, #2563eb);
+      color: #fff;
+      border-bottom-right-radius: 4px;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+    }
+
+    .chat-bubble.ai {
+      align-self: flex-start;
+      background: var(--bg-dark-2);
+      color: #e2e8f0;
+      border: 1px solid var(--border-subtle);
+      border-bottom-left-radius: 4px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .chat-bubble .meta {
+      font-size: 0.68rem;
+      color: var(--color-cyan-light);
+      margin-bottom: 4px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* QUICK PROMPTS */
+    .quick-prompts-row {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding: 2px 0 10px 0;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .quick-prompts-row::-webkit-scrollbar {
+      display: none;
+    }
+
+    .quick-prompt-chip {
+      background: rgba(17, 26, 48, 0.7);
+      border: 1px solid var(--border-subtle);
+      color: #cbd5e1;
+      font-family: var(--font-main);
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: var(--radius-full);
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+    .quick-prompt-chip:hover {
+      border-color: var(--color-cyan);
+      color: #fff;
+      background: rgba(6, 182, 212, 0.15);
+      transform: translateY(-1px);
+    }
+
+    /* INPUT ROW */
+    .chat-input-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .btn-mic {
+      background: linear-gradient(135deg, #e11d48, #be123c);
+      color: #fff;
+      border: none;
+      padding: 8px 14px;
+      border-radius: var(--radius-full);
+      font-family: var(--font-main);
+      font-size: 0.76rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      min-height: 40px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      box-shadow: 0 4px 14px rgba(225, 29, 72, 0.35);
+      transition: all 0.2s ease;
+    }
+    .btn-mic:hover {
+      filter: brightness(1.1);
+    }
+    .btn-mic.listening {
+      background: linear-gradient(135deg, #10b981, #059669);
+      box-shadow: 0 0 18px rgba(16, 185, 129, 0.6);
+      animation: micRipple 1.2s infinite;
+    }
+    @keyframes micRipple {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    #input-ai-chat {
+      flex: 1;
+      background: var(--bg-dark-2);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-full);
+      padding: 9px 16px;
+      color: #fff;
+      font-family: var(--font-main);
+      font-size: 0.82rem;
+      outline: none;
+      min-height: 40px;
+      transition: all 0.2s;
+    }
+    #input-ai-chat:focus {
+      border-color: var(--color-blue);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+
+    #btn-send-ai-chat {
+      min-height: 40px;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      border: none;
+      color: #fff;
+      padding: 0 16px;
+      border-radius: var(--radius-full);
+      font-family: var(--font-main);
+      font-size: 0.80rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+      transition: all 0.2s;
+    }
+    #btn-send-ai-chat:hover {
+      filter: brightness(1.1);
+    }
+    #btn-send-ai-chat:active {
+      transform: scale(0.95);
+    }
+
+    /* ============================================================
+       POI BOTTOM SHEET
+       ============================================================ */
+    .poi-bottom-sheet {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+      background: var(--bg-dark-1);
+      border-top: 2px solid var(--color-amber);
+      border-radius: 24px 24px 0 0;
+      padding: 14px 18px;
+      padding-bottom: max(18px, env(safe-area-inset-bottom, 18px));
+      z-index: 600;
+      box-shadow: 0 -16px 40px rgba(0,0,0,0.85);
+      transform: translateY(100%);
+      transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+      max-height: 60vh;
+      max-height: 60dvh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .poi-bottom-sheet.open {
+      transform: translateY(0);
+    }
+
+    .poi-audio-action-btn {
+      width: 100%;
+      min-height: 46px;
+      font-family: var(--font-main);
+      font-size: 0.88rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border-radius: var(--radius-md);
+      margin-top: 12px;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 18px rgba(37, 99, 235, 0.4);
+      transition: all 0.2s ease;
+    }
+    .poi-audio-action-btn:hover {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+    }
+    .poi-audio-action-btn:active {
+      transform: scale(0.97);
+    }
+
+    /* RESPONSIVE TWEAKS */
+    @media (max-width: 480px) {
+      .group-badge-title {
+        font-size: 0.86rem;
+      }
+      .btn-search-hub {
+        padding: 0 9px;
+        font-size: 0.70rem;
+      }
+      .fab-btn {
+        padding: 8px 14px;
+        font-size: 0.74rem;
+        min-height: 38px;
+      }
+    }
+  </style>
+<style>
+
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    :root {
+        --font-main: 'Inter', sans-serif !important;
+        --bg-dark-0: #0a0e1a !important;
+        --bg-glass-1: rgba(15, 23, 42, 0.88) !important;
+        --bg-glass-2: rgba(22, 33, 60, 0.92) !important;
+        --border-subtle: rgba(255, 255, 255, 0.12) !important;
+        --color-cyan: #6366f1 !important;
+        --color-amber: #38bdf8 !important;
+        --color-emerald: #10b981 !important;
+        --text-white: #f8fafc !important;
+        --radius-lg: 20px !important;
+    }
+    * {
+        font-family: 'Inter', sans-serif;
+        box-sizing: border-box;
+    }
+    html, body {
+        width: 100vw !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+        position: relative !important;
+    }
+
+    /* MASTER STYLE SWITCHER - RESPONSIVE MOBILE BAR */
+    #master-style-switcher {
+        position: relative !important;
+        width: 100vw !important;
+        height: 42px !important;
+        min-height: 42px !important;
+        max-height: 42px !important;
+        background: #060913 !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+        z-index: 99999 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        padding: 0 10px !important;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.6) !important;
+        flex-shrink: 0 !important;
+    }
+    .sw-left, .sw-center, .sw-right {
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+    }
+    .sw-home-btn {
+        background: rgba(255, 255, 255, 0.1) !important;
+        color: #fff !important;
+        text-decoration: none !important;
+        padding: 4px 8px !important;
+        border-radius: 6px !important;
+        font-size: 11px !important;
+        font-weight: 700 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+    }
+    .sw-badge {
+        background: rgba(6, 182, 212, 0.2) !important;
+        color: #38bdf8 !important;
+        border: 1px solid rgba(6, 182, 212, 0.4) !important;
+        padding: 2px 6px !important;
+        border-radius: 6px !important;
+        font-size: 11px !important;
+        font-weight: 800 !important;
+        font-family: monospace !important;
+    }
+    .sw-title {
+        color: #fff !important;
+        font-size: 12px !important;
+        font-weight: 700 !important;
+    }
+    .sw-nav-btn {
+        background: rgba(255, 255, 255, 0.08) !important;
+        border: 1px solid rgba(255, 255, 255, 0.18) !important;
+        color: #fff !important;
+        text-decoration: none !important;
+        padding: 4px 8px !important;
+        border-radius: 6px !important;
+        font-size: 11px !important;
+        font-weight: 700 !important;
+    }
+    .sw-select {
+        background: #111a2e !important;
+        color: #fff !important;
+        border: 1px solid rgba(255, 255, 255, 0.25) !important;
+        border-radius: 6px !important;
+        padding: 4px 6px !important;
+        font-size: 11.5px !important;
+        font-weight: 700 !important;
+        outline: none !important;
+        cursor: pointer !important;
+        max-width: 175px !important;
+    }
+    .sw-btn-chat {
+        background: rgba(255, 255, 255, 0.1) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        color: #e2e8f0 !important;
+        font-size: 11px !important;
+        font-weight: 700 !important;
+        padding: 4px 8px !important;
+        border-radius: 6px !important;
+        cursor: pointer !important;
+    }
+    .sw-btn-apply {
+        background: linear-gradient(135deg, #0284c7, #06b6d4) !important;
+        color: #fff !important;
+        font-size: 11px !important;
+        font-weight: 800 !important;
+        padding: 4px 10px !important;
+        border-radius: 6px !important;
+        border: none !important;
+        cursor: pointer !important;
+    }
+
+    @media (max-width: 640px) {
+        .sw-hide-mobile {
+            display: none !important;
+        }
+        .sw-select {
+            max-width: 125px !important;
+            font-size: 10.5px !important;
+        }
+    }
+
+    /* GUARANTEE FULL MAP DISPLAY ON MOBILE */
+    .user-header {
+        flex-shrink: 0 !important;
+        z-index: 1000 !important;
+    }
+    .user-map-container {
+        flex: 1 1 0% !important;
+        width: 100% !important;
+        height: 100% !important;
+        min-height: 200px !important;
+        position: relative !important;
+        overflow: hidden !important;
+        display: block !important;
+    }
+    #user-map {
+        width: 100% !important;
+        height: 100% !important;
+        min-height: 100% !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        background: #0b1120 !important;
+        z-index: 1 !important;
+    }
+    
+        .brand-icon-wrap { border-radius: 10px !important; background: #6366f1 !important; color: #fff !important; }
+        .fab-ai { background: #6366f1 !important; border-color: #a5b4fc !important; }
+        .poi-bottom-sheet { border-radius: 24px 24px 0 0 !important; }
+        
+    
+</style>
+</head>
+<body>
+
+    <!-- Master Style Switcher Bar for Visitor App (Ultra Responsive Mobile & Desktop) -->
+    <div id="master-style-switcher">
+        <div class="sw-left">
+            <a href="index.html" class="sw-home-btn" title="Về danh sách tất cả phong cách">
+                <span>🏠</span> <span class="sw-hide-mobile">Tất Cả Styles</span>
+            </a>
+            <span class="sw-badge">#07/12</span>
+            <span class="sw-title sw-hide-mobile">Bento Box Modern Visitor</span>
+        </div>
+        <div class="sw-center">
+            <a href="06-dark-mode-oled-night.html" class="sw-nav-btn" title="Phong cách trước">◀</a>
+            <select onchange="location.href=this.value" class="sw-select" title="Chọn phong cách">
+                <option value="01-modern-glassmorphism.html" >#01 - Modern Glassmorphism & Cyber Amber</option>
+<option value="02-heritage-luxury-gold.html" >#02 - Imperial Heritage Gold & Crimson</option>
+<option value="03-hud-scifi-gaze.html" >#03 - HUD / Sci-Fi Cyber Gaze (AR Smart Glass)</option>
+<option value="04-apple-native-ios.html" >#04 - Apple Native iOS 18 Design</option>
+<option value="05-organic-biophilic.html" >#05 - Organic Biophilic & Ancient Stone</option>
+<option value="06-dark-mode-oled-night.html" >#06 - Dark Mode OLED Night Tour</option>
+<option value="07-bento-modern-visitor.html" selected="selected">#07 - Bento Box Modern Visitor</option>
+<option value="08-neubrutalism-pop.html" >#08 - Neubrutalism Pop Heritage</option>
+<option value="09-eink-paper-parchment.html" >#09 - E-Ink / Ancient Parchment (Giấy Dó & Mực Tàu)</option>
+<option value="10-liquid-glass-aurora.html" >#10 - Liquid Glass Aurora Glow</option>
+<option value="11-neumorphism-soft-console.html" >#11 - Neumorphism Soft Audio Console</option>
+<option value="12-retro-synthwave.html" >#12 - Retro-Futurism Synthwave 80s</option>
+
+            </select>
+            <a href="08-neubrutalism-pop.html" class="sw-nav-btn" title="Phong cách tiếp theo">▶</a>
+        </div>
+        <div class="sw-right">
+            <button type="button" onclick="toggleChatPreview()" class="sw-btn-chat" title="Xem thử khung chat đối thoại với Trợ lý AI">
+                💬 <span class="sw-hide-mobile">Chat AI</span>
+            </button>
+            <button type="button" onclick="applyUserStyle('07-bento-modern-visitor.html', 'Bento Box Modern Visitor')" class="sw-btn-apply" title="Đặt làm phong cách mặc định">
+                ⭐ <span class="sw-hide-mobile">Chọn</span>
+            </button>
+        </div>
+    </div>
+    
+
+  <!-- BANNER PHÁT THANH KHẨN CẤP TỪ BAN QUẢN LÝ -->
+  <div id="emergency-banner" class="emergency-banner">
+    <span id="emergency-banner-text">THÔNG BÁO TỪ BAN QUẢN LÝ</span>
+  </div>
+
+  <!-- HEADER DÀNH CHO USER: NHẬP TRỰC TIẾP HUB ID & TÌM KIẾM -->
+  <header class="user-header">
+    <div class="user-top-row">
+      <div class="header-brand-block">
+        <div class="brand-icon-wrap">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--color-cyan-light);">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+          </svg>
+        </div>
+        <div class="brand-titles-col">
+          <span class="group-badge-title" id="display-group-name">Đoàn Tham Quan</span>
+        </div>
+      </div>
+
+      <!-- Ô NHẬP MÃ THIẾT BỊ HUB -->
+      <div class="hub-input-group">
+        <span class="hub-input-label">Hub:</span>
+        <input type="text" id="input-my-hub-id" class="hub-input-field" placeholder="NEU001" value="NEU001" />
+        <button id="btn-save-hub-id" class="btn-hub-change">Đổi</button>
+      </div>
+    </div>
+
+    <!-- THANH CÔNG CỤ TÌM KIẾM THIẾT BỊ TRONG ĐOÀN -->
+    <div class="user-tools-row">
+      <div class="search-box-wrapper">
+        <span class="search-icon-prefix">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </span>
+        <input type="text" id="input-search-hub" class="search-input" list="group-hubs-datalist" placeholder="Nhập mã Hub (ví dụ: NEU002)..." autocomplete="off" />
+        <datalist id="group-hubs-datalist"></datalist>
+        <button type="button" id="btn-clear-search" class="btn-clear-search" title="Xóa nhanh">✕</button>
+        <button id="btn-search-hub" class="btn-search-hub">
+          <span>Tìm</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- BẢN ĐỒ USER CHÍNH -->
+  <main class="user-map-container">
+    <div id="user-map"></div>
+
+    <!-- THANH DANH SÁCH THÀNH VIÊN CUỘN NGANG (TOP: 10PX) -->
+    <div class="members-scroll-bar" id="members-list-bar">
+      <!-- Render các chip thành viên từ user.js -->
+    </div>
+
+    <!-- THANH ĐIỀU KHIỂN ÂM LƯỢNG & 3D SPATIAL AUDIO (TOP: 56PX - KHÔNG BỊ TRÙNG VỊ TRÍ) -->
+    <div id="spatial-audio-bar">
+      <div class="audio-3d-toggle-btn" id="btn-toggle-spatial-audio" title="Bật/Tắt Âm Thanh 3D Không Gian HRTF">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--color-cyan-light);">
+          <path d="M3 18v-6a9 9 0 0 1 18 0v6"></path>
+          <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path>
+        </svg>
+        <span class="audio-3d-label">3D AUDIO</span>
+      </div>
+
+      <div style="width: 1px; height: 16px; background: rgba(255, 255, 255, 0.15);"></div>
+
+      <div class="audio-slider-wrap">
+        <span id="vol-icon" style="font-size: 0.85rem; color: var(--text-muted); display: flex; align-items: center;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          </svg>
+        </span>
+        <input type="range" id="slider-master-volume" min="1" max="100" value="50" title="Âm lượng khách đặt (1% - 100%)" />
+        <span id="display-master-vol">50%</span>
+      </div>
+    </div>
+
+    <!-- HUD THÔNG TIN ÂM THANH 3D ĐỘNG (TOP: 100PX) -->
+    <div id="spatial-audio-hud">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+        <span style="color: var(--color-emerald); font-weight: 800; display: flex; align-items: center; gap: 5px; font-size: 0.72rem;">
+          <span style="display: inline-block; width: 7px; height: 7px; background: var(--color-emerald); border-radius: 50%; box-shadow: 0 0 8px var(--color-emerald);"></span>
+          3D ĐANG PHÁT:
+        </span>
+        <span id="hud-actual-vol" style="color: var(--color-cyan-light); font-weight: 800; font-family: var(--font-mono);">65%</span>
+      </div>
+      <div id="hud-poi-name" style="font-weight: 700; color: var(--color-amber-light); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.80rem;">Tòa Nhà Thế Kỷ A2</div>
+      <div style="display: flex; justify-content: space-between; color: var(--text-muted); font-size: 0.70rem; margin-top: 4px;">
+        <span id="hud-distance">Cự ly: 4.5m</span>
+        <span id="hud-direction">Hướng: 45° Phải</span>
+      </div>
+      <div style="margin-top: 6px; display: flex; justify-content: flex-end;">
+        <button id="btn-stop-spatial-audio" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5; font-size: 0.68rem; padding: 3px 9px; border-radius: 4px; cursor: pointer; font-weight: 700;">Dừng Phát 3D</button>
+      </div>
+    </div>
+
+    <!-- TOAST THÔNG BÁO TÌM KIẾM THIẾT BỊ -->
+    <div id="search-feedback-toast" class="search-feedback-toast"></div>
+
+    <!-- KHUNG HỘI THOẠI TRỢ LÝ AI (DRAWER) -->
+    <div id="ai-chat-drawer" class="ai-chat-drawer">
+      <div class="sheet-drag-handle"></div>
+      
+      <div class="chat-header-row">
+        <div class="chat-ai-profile">
+          <div class="chat-avatar-glow">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color: #fff;">
+              <path d="M12 2a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2 2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"></path>
+              <rect x="4" y="8" width="16" height="12" rx="3"></rect>
+              <line x1="9" y1="13" x2="9" y2="15"></line>
+              <line x1="15" y1="13" x2="15" y2="15"></line>
+            </svg>
+          </div>
+          <div class="chat-title-group">
+            <h4>Trợ Lý Hướng Dẫn Viên AI</h4>
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button id="btn-close-ai-chat" style="padding: 4px 10px; font-weight: 700; background: rgba(255, 255, 255, 0.1); border: none; color: #fff; border-radius: var(--radius-sm); cursor: pointer;">✕</button>
+        </div>
+      </div>
+
+      <!-- KHUNG TIN NHẮN -->
+      <div id="chat-messages" class="chat-messages">
+        <div class="chat-bubble ai">
+          <div class="meta">AI Tour Guide</div>
+          Xin chào! Tôi là Trợ Lý Hướng Dẫn Viên AI. Bạn có thể bấm nút Micro để nói chuyện trực tiếp hoặc gõ câu hỏi, tôi sẽ thuyết minh và chỉ dẫn theo góc nhìn thực địa của bạn!
+        </div>
+      </div>
+
+      <!-- GỢI Ý CÂU HỎI NHANH -->
+      <div class="quick-prompts-row">
+        <button class="quick-prompt-chip" onclick="sendQuickPrompt('Tòa nhà Thế Kỷ A2 có gì đặc sắc?')">
+          🏛️ Tòa nhà A2
+        </button>
+        <button class="quick-prompt-chip" onclick="sendQuickPrompt('Thư viện Phạm Văn Đồng ở đâu và có những tiện ích gì?')">
+          📚 Thư viện
+        </button>
+        <button class="quick-prompt-chip" onclick="sendQuickPrompt('Không gian khởi nghiệp sáng tạo')">
+          🚀 Khởi nghiệp
+        </button>
+        <button class="quick-prompt-chip" onclick="sendQuickPrompt('Khu thể thao và sân bóng đá ở đâu?')">
+          ⚽ Sân Thể thao
+        </button>
+      </div>
+
+      <!-- THANH NHẬP CÂU HỎI & NÓI MIC -->
+      <div class="chat-input-row">
+        <button id="btn-mic-record" class="btn-mic" title="Bấm để nói chuyện qua Micro">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+            <line x1="12" y1="19" x2="12" y2="23"></line>
+            <line x1="8" y1="23" x2="16" y2="23"></line>
+          </svg>
+          <span>Nói Mic</span>
+        </button>
+        <input type="text" id="input-ai-chat" placeholder="Hỏi AI về hiện vật, đường đi..." />
+        <button id="btn-send-ai-chat">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+          <span>Gửi</span>
+        </button>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; font-size: 0.72rem; color: var(--text-dim);">
+        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none;">
+          <input type="checkbox" id="chk-auto-speech" checked style="accent-color: var(--color-blue);" /> Tự động đọc câu trả lời
+        </label>
+        <span id="ai-status-indicator" style="display: flex; align-items: center; gap: 5px;">
+          <span style="width: 5px; height: 5px; border-radius: 50%; background: var(--color-emerald);"></span> Sẵn sàng
+        </span>
+      </div>
+    </div>
+
+    <!-- NÚT ĐIỀU HƯỚNG NHANH GÓC PHẢI DƯỚI (FABs) -->
+    <div class="user-fab-container">
+      <button id="btn-toggle-ai-chat" class="fab-btn fab-ai">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+        <span>Hỏi AI</span>
+      </button>
+
+      <button id="btn-locate-self" class="fab-btn fab-self">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M12 2v3M12 19v3M2 12h3M19 12h3"></path>
+        </svg>
+        <span>Vị Trí Tôi</span>
+      </button>
+
+      <button id="btn-fit-group" class="fab-btn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+        <span>Cả Đoàn</span>
+      </button>
+    </div>
+
+    <!-- BOTTOM SHEET CHI TIẾT ĐIỂM DI TÍCH / POI -->
+    <div id="poi-sheet" class="poi-bottom-sheet">
+      <div class="sheet-drag-handle"></div>
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+        <div>
+          <h3 id="sheet-poi-title" style="color: var(--color-amber-light); font-size: 1.1rem; margin: 0; font-weight: 800;">1. Cổng chính</h3>
+          <div id="sheet-poi-zone" style="font-size: 0.72rem; color: var(--color-cyan); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; margin-top: 2px;">Khuôn Viên</div>
+        </div>
+        <button id="btn-close-poi-sheet" style="padding: 4px 12px; font-weight: 700; background: rgba(255, 255, 255, 0.1); border: none; color: #fff; border-radius: var(--radius-sm); cursor: pointer; font-size: 0.75rem;">Đóng</button>
+      </div>
+
+      <p id="sheet-poi-desc" style="font-size: 0.85rem; color: var(--text-muted); margin: 12px 0; line-height: 1.55;">
+        Mô tả điểm tham quan...
+      </p>
+
+      <button id="btn-play-poi-audio" class="poi-audio-action-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polygon points="10 8 16 12 10 16 10 8"></polygon>
+        </svg>
+        <span>Nghe Thuyết Minh 3D (Spatial Audio)</span>
+      </button>
+    </div>
+  </main>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  
+  
+    <script>
+    // Standalone Interactive Controller for 2Guide Visitor Preview (Full Smartphone & Desktop Support)
+    let mapInstance = null;
+
+    function initVisitorMap() {
+        const mapContainer = document.getElementById('user-map');
+        if (!mapContainer) {
+            console.error('Không tìm thấy phần tử #user-map!');
+            return;
+        }
+
+        if (typeof L === 'undefined') {
+            console.error('Thư viện Leaflet chưa sẵn sàng!');
+            return;
+        }
+
+        try {
+            mapInstance = L.map('user-map', {
+                center: [21.0289, 105.8355], // Tọa độ trung tâm Văn Miếu - Quốc Tử Giám
+                zoom: 18,
+                minZoom: 15,
+                maxZoom: 22,
+                zoomControl: false
+            });
+
+            // Zoom control góc dưới bên trái
+            L.control.zoom({ position: 'bottomleft' }).addTo(mapInstance);
+
+            // Google Satellite (Hybrid) + OSM Fallback
+            const googleSat = L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+                maxZoom: 22,
+                attribution: 'Google Satellite'
+            });
+
+            const osmRoads = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: 'OpenStreetMap'
+            });
+
+            googleSat.addTo(mapInstance);
+
+            L.control.layers({
+                "Vệ Tinh Google": googleSat,
+                "Bản Đồ Đường Phố": osmRoads
+            }, null, { position: 'topright' }).addTo(mapInstance);
+
+            // Các phân khu di tích Văn Miếu
+            const zones = [
+                { name: 'Khuê Văn Các & Giếng Thiên Quang', color: '#f59e0b', bounds: [[21.0286, 105.8351], [21.0292, 105.8359]] },
+                { name: 'Vườn 82 Bia Tiến Sĩ Triều Lê - Mạc', color: '#ef4444', bounds: [[21.0292, 105.8350], [21.0298, 105.8360]] },
+                { name: 'Điện Đại Thành & Nhà Thái Học', color: '#a855f7', bounds: [[21.0298, 105.8349], [21.0305, 105.8361]] }
+            ];
+
+            zones.forEach(z => {
+                L.rectangle(z.bounds, {
+                    color: z.color,
+                    weight: 2,
+                    dashArray: '4, 6',
+                    fillColor: z.color,
+                    fillOpacity: 0.16
+                }).addTo(mapInstance).bindTooltip(z.name, { permanent: true, direction: 'center', className: 'zone-tooltip' });
+            });
+
+            // Chấm vị trí người dùng (Pulsing blue dot)
+            const userLatLng = [21.02885, 105.83545];
+            const userDot = L.circleMarker(userLatLng, {
+                radius: 9,
+                color: '#ffffff',
+                weight: 3,
+                fillColor: '#0284c7',
+                fillOpacity: 1
+            }).addTo(mapInstance).bindPopup(`
+                <div style="font-size: 12px; font-family: sans-serif; line-height: 1.4;">
+                    <strong>📍 Vị trí hiện tại của bạn</strong><br>
+                    Khoảng cách tới Khuê Văn Các: <strong style="color: #0284c7;">8 mét</strong><br>
+                    Tín hiệu BLE: <strong style="color: #10b981;">Tốt (-68 dBm)</strong>
+                </div>
+            `);
+
+            // Hiện vật lịch sử (Markers)
+            const artifacts = [
+                { title: 'Khuê Văn Các (Gác Sao Khuê)', zone: 'Khuôn Viên Trung Tâm', lat: 21.0289, lng: 105.8355, desc: 'Công trình biểu tượng văn hiến Thăng Long, xây dựng năm 1805 triều Nguyễn, hai tầng tám mái bằng gỗ lim quý hiếm.' },
+                { title: 'Bia Tiến Sĩ Số 01 (Khoa 1442)', zone: 'Vườn Bia Tiến Sĩ', lat: 21.0294, lng: 105.8353, desc: 'Bia khắc tên các tiến sĩ khoa Nhâm Tuất 1442 dưới triều vua Lê Thái Tông, mở đầu truyền thống tôn vinh hiền tài.' },
+                { title: 'Giếng Thiên Quang', zone: 'Khu Vực 3', lat: 21.0289, lng: 105.8352, desc: 'Giếng nước hình vuông soi bóng trời tròn, biểu trưng cho âm dương hòa hợp và ánh sáng trí tuệ khai mở.' }
+            ];
+
+            artifacts.forEach(art => {
+                const marker = L.circleMarker([art.lat, art.lng], {
+                    radius: 8,
+                    color: '#ffffff',
+                    weight: 2,
+                    fillColor: '#f59e0b',
+                    fillOpacity: 1
+                }).addTo(mapInstance);
+
+                marker.on('click', () => {
+                    openPoiSheet(art.title, art.zone, art.desc);
+                });
+            });
+
+            // Định vị lại vị trí tôi
+            const btnRecenter = document.getElementById('btn-user-recenter');
+            if (btnRecenter) {
+                btnRecenter.addEventListener('click', () => {
+                    mapInstance.flyTo(userLatLng, 19, { duration: 1.2 });
+                });
+            }
+
+            // Gọi invalidateSize sau khi nạp để bảo đảm bản đồ nở trọn 100% trên màn hình điện thoại
+            setTimeout(() => { if (mapInstance) mapInstance.invalidateSize(); }, 150);
+            setTimeout(() => { if (mapInstance) mapInstance.invalidateSize(); }, 600);
+            window.addEventListener('resize', () => { if (mapInstance) mapInstance.invalidateSize(); });
+
+        } catch (err) {
+            console.error('Lỗi khởi tạo bản đồ:', err);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        initVisitorMap();
+
+        // Xử lý nút đóng bottom sheet
+        const btnClosePoi = document.getElementById('btn-close-poi-sheet');
+        if (btnClosePoi) {
+            btnClosePoi.addEventListener('click', () => {
+                const sheet = document.getElementById('poi-sheet');
+                if (sheet) sheet.classList.remove('active');
+            });
+        }
+
+        // Xử lý nút nghe audio 3D
+        const btnPlayAudio = document.getElementById('btn-play-poi-audio');
+        if (btnPlayAudio) {
+            btnPlayAudio.addEventListener('click', () => {
+                alert('🎧 [ĐANG PHÁT THUYẾT MINH 3D SPATIAL AUDIO]\n\nÂm thanh đang được mô phỏng định hướng không gian 3D theo góc quay đầu và khoảng cách của bạn tới cổ vật.');
+            });
+        }
+
+        // FAB Chat AI trigger
+        const fabAi = document.getElementById('btn-fab-open-ai-chat');
+        if (fabAi) {
+            fabAi.addEventListener('click', () => {
+                toggleChatPreview();
+            });
+        }
+
+        // Close Chat Drawer
+        const btnCloseChat = document.getElementById('btn-close-ai-chat');
+        if (btnCloseChat) {
+            btnCloseChat.addEventListener('click', () => {
+                const drawer = document.getElementById('ai-chat-drawer');
+                if (drawer) drawer.classList.remove('open');
+            });
+        }
+
+        // Voice button inside chat
+        const btnVoice = document.getElementById('btn-chat-voice-record');
+        if (btnVoice) {
+            btnVoice.addEventListener('click', () => {
+                alert('🎙️ [KÍCH HOẠT MICRO THU ÂM]\n\nĐang lắng nghe câu hỏi của du khách qua Web Speech API / Micro INMP441...');
+            });
+        }
+    });
+
+    function openPoiSheet(title, zone, desc) {
+        const sheet = document.getElementById('poi-sheet');
+        const titleEl = document.getElementById('sheet-poi-title');
+        const zoneEl = document.getElementById('sheet-poi-zone');
+        const descEl = document.getElementById('sheet-poi-desc');
+
+        if (titleEl) titleEl.textContent = title;
+        if (zoneEl) zoneEl.textContent = zone;
+        if (descEl) descEl.textContent = desc;
+        if (sheet) sheet.classList.add('active');
+    }
+
+    function toggleChatPreview() {
+        const drawer = document.getElementById('ai-chat-drawer');
+        if (drawer) {
+            drawer.classList.toggle('open');
+        }
+    }
+
+    function applyUserStyle(file, name) {
+        alert('⭐ Bạn đã chọn Style: ' + name + '!\n\nĐể dùng style này làm giao diện du khách chính thức, bạn chỉ cần copy nội dung file "' + file + '" thay thế vào file "public/user.html".');
+    }
+    </script>
+    
+</body>
+</html>

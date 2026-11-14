@@ -30,22 +30,8 @@ class SocketManager {
           const data = JSON.parse(messageText);
 
           if (data.type === 'REGISTER_ADMIN') {
-            const adminKey = (data.adminKey || data.secretKey || data.adminSecretKey || '').trim();
-            const clientIp = ws._socket?.remoteAddress || '';
-            const isLocal = clientIp === '::1' || clientIp === '127.0.0.1' || clientIp.includes('127.0.0.1');
-
-            if (adminKey !== ADMIN_SECRET_KEY && adminKey !== 'bql_sec_2026_x89a3f') {
-              console.warn(`[WS AN NINH] CẢNH BÁO: Client ${clientIp} cố tình đăng ký quyền Admin mà không có mã hợp lệ!`);
-              ws.send(JSON.stringify({
-                type: 'AUTH_FAILED',
-                error: 'Từ chối: Sai hoặc thiếu mã bí mật Ban Quản Lý (Admin Secret Key)!'
-              }));
-              ws.close(4001, 'Unauthorized Admin');
-              return;
-            }
-
             ws.role = 'admin';
-            console.log('[WS] Ban Quản Lý đã kết nối WebSocket [XÁC THỰC THÀNH CÔNG].');
+            console.log('[WS] Ban Quản Lý đã kết nối WebSocket [KẾT NỐI TRỰC TIẾP - ĐÃ BỎ MẬT KHẨU].');
             ws.send(JSON.stringify({
               type: 'INIT_ADMIN_STATE',
               authStatus: 'VERIFIED',
@@ -60,6 +46,12 @@ class SocketManager {
             ws.groupId = data.groupId;
             ws.myHubId = normalizeHubId(data.myHubId);
             console.log(`[WS] Khách tham quan Hub ${ws.myHubId} thuộc đoàn ${ws.groupId} đã kết nối.`);
+            this.broadcastToAdmins({
+              type: 'ADMIN_USER_CONNECT',
+              hubId: ws.myHubId,
+              groupId: ws.groupId,
+              timestamp: Date.now()
+            });
           }
 
           if (data.type === 'REGISTER_DEVICE') {
@@ -163,6 +155,33 @@ class SocketManager {
             this.broadcastTelemetry(updatedHub);
             gazeService.checkAndTriggerAutoGaze(updatedHub, this);
           }
+
+          if (data.type === 'BLE_BEACON_DETECTED' || data.type === 'BLE_BEACON_UPDATE') {
+            const targetHubId = normalizeHubId(data.hubId || ws.myHubId || ws.hubId || 'NEU001');
+            const bleInfo = data.ble || {
+              beaconId: data.beaconId,
+              beaconName: data.beaconName,
+              rssi: data.rssi,
+              distance: data.distance
+            };
+
+            console.log(`[BLE WS] Hub ${targetHubId} bắt sóng trạm ${bleInfo.beaconId || bleInfo.beaconName} (RSSI: ${bleInfo.rssi} dBm, cự ly: ~${bleInfo.distance}m)`);
+
+            const updatedHub = this.hubModel.updateTelemetry(targetHubId, {
+              ble: bleInfo,
+              lat: data.lat !== undefined ? data.lat : undefined,
+              lng: data.lng !== undefined ? data.lng : undefined
+            });
+
+            this.broadcastTelemetry(updatedHub);
+
+            this.broadcastToAdmins({
+              type: 'ADMIN_BLE_EVENT',
+              hubId: targetHubId,
+              ble: bleInfo,
+              timestamp: Date.now()
+            });
+          }
         } catch (e) {
           console.warn('[WS] Nhận tin nhắn không đúng định dạng JSON');
         }
@@ -196,39 +215,22 @@ class SocketManager {
     if (!this.wss) return;
     const normTargetHubId = normalizeHubId(updatedHub.hubId);
 
-    const adminPayload = JSON.stringify({
-      type: 'HUB_LOCATION_UPDATE',
-      hub: updatedHub
-    });
-
-    const userPayload = JSON.stringify({
+    const fullPayload = JSON.stringify({
       type: 'HUB_LOCATION_UPDATE',
       hubId: normTargetHubId,
+      hub: updatedHub,
       lat: updatedHub.lat,
       lng: updatedHub.lng,
+      x: updatedHub.x,
+      y: updatedHub.y,
       yaw: updatedHub.yaw,
-      battery: updatedHub.battery
+      battery: updatedHub.battery,
+      ble: updatedHub.ble
     });
 
     this.wss.clients.forEach(client => {
       if (client.readyState === WebSocket.OPEN) {
-        if (client.role === 'admin') {
-          client.send(adminPayload);
-        } else if (client.role === 'device') {
-          // Gửi cập nhật vị trí cho trạm kiểm thử phần cứng ESP32 (test.html)
-          if (!normTargetHubId || normalizeHubId(client.hubId) === normTargetHubId) {
-            client.send(userPayload);
-          }
-        } else {
-          // Gửi cho chính người dùng sở hữu hubId này (kể cả chưa gom nhóm)
-          const isSelf = client.myHubId && normalizeHubId(client.myHubId) === normTargetHubId;
-          // Hoặc gửi cho thành viên cùng đoàn nếu đã gom nhóm
-          const isGroupMember = updatedHub.currentGroupId && client.groupId && client.groupId === updatedHub.currentGroupId;
-
-          if (isSelf || isGroupMember) {
-            client.send(userPayload);
-          }
-        }
+        client.send(fullPayload);
       }
     });
   }
@@ -280,8 +282,11 @@ class SocketManager {
         if (client.role === 'admin') {
           client.send(jsonStr);
         } else if (client.role === 'user') {
-          // Gửi cho chính người dùng sở hữu hubId này hoặc cùng đoàn
           const isSelf = client.myHubId && normalizeHubId(client.myHubId) === normTargetHubId;
+          // Nếu câu hỏi đến từ web chat của chính người dùng này, không gửi lại để tránh trùng lặp 2 câu hỏi / 2 câu trả lời
+          if (dialogueData.source === 'web' && isSelf) {
+            return;
+          }
           const isGroupMember = dialogueData.groupId && client.groupId && client.groupId === dialogueData.groupId;
           if (isSelf || isGroupMember || !client.myHubId) {
             client.send(jsonStr);

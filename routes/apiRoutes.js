@@ -14,6 +14,8 @@ const voiceAiController = require('../controllers/voiceAiController');
 const deviceAuthController = require('../controllers/deviceAuthController');
 const adminController = require('../controllers/adminController');
 const viewController = require('../controllers/viewController');
+const financeController = require('../controllers/financeController');
+const rentalController = require('../controllers/rentalController');
 
 const upload = require('../middlewares/uploadMiddleware');
 const { verifyEsp32Secret } = require('../middlewares/esp32AuthMiddleware');
@@ -158,5 +160,20 @@ router.get('/admin/logout', (req, res) => {
   res.setHeader('Set-Cookie', 'admin_session_key=; Path=/; Max-Age=0');
   res.redirect(ADMIN_SECRET_PATH);
 });
+
+// ==========================================
+// 7. BÁO CÁO TÀI CHÍNH & THIẾT BỊ MONGODB
+// ==========================================
+router.get('/finance/overview', financeController.getOverview.bind(financeController));
+router.get('/finance/transactions', financeController.getTransactions.bind(financeController));
+router.get('/finance/chart', financeController.getUsageChart.bind(financeController));
+router.get('/devices', financeController.getAllDevices.bind(financeController));
+
+// ==========================================
+// 8. NGHIỆP VỤ THUÊ MÁY (ĐẨY LÊN MONGODB)
+// ==========================================
+router.post('/rentals/rent', rentalController.createRental.bind(rentalController));
+router.post('/rentals/return', rentalController.returnRental.bind(rentalController));
+router.get('/rentals/active', rentalController.getActiveRentals.bind(rentalController));
 
 module.exports = router;

@@ -9,14 +9,15 @@ const router = express.Router();
 const viewController = require('../controllers/viewController');
 const { ADMIN_SECRET_PATH, EDITOR_SECRET_PATH } = require('../config/appConfig');
 
-// 1. Cổng khách tham quan: /user và /user.html
+// 1. Cổng khách tham quan: /user và /user.html (Giao diện UI/UX Hỏa Lò Canva mới)
 router.get('/user.html', viewController.redirectUserHtml);
 router.get('/user', viewController.renderUser);
 
-// 2. Cổng quản lý Ban Quản Lý:
-router.get(ADMIN_SECRET_PATH, viewController.renderAdmin);
-// Tự động chuyển hướng từ các đường dẫn quen thuộc sang Cổng Ban Quản Lý
-router.get(['/admin', '/quanly', '/index.html'], (req, res) => res.redirect(ADMIN_SECRET_PATH));
+// 1b. Khám phá Nhà tù Hỏa Lò (Giao diện Canva: Bản đồ & Câu chuyện)
+router.get(['/hoa-lo', '/hoa-lo.html', '/kham-pha', '/story'], viewController.renderHoaLo);
+
+// 2. Cổng Quản lý Thiết Bị Ban Quản Lý (Giao diện Canva Manager mới - Truy cập trực tiếp, KHÔNG MẬT KHẨU)
+router.get(['/admin', '/quanly', '/manager', '/manager-demo', '/manager-demo.html', ADMIN_SECRET_PATH], viewController.renderManagerDemo);
 
 // 3. Cổng giả lập tín hiệu GPS & Pin
 router.get(['/simulate', '/simulate.html'], viewController.renderSimulate);

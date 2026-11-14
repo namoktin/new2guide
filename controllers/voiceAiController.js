@@ -200,13 +200,14 @@ class VoiceAiController {
         hubId: hubId || 'Khách lẻ'
       });
 
-      // Phát sóng realtime câu hỏi và câu trả lời AI cho Web Khách (user.html)
+      // Phát sóng realtime câu hỏi và câu trả lời AI cho Quản lý & các máy khác
       socketManager.broadcastAiDialogue({
         hubId: hubId || 'Khách lẻ',
         userQuestion: question.trim(),
         aiReply: aiResult.reply,
         provider: aiResult.provider,
-        nearestPoi: aiResult.nearestPoi
+        nearestPoi: aiResult.nearestPoi,
+        source: 'web'
       });
 
       res.json({

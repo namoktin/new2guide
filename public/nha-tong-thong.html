@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Bản Đồ Nhà Tổng Thống — Tích Hợp 3 Trạm BLE Beacon</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      background-color: #0b0d13;
+      color: #e5e7eb;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      touch-action: none;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+      width: 100vw;
+      height: 100vh;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    #svg-container {
+      width: 100vw;
+      height: 100vh;
+      cursor: grab;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at 50% 50%, #171d2b 0%, #090b10 100%);
+      position: relative;
+      transition: background 0.3s ease;
+    }
+    #svg-container:active {
+      cursor: grabbing;
+    }
+    #map-wrapper {
+      transform-origin: 0 0;
+      will-change: transform;
+      transition: transform 0.12s ease-out;
+    }
+    .wave-bar {
+      animation: soundWave 1.2s ease-in-out infinite alternate;
+    }
+    @keyframes soundWave {
+      0% { height: 4px; }
+      100% { height: 22px; }
+    }
+    /* Beacon Pulse Animations */
+    @keyframes pulseRing {
+      0% { r: 6px; opacity: 1; stroke-width: 2.5px; }
+      100% { r: 35px; opacity: 0; stroke-width: 0.5px; }
+    }
+    .beacon-wave-1 {
+      animation: pulseRing 2.4s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+    }
+    .beacon-wave-2 {
+      animation: pulseRing 2.4s cubic-bezier(0.215, 0.61, 0.355, 1) infinite 0.7s;
+    }
+    .beacon-wave-3 {
+      animation: pulseRing 2.4s cubic-bezier(0.215, 0.61, 0.355, 1) infinite 1.4s;
+    }
+    /* Highlight */
+    .highlight-active {
+      stroke: #00f0ff !important;
+      stroke-width: 3.5px !important;
+      filter: drop-shadow(0 0 16px #00f0ff) !important;
+    }
+    .hover-glow:hover {
+      filter: brightness(1.2) drop-shadow(0 0 8px rgba(218,165,32,0.6));
+      cursor: pointer;
+    }
+
+    /* LIGHT THEME */
+    body.theme-light {
+      background-color: #f8fafc;
+      color: #0f172a;
+    }
+    body.theme-light #svg-container {
+      background: radial-gradient(circle at 50% 50%, #ffffff 0%, #e2e8f0 100%);
+    }
+    body.theme-light #svg-host svg {
+      filter: drop-shadow(0 15px 35px rgba(0, 0, 0, 0.12));
+    }
+    body.theme-light .glass-card {
+      background-color: rgba(255, 255, 255, 0.95) !important;
+      border-color: rgba(226, 232, 240, 0.9) !important;
+      box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04) !important;
+      color: #0f172a !important;
+    }
+    body.theme-light .glass-card h1,
+    body.theme-light .glass-card h3 {
+      color: #0f172a !important;
+    }
+    body.theme-light .glass-card p {
+      color: #475569 !important;
+    }
+    body.theme-light .floating-btn {
+      background-color: rgba(255, 255, 255, 0.95) !important;
+      color: #0f172a !important;
+      border-color: rgba(226, 232, 240, 0.9) !important;
+      box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.1) !important;
+    }
+    body.theme-light .floating-btn:hover {
+      background-color: #f1f5f9 !important;
+    }
+    body.theme-light .tag-meta {
+      background-color: #f1f5f9 !important;
+      color: #334155 !important;
+      border: 1px solid #e2e8f0;
+    }
+    body.theme-light .highlight-active {
+      stroke: #0284c7 !important;
+      stroke-width: 3.5px !important;
+      filter: drop-shadow(0 0 16px rgba(2, 132, 199, 0.6)) !important;
+    }
+    body.theme-light .beacon-wave-1,
+    body.theme-light .beacon-wave-2,
+    body.theme-light .beacon-wave-3 {
+      stroke: #0284c7 !important;
+    }
+    body.theme-light .beacon-center-dot {
+      fill: #0284c7 !important;
+    }
+    body.theme-light .beacon-text-label {
+      fill: #0369a1 !important;
+    }
+    body.theme-light .theme-btn-style {
+      background-color: #0f172a !important;
+      color: #f8fafc !important;
+      border-color: #334155 !important;
+    }
+  </style>
+</head>
+<body class="w-screen h-screen relative select-none">
+
+  <!-- TOP APP BAR -->
+  <header class="absolute top-0 left-0 right-0 z-30 p-3 md:p-4 flex flex-wrap items-center justify-between gap-2 pointer-events-none">
+    <div class="pointer-events-auto flex items-center gap-3 glass-card bg-slate-900/90 backdrop-blur-md border border-white/15 px-4 py-2.5 rounded-2xl shadow-2xl transition-colors">
+      <div class="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-lg">
+        🏛️
+      </div>
+      <div>
+        <h1 class="text-xs md:text-sm font-black text-white flex items-center gap-2">
+          BẢN ĐỒ NHÀ TỔNG THỐNG
+          <span class="text-[9px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-bold border border-cyan-400/30">3 Trạm Beacon BLE</span>
+        </h1>
+        <p class="text-[10px] text-gray-400">Kiến trúc gỗ gõ đỏ, đá cổ • Tích hợp iBeacon Micro-positioning</p>
+      </div>
+    </div>
+
+    <!-- RIGHT CONTROLS -->
+    <div class="pointer-events-auto flex items-center gap-2 flex-wrap">
+      <!-- SELECT BEACON QUICK FOCUS -->
+      <select id="select-beacon" onchange="focusBeacon(this.value)" class="bg-slate-800/90 hover:bg-slate-700/90 text-cyan-300 border border-cyan-400/40 px-3 py-2 rounded-2xl text-xs font-bold shadow-xl transition outline-none cursor-pointer">
+        <option value="">🎯 Chọn Trạm Beacon (3 Điểm)...</option>
+        <option value="0">📡 Trạm 1: Đông (745, 258)</option>
+        <option value="1">🏛️ Trạm 2: Bắc (550, 25)</option>
+        <option value="2">🧭 Trạm 3: Tiền Sảnh (310, 340)</option>
+      </select>
+
+      <!-- THEME TOGGLE BUTTON -->
+      <button onclick="toggleTheme()" id="btn-theme-toggle" class="bg-slate-800/90 hover:bg-slate-700/90 text-amber-300 border border-white/15 px-3.5 py-2 rounded-2xl text-xs font-bold shadow-xl transition-all flex items-center gap-2 theme-btn-style">
+        <span id="theme-icon">☀️</span>
+        <span id="theme-text">Xem Nền Trắng</span>
+      </button>
+
+      <!-- PLAY BEACON STEALTH GAME -->
+      <a href="game.html" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white px-3.5 py-2 rounded-2xl text-xs font-black shadow-xl transition flex items-center gap-1.5 border border-purple-400/40">
+        <span>🕹️</span> <span>Chơi Game Dò Beacon</span>
+      </a>
+
+      <!-- BLE Trigger Simulation -->
+      <button onclick="cycleBeaconSimulation()" class="bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/40 text-cyan-300 px-3.5 py-2 rounded-2xl text-xs font-bold shadow-xl transition flex items-center gap-2">
+        <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping"></span>
+        <span>Dò Sóng Tự Động</span>
+      </button>
+
+      <!-- Download Original SVG -->
+      <a href="Nha_tong_thong_blueprint.svg" download="Nha_tong_thong_blueprint.svg" class="bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/40 text-amber-300 px-3.5 py-2 rounded-2xl text-xs font-bold shadow-xl transition flex items-center gap-1.5">
+        <span>📥</span> <span class="hidden md:inline">Tải File .SVG</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- MAP CONTAINER (ZOOM & PAN) -->
+  <div id="svg-container">
+    <div id="map-wrapper">
+      <div id="svg-host" style="width: 800px; height: 500px;">
+        <svg xmlns="http://www.w3.org/2000/svg" id="natural-artisan-svg" viewBox="0 0 800 500" width="800" height="500" class="w-full h-full select-none"><defs><pattern id="pattern-terracotta-tile" width="36" height="22" patternUnits="userSpaceOnUse"><rect width="36" height="22" fill="#c2410c"/><path d="M0,11 Q9,2 18,11 Q27,2 36,11" stroke="#7c2d12" stroke-width="1.8" fill="#ea580c" fill-opacity="0.45"/><path d="M-9,22 Q0,13 9,22 Q18,13 27,22 Q36,13 45,22" stroke="#431407" stroke-width="2" fill="#9a3412" fill-opacity="0.6"/><line x1="18" y1="0" x2="18" y2="10" stroke="#fed7aa" stroke-width="0.8" opacity="0.4"/><line x1="9" y1="11" x2="9" y2="21" stroke="#fed7aa" stroke-width="0.8" opacity="0.4"/><line x1="27" y1="11" x2="27" y2="21" stroke="#fed7aa" stroke-width="0.8" opacity="0.4"/></pattern><pattern id="pattern-ancient-brick" width="44" height="24" patternUnits="userSpaceOnUse"><rect width="44" height="24" fill="#a16207"/><rect x="0" y="0" width="44" height="24" fill="#78350f"/><rect x="1" y="1" width="20" height="10" rx="1" fill="#b45309" stroke="#92400e" stroke-width="0.6"/><rect x="23" y="1" width="20" height="10" rx="1" fill="#c2410c" stroke="#9a3412" stroke-width="0.6"/><rect x="-10" y="13" width="20" height="10" rx="1" fill="#c2410c" stroke="#9a3412" stroke-width="0.6"/><rect x="12" y="13" width="20" height="10" rx="1" fill="#b45309" stroke="#78350f" stroke-width="0.6"/><rect x="34" y="13" width="20" height="10" rx="1" fill="#9a3412" stroke="#78350f" stroke-width="0.6"/><circle cx="8" cy="6" r="1" fill="#451a03" opacity="0.6"/><circle cx="30" cy="5" r="1.2" fill="#365314" opacity="0.7"/><circle cx="20" cy="18" r="1.2" fill="#451a03" opacity="0.6"/><circle cx="40" cy="17" r="1" fill="#65a30d" opacity="0.6"/></pattern><pattern id="pattern-ancient-stone" width="60" height="40" patternUnits="userSpaceOnUse"><rect width="60" height="40" fill="#78716c"/><rect x="1" y="1" width="32" height="18" fill="#a8a29e" stroke="#57534e" stroke-width="1.2"/><rect x="34" y="1" width="25" height="18" fill="#8c857b" stroke="#57534e" stroke-width="1.2"/><rect x="1" y="20" width="22" height="19" fill="#8c857b" stroke="#57534e" stroke-width="1.2"/><rect x="24" y="20" width="35" height="19" fill="#a8a29e" stroke="#57534e" stroke-width="1.2"/><circle cx="15" cy="10" r="1.5" fill="#44403c" opacity="0.5"/><circle cx="45" cy="8" r="1.2" fill="#292524" opacity="0.6"/><circle cx="10" cy="30" r="1.5" fill="#292524" opacity="0.6"/><circle cx="40" cy="28" r="1.8" fill="#44403c" opacity="0.5"/></pattern><pattern id="pattern-moss-stone" width="64" height="64" patternUnits="userSpaceOnUse"><rect width="64" height="64" fill="#44403c"/><line x1="0" y1="32" x2="64" y2="32" stroke="#292524" stroke-width="2"/><line x1="32" y1="0" x2="32" y2="32" stroke="#292524" stroke-width="2"/><line x1="48" y1="32" x2="48" y2="64" stroke="#292524" stroke-width="2"/><line x1="16" y1="32" x2="16" y2="64" stroke="#292524" stroke-width="2"/><ellipse cx="20" cy="32" rx="14" ry="6" fill="#3f6212" opacity="0.9"/><ellipse cx="22" cy="31" rx="8" ry="3" fill="#65a30d" opacity="0.85"/><ellipse cx="48" cy="48" rx="12" ry="7" fill="#365314" opacity="0.9"/><ellipse cx="49" cy="46" rx="6" ry="4" fill="#84cc16" opacity="0.8"/><circle cx="10" cy="14" r="5" fill="#4d7c0f" opacity="0.75"/><circle cx="54" cy="18" r="7" fill="#3f6212" opacity="0.8"/></pattern><pattern id="pattern-wood-grain" width="160" height="120" patternUnits="userSpaceOnUse"><rect width="160" height="120" fill="#78350f"/><path d="M0,15 Q40,10 80,18 T160,12 M0,35 Q50,42 100,32 T160,38 M0,60 Q30,55 90,65 T160,58 M0,85 Q60,92 110,80 T160,88 M0,105 Q45,100 85,110 T160,104" stroke="#451a03" stroke-width="3.2" fill="none" opacity="0.7"/><path d="M0,5 Q55,2 95,8 T160,4 M0,25 Q35,30 85,22 T160,26 M0,48 Q70,40 120,50 T160,46 M0,72 Q25,78 75,68 T160,74 M0,96 Q65,102 125,92 T160,98 M0,115 Q30,118 90,112 T160,116" stroke="#92400e" stroke-width="1.6" fill="none" opacity="0.85"/><ellipse cx="70" cy="50" rx="9" ry="6" fill="#3b1502" opacity="0.9"/><ellipse cx="70" cy="50" rx="17" ry="12" stroke="#521f06" stroke-width="2" fill="none" opacity="0.7"/></pattern><pattern id="pattern-bamboo-weave" width="40" height="40" patternUnits="userSpaceOnUse"><rect width="40" height="40" fill="#ca8a04"/><rect x="0" y="1" width="18" height="17" rx="1" fill="#b45309" stroke="#78350f" stroke-width="0.8"/><line x1="2" y1="6" x2="16" y2="6" stroke="#fde047" stroke-width="0.8" opacity="0.5"/><line x1="2" y1="12" x2="16" y2="12" stroke="#78350f" stroke-width="0.8" opacity="0.5"/><rect x="20" y="21" width="18" height="17" rx="1" fill="#b45309" stroke="#78350f" stroke-width="0.8"/><line x1="22" y1="26" x2="36" y2="26" stroke="#fde047" stroke-width="0.8" opacity="0.5"/><line x1="22" y1="32" x2="36" y2="32" stroke="#78350f" stroke-width="0.8" opacity="0.5"/><rect x="21" y="1" width="17" height="18" rx="1" fill="#d97706" stroke="#78350f" stroke-width="0.8"/><line x1="26" y1="3" x2="26" y2="17" stroke="#fef08a" stroke-width="0.8" opacity="0.5"/><line x1="32" y1="3" x2="32" y2="17" stroke="#78350f" stroke-width="0.8" opacity="0.5"/><rect x="1" y="21" width="17" height="18" rx="1" fill="#d97706" stroke="#78350f" stroke-width="0.8"/><line x1="6" y1="23" x2="6" y2="37" stroke="#fef08a" stroke-width="0.8" opacity="0.5"/><line x1="12" y1="23" x2="12" y2="37" stroke="#78350f" stroke-width="0.8" opacity="0.5"/></pattern><pattern id="pattern-thatch-straw" width="60" height="30" patternUnits="userSpaceOnUse"><rect width="60" height="30" fill="#d97706"/><path d="&#10;            M0,5 L8,25 M5,4 L14,26 M12,3 L19,25 M18,5 L26,27 &#10;            M24,4 L32,25 M30,3 L38,26 M36,5 L44,27 M42,4 L50,25 &#10;            M48,3 L56,26 M54,5 L62,27&#10;          " stroke="#92400e" stroke-width="1.8" stroke-linecap="round" opacity="0.85"/><path d="&#10;            M3,6 L10,24 M15,5 L22,25 M28,4 L35,26 M40,6 L48,25 M52,4 L58,26&#10;          " stroke="#fde68a" stroke-width="1.2" stroke-linecap="round" opacity="0.75"/><line x1="0" y1="12" x2="60" y2="12" stroke="#78350f" stroke-width="1" stroke-dasharray="3 3" opacity="0.5"/></pattern><pattern id="pattern-marble-vein" width="120" height="120" patternUnits="userSpaceOnUse"><rect width="120" height="120" fill="#f8fafc"/><path d="M-10,25 C30,10 65,70 130,40 L130,70 C80,100 35,50 -10,80 Z" fill="#e2e8f0" opacity="0.8"/><path d="M0,20 Q30,45 60,30 T100,60 T120,50" stroke="#64748b" stroke-width="1.8" fill="none" opacity="0.7"/><path d="M5,18 Q33,48 63,32 T102,63 T122,52" stroke="#334155" stroke-width="1" fill="none" opacity="0.8"/><path d="M60,32 Q80,15 115,22 M55,33 Q70,55 85,90 T115,115" stroke="#475569" stroke-width="0.9" fill="none" opacity="0.6"/></pattern><pattern id="pattern-water-ripples" width="90" height="90" patternUnits="userSpaceOnUse"><rect width="90" height="90" fill="#0284c7"/><circle cx="45" cy="45" r="10" stroke="#bae6fd" stroke-width="2.5" fill="none" opacity="0.85"/><circle cx="45" cy="45" r="22" stroke="#7dd3fc" stroke-width="2" fill="none" opacity="0.7"/><circle cx="45" cy="45" r="34" stroke="#38bdf8" stroke-width="1.5" fill="none" opacity="0.55"/><circle cx="45" cy="45" r="44" stroke="#0ea5e9" stroke-width="1" fill="none" opacity="0.4"/><circle cx="0" cy="0" r="16" stroke="#7dd3fc" stroke-width="1.5" fill="none" opacity="0.6"/><circle cx="90" cy="0" r="16" stroke="#7dd3fc" stroke-width="1.5" fill="none" opacity="0.6"/><circle cx="0" cy="90" r="16" stroke="#7dd3fc" stroke-width="1.5" fill="none" opacity="0.6"/><circle cx="90" cy="90" r="16" stroke="#7dd3fc" stroke-width="1.5" fill="none" opacity="0.6"/></pattern></defs><g id="elem-1794647838985" class="cursor-move group"><g opacity="1"><rect x="-5" y="-5" width="805" height="20" fill="#78716c" stroke="#44403c" stroke-width="2"/><line x1="-5" y1="-5" x2="800" y2="15" stroke="#44403c" stroke-width="0.8" opacity="0.35"/><line x1="800" y1="-5" x2="-5" y2="15" stroke="#44403c" stroke-width="0.8" opacity="0.35"/></g></g><g id="elem-1794647846874-0" class="cursor-move group"><g opacity="1"><rect x="-5" y="5" width="25" height="505" fill="#78716c" stroke="#44403c" stroke-width="2"/><line x1="-5" y1="5" x2="20" y2="510" stroke="#44403c" stroke-width="0.8" opacity="0.35"/><line x1="20" y1="5" x2="-5" y2="510" stroke="#44403c" stroke-width="0.8" opacity="0.35"/></g></g><g id="elem-1794647906409-0" class="cursor-move group"><g opacity="1"><rect x="790" y="-5" width="25" height="505" fill="#78716c" stroke="#44403c" stroke-width="2"/><line x1="790" y1="-5" x2="815" y2="500" stroke="#44403c" stroke-width="0.8" opacity="0.35"/><line x1="815" y1="-5" x2="790" y2="500" stroke="#44403c" stroke-width="0.8" opacity="0.35"/></g></g><g id="elem-1794647913394-0" class="cursor-move group"><g opacity="1"><rect x="-5" y="490" width="805" height="20" fill="#78716c" stroke="#44403c" stroke-width="2"/><line x1="-5" y1="490" x2="800" y2="510" stroke="#44403c" stroke-width="0.8" opacity="0.35"/><line x1="800" y1="490" x2="-5" y2="510" stroke="#44403c" stroke-width="0.8" opacity="0.35"/></g></g><g id="elem-1794647921492" class="cursor-move group"><g opacity="1"><rect x="240" y="220" width="20" height="20" fill="#e2e8f0" stroke="#451a03" stroke-width="1.6"/><circle cx="250" cy="230" r="8" fill="#78350f" stroke="#451a03" stroke-width="2"/><circle cx="250" cy="230" r="1.5" fill="#451a03"/></g></g><g id="elem-1794647947024" class="cursor-move group"><g opacity="1"><rect x="20" y="64.25" width="18.9" height="31.499999999999996" rx="1" fill="url(#pattern-wood-grain)" stroke="#451a03" stroke-width="1.5"/><rect x="156.1" y="64.25" width="18.9" height="31.499999999999996" rx="1" fill="url(#pattern-wood-grain)" stroke="#451a03" stroke-width="1.5"/><rect x="51.5" y="39" width="92" height="82" rx="2" fill="url(#pattern-wood-grain)" stroke="#451a03" stroke-width="2"/><circle cx="97.5" cy="80" r="3" fill="#78350f"/></g></g><g id="elem-1794647957226" class="cursor-move group"><g opacity="1"><ellipse cx="715" cy="427.5" rx="65" ry="52.5" fill="url(#pattern-ancient-stone)" stroke="#451a03" stroke-width="2"/><rect x="646" y="424.5" width="5" height="6" rx="1" fill="#451a03"/><rect x="779" y="424.5" width="5" height="6" rx="1" fill="#451a03"/><ellipse cx="715" cy="427.5" rx="39" ry="31.5" fill="#78350f" opacity="0.6"/><circle cx="715" cy="427.5" r="2" fill="#ef4444"/></g></g><g id="elem-1794647978990-0" class="cursor-move group"><g opacity="1"><rect x="240" y="105" width="20" height="20" fill="#e2e8f0" stroke="#451a03" stroke-width="1.6"/><circle cx="250" cy="115" r="8" fill="#78350f" stroke="#451a03" stroke-width="2"/><circle cx="250" cy="115" r="1.5" fill="#451a03"/></g></g><g id="elem-1794647998825" class="cursor-move group"><circle cx="745" cy="258" r="10" fill="#f8fafc" stroke="#1e293b" stroke-width="2" opacity="1"/></g><g id="elem-1794652492383-0" class="cursor-move group"><circle cx="550" cy="25" r="10" fill="#f8fafc" stroke="#1e293b" stroke-width="2" opacity="1"/></g><g id="elem-1794652502322-0" class="cursor-move group"><circle cx="310" cy="340" r="10" fill="#f8fafc" stroke="#1e293b" stroke-width="2" opacity="1"/></g>
+  <!-- BEACON OVERLAY 1: BEACONTAG-1 -->
+  <g id="beacon-overlay-1" class="beacon-group-marker" data-beacon-idx="0" transform="translate(745, 258)" style="cursor: pointer;">
+    <!-- Concentric pulsing waves -->
+    <circle cx="0" cy="0" r="10" fill="none" stroke="#00f0ff" stroke-width="2" class="beacon-wave-1"/>
+    <circle cx="0" cy="0" r="18" fill="none" stroke="#00f0ff" stroke-width="1.5" class="beacon-wave-2"/>
+    <circle cx="0" cy="0" r="26" fill="none" stroke="#00f0ff" stroke-width="1" class="beacon-wave-3"/>
+    <!-- Center Beacon Dot -->
+    <circle cx="0" cy="0" r="8" fill="#00e5ff" stroke="#ffffff" stroke-width="2" class="beacon-center-dot"/>
+    <circle cx="0" cy="0" r="3" fill="#ffffff"/>
+    <text x="0" y="22" font-size="9" font-weight="bold" fill="#00f0ff" text-anchor="middle" class="beacon-text-label">BEACONTAG-1</text>
+  </g>
+  <!-- BEACON OVERLAY 2: BEACONTAG-2 -->
+  <g id="beacon-overlay-2" class="beacon-group-marker" data-beacon-idx="1" transform="translate(550, 25)" style="cursor: pointer;">
+    <!-- Concentric pulsing waves -->
+    <circle cx="0" cy="0" r="10" fill="none" stroke="#00f0ff" stroke-width="2" class="beacon-wave-1"/>
+    <circle cx="0" cy="0" r="18" fill="none" stroke="#00f0ff" stroke-width="1.5" class="beacon-wave-2"/>
+    <circle cx="0" cy="0" r="26" fill="none" stroke="#00f0ff" stroke-width="1" class="beacon-wave-3"/>
+    <!-- Center Beacon Dot -->
+    <circle cx="0" cy="0" r="8" fill="#00e5ff" stroke="#ffffff" stroke-width="2" class="beacon-center-dot"/>
+    <circle cx="0" cy="0" r="3" fill="#ffffff"/>
+    <text x="0" y="22" font-size="9" font-weight="bold" fill="#00f0ff" text-anchor="middle" class="beacon-text-label">BEACONTAG-2</text>
+  </g>
+  <!-- BEACON OVERLAY 3: BEACONTAG-3 -->
+  <g id="beacon-overlay-3" class="beacon-group-marker" data-beacon-idx="2" transform="translate(310, 340)" style="cursor: pointer;">
+    <!-- Concentric pulsing waves -->
+    <circle cx="0" cy="0" r="10" fill="none" stroke="#00f0ff" stroke-width="2" class="beacon-wave-1"/>
+    <circle cx="0" cy="0" r="18" fill="none" stroke="#00f0ff" stroke-width="1.5" class="beacon-wave-2"/>
+    <circle cx="0" cy="0" r="26" fill="none" stroke="#00f0ff" stroke-width="1" class="beacon-wave-3"/>
+    <!-- Center Beacon Dot -->
+    <circle cx="0" cy="0" r="8" fill="#00e5ff" stroke="#ffffff" stroke-width="2" class="beacon-center-dot"/>
+    <circle cx="0" cy="0" r="3" fill="#ffffff"/>
+    <text x="0" y="22" font-size="9" font-weight="bold" fill="#00f0ff" text-anchor="middle" class="beacon-text-label">BEACONTAG-3</text>
+  </g>
+</svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- FLOATING ZOOM CONTROLS -->
+  <div class="absolute bottom-6 right-6 z-30 flex flex-col gap-2">
+    <button onclick="zoomMap(1.25)" class="floating-btn w-10 h-10 rounded-2xl bg-slate-900/90 hover:bg-slate-800 text-white font-black text-lg border border-white/20 shadow-2xl flex items-center justify-center transition">
+      +
+    </button>
+    <button onclick="zoomMap(0.8)" class="floating-btn w-10 h-10 rounded-2xl bg-slate-900/90 hover:bg-slate-800 text-white font-black text-lg border border-white/20 shadow-2xl flex items-center justify-center transition">
+      -
+    </button>
+    <button onclick="resetZoom()" class="floating-btn w-10 h-10 rounded-2xl bg-slate-900/90 hover:bg-slate-800 text-cyan-300 font-bold text-xs border border-white/20 shadow-2xl flex items-center justify-center transition" title="Căn chỉnh toàn màn hình">
+      Fit
+    </button>
+  </div>
+
+  <!-- BOTTOM SHEET: DISCOVERY & AUDIO NARRATION -->
+  <div id="info-sheet" class="glass-card absolute bottom-6 left-6 right-6 md:right-auto md:w-96 z-30 bg-slate-900/95 backdrop-blur-xl border border-white/20 rounded-3xl p-4 shadow-2xl transition-all duration-300 translate-y-[150%] opacity-0">
+    <div class="flex items-start justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div id="info-icon" class="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500/20 to-cyan-500/20 border border-amber-400/30 flex items-center justify-center text-2xl shrink-0">
+          📍
+        </div>
+        <div>
+          <span id="info-badge" class="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-400 font-extrabold border border-cyan-400/30">
+            BLE MINOR 977
+          </span>
+          <h3 id="info-title" class="font-extrabold text-sm text-white mt-1 leading-snug">
+            Trạm Định Vị BLE Beacon
+          </h3>
+        </div>
+      </div>
+      <button onclick="closeInfoSheet()" class="w-7 h-7 rounded-full hover:bg-black/10 text-gray-400 hover:text-gray-700 flex items-center justify-center text-sm">
+        ✕
+      </button>
+    </div>
+
+    <p id="info-desc" class="text-xs text-gray-300 mt-2.5 leading-relaxed">
+      Điểm thu phát sóng BLE Beacon. Tự động nhận diện du khách khi bước tới gần dưới 2 mét (RSSI -65dBm).
+    </p>
+
+    <!-- METADATA TAGS -->
+    <div class="mt-3 flex flex-wrap gap-1.5 text-[10px] font-mono">
+      <span id="meta-uuid" class="tag-meta px-2 py-0.5 rounded bg-white/10 text-gray-300">UUID: E2C56DB5-...-D0F5A71096E0</span>
+      <span id="meta-major" class="tag-meta px-2 py-0.5 rounded bg-white/10 text-emerald-400 font-bold">Major: 1</span>
+      <span id="meta-minor" class="tag-meta px-2 py-0.5 rounded bg-white/10 text-cyan-400 font-bold">Minor: 977</span>
+      <span id="meta-rssi" class="tag-meta px-2 py-0.5 rounded bg-white/10 text-amber-400">RSSI: -65 dBm</span>
+      <span id="meta-coord" class="tag-meta px-2 py-0.5 rounded bg-white/10 text-purple-400 font-bold">Tọa độ: (745, 258)</span>
+    </div>
+
+    <!-- AUDIO PLAYER WITH SOUND WAVES -->
+    <div class="mt-3 pt-3 border-t border-white/10 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <button onclick="toggleAudio()" id="btn-audio-play" class="w-9 h-9 rounded-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold flex items-center justify-center text-sm shadow-lg transition">
+          ▶
+        </button>
+        <!-- Sound Wave Visualizer -->
+        <div class="flex items-center gap-1 h-6">
+          <div class="w-1 bg-cyan-500 rounded-full wave-bar" style="animation-delay: 0.1s"></div>
+          <div class="w-1 bg-cyan-500 rounded-full wave-bar" style="animation-delay: 0.3s"></div>
+          <div class="w-1 bg-cyan-500 rounded-full wave-bar" style="animation-delay: 0.2s"></div>
+          <div class="w-1 bg-cyan-500 rounded-full wave-bar" style="animation-delay: 0.4s"></div>
+          <div class="w-1 bg-cyan-500 rounded-full wave-bar" style="animation-delay: 0.15s"></div>
+        </div>
+      </div>
+      <span class="text-[10px] text-gray-400 font-mono">Khoảng cách: <strong class="text-emerald-500 font-bold" id="info-dist">0.6m</strong></span>
+    </div>
+  </div>
+
+  <script>
+    const BEACONS_DATA = [
+  {
+    "id": "BEACONTAG-1",
+    "name": "Trạm Beacon 1: Cung Điện Phía Đông",
+    "desc": "Thiết bị iBeacon phát sóng Bluetooth định vị du khách tại vị trí tọa độ (745, 258). Tự động nhận diện du khách khi bước tới gần dưới 2 mét (RSSI -65dBm).",
+    "x": 745,
+    "y": 258,
+    "minor": 977,
+    "major": 1,
+    "uuid": "E2C56DB5-DFFB-48D2-B060-D0F5A71096E0",
+    "rssi": -65,
+    "icon": "📡",
+    "objectId": "elem-1794647998825"
+  },
+  {
+    "id": "BEACONTAG-2",
+    "name": "Trạm Beacon 2: Cổng Bắc & Hành Lang Vòm",
+    "desc": "Trạm vi định vị BLE Beacon gắn tại vòm cửa phía Bắc (550, 25). Phát hiện du khách bước vào khu vực hành lang chuyển tiếp với độ chính xác cao.",
+    "x": 550,
+    "y": 25,
+    "minor": 977,
+    "major": 1,
+    "uuid": "E2C56DB5-DFFB-48D2-B060-D0F5A71096E0",
+    "rssi": -65,
+    "icon": "🏛️",
+    "objectId": "elem-1794652492383-0"
+  },
+  {
+    "id": "BEACONTAG-3",
+    "name": "Trạm Beacon 3: Tiền Sảnh Trung Tâm",
+    "desc": "Trạm vi định vị BLE Beacon gắn tại trung tâm tiền sảnh đón tiếp (310, 340). Tự động kích hoạt hướng dẫn lộ trình tham quan tổng thể cho du khách.",
+    "x": 310,
+    "y": 340,
+    "minor": 977,
+    "major": 1,
+    "uuid": "E2C56DB5-DFFB-48D2-B060-D0F5A71096E0",
+    "rssi": -65,
+    "icon": "🧭",
+    "objectId": "elem-1794652502322-0"
+  }
+];
+
+    // Theme Toggle Logic
+    function toggleTheme() {
+      document.body.classList.toggle('theme-light');
+      const isLight = document.body.classList.contains('theme-light');
+      document.getElementById('theme-icon').innerText = isLight ? '🌙' : '☀️';
+      document.getElementById('theme-text').innerText = isLight ? 'Xem Nền Tối' : 'Xem Nền Trắng';
+      localStorage.setItem('nha_tong_thong_theme', isLight ? 'light' : 'dark');
+    }
+
+    // State for Pan & Zoom
+    let scale = 1;
+    let panX = 0;
+    let panY = 0;
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+
+    const wrapper = document.getElementById('map-wrapper');
+    const container = document.getElementById('svg-container');
+
+    function updateTransform() {
+      wrapper.style.transform = "translate(" + panX + "px, " + panY + "px) scale(" + scale + ")";
+    }
+
+    container.addEventListener('mousedown', e => {
+      if (e.target.closest('button, select, a, #info-sheet')) return;
+      isDragging = true;
+      startX = e.clientX - panX;
+      startY = e.clientY - panY;
+      container.style.cursor = 'grabbing';
+    });
+
+    window.addEventListener('mousemove', e => {
+      if (!isDragging) return;
+      panX = e.clientX - startX;
+      panY = e.clientY - startY;
+      updateTransform();
+    });
+
+    window.addEventListener('mouseup', () => {
+      isDragging = false;
+      container.style.cursor = 'grab';
+    });
+
+    // Touch Support
+    let initialTouchDist = null;
+    let initialScale = 1;
+
+    container.addEventListener('touchstart', e => {
+      if (e.target.closest('button, select, a, #info-sheet')) return;
+      if (e.touches.length === 1) {
+        isDragging = true;
+        startX = e.touches[0].clientX - panX;
+        startY = e.touches[0].clientY - panY;
+      } else if (e.touches.length === 2) {
+        isDragging = false;
+        initialTouchDist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        initialScale = scale;
+      }
+    });
+
+    window.addEventListener('touchmove', e => {
+      if (isDragging && e.touches.length === 1) {
+        panX = e.touches[0].clientX - startX;
+        panY = e.touches[0].clientY - startY;
+        updateTransform();
+      } else if (e.touches.length === 2 && initialTouchDist) {
+        const dist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        const factor = dist / initialTouchDist;
+        scale = Math.min(Math.max(0.3, initialScale * factor), 4);
+        updateTransform();
+      }
+    }, { passive: false });
+
+    window.addEventListener('touchend', () => {
+      isDragging = false;
+      initialTouchDist = null;
+    });
+
+    // Mouse Wheel Zoom
+    container.addEventListener('wheel', e => {
+      e.preventDefault();
+      const zoomFactor = e.deltaY < 0 ? 1.15 : 0.85;
+      const rect = container.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+
+      const newScale = Math.min(Math.max(0.3, scale * zoomFactor), 4);
+      panX = mouseX - (mouseX - panX) * (newScale / scale);
+      panY = mouseY - (mouseY - panY) * (newScale / scale);
+      scale = newScale;
+      updateTransform();
+    }, { passive: false });
+
+    function zoomMap(factor) {
+      const newScale = Math.min(Math.max(0.3, scale * factor), 4);
+      const centerX = window.innerWidth / 2;
+      const centerY = window.innerHeight / 2;
+      panX = centerX - (centerX - panX) * (newScale / scale);
+      panY = centerY - (centerY - panY) * (newScale / scale);
+      scale = newScale;
+      updateTransform();
+    }
+
+    function resetZoom() {
+      const containerW = window.innerWidth;
+      const containerH = window.innerHeight;
+      const svgW = 800;
+      const svgH = 500;
+      const padding = 40;
+
+      scale = Math.min((containerW - padding) / svgW, (containerH - padding) / svgH, 1.4);
+      panX = (containerW - svgW * scale) / 2;
+      panY = (containerH - svgH * scale) / 2;
+      updateTransform();
+    }
+
+    function panToCoordinate(targetX, targetY, targetScale = 1.6) {
+      scale = targetScale;
+      panX = window.innerWidth / 2 - targetX * scale;
+      panY = window.innerHeight / 2 - targetY * scale;
+      updateTransform();
+    }
+
+    // Attach click events for Beacons and POIs
+    function initInteractions() {
+      // 1. Presidential Desk
+      const desk = document.getElementById('elem-1794647947024');
+      if (desk) {
+        desk.classList.add('hover-glow');
+        desk.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openInfoSheet('🪑', 'Bàn Làm Việc Tổng Thống', 'Bàn làm việc chạm khắc vân gỗ gõ đỏ nguyên khối theo phong cách cổ điển, nơi làm việc và ký kết các sắc lệnh quan trọng.', 'N/A', '1.2m', 'N/A', '(97, 80)');
+          highlightElement(desk);
+        });
+      }
+
+      // 2. Oval Conference Table
+      const table = document.getElementById('elem-1794647957226');
+      if (table) {
+        table.classList.add('hover-glow');
+        table.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openInfoSheet('🏛️', 'Bàn Hội Nghị Bầu Dục (Mặt Đá Cổ)', 'Bàn họp mặt đá cổ vân rêu, nơi diễn ra các cuộc họp nội các và tiếp đón ngoại giao quốc tế.', 'N/A', '2.5m', 'N/A', '(715, 427)');
+          highlightElement(table);
+        });
+      }
+
+      // 3. Architectural Pillars
+      ['elem-1794647921492', 'elem-1794647978990-0'].forEach((id, idx) => {
+        const col = document.getElementById(id);
+        if (col) {
+          col.classList.add('hover-glow');
+          col.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openInfoSheet('🏛️', 'Cột Trụ Kiến Trúc Số ' + (idx + 1), 'Cột trụ chịu lực kiến trúc kiên cố bằng đá granite vững chãi.', 'N/A', '3.1m', 'N/A', '(250, 115)');
+            highlightElement(col);
+          });
+        }
+      });
+
+      // 4. Attach all 3 Beacons
+      BEACONS_DATA.forEach((b, idx) => {
+        const overlay = document.getElementById('beacon-overlay-' + (idx + 1));
+        const circleEl = document.getElementById(b.objectId);
+
+        const onBeaconClick = (e) => {
+          if (e) e.stopPropagation();
+          panToCoordinate(b.x, b.y, 1.8);
+          openInfoSheet(
+            b.icon,
+            b.name,
+            b.desc,
+            b.minor,
+            '0.' + (5 + idx * 2) + 'm',
+            b.id,
+            '(' + b.x + ', ' + b.y + ')'
+          );
+          if (circleEl) highlightElement(circleEl);
+          document.getElementById('select-beacon').value = idx;
+        };
+
+        if (overlay) overlay.addEventListener('click', onBeaconClick);
+        if (circleEl) {
+          circleEl.classList.add('hover-glow');
+          circleEl.addEventListener('click', onBeaconClick);
+        }
+      });
+    }
+
+    let currentHighlight = null;
+    function highlightElement(el) {
+      if (currentHighlight) {
+        currentHighlight.classList.remove('highlight-active');
+      }
+      currentHighlight = el;
+      currentHighlight.classList.add('highlight-active');
+    }
+
+    function focusBeacon(idxStr) {
+      if (idxStr === '' || isNaN(idxStr)) return;
+      const idx = parseInt(idxStr);
+      const b = BEACONS_DATA[idx];
+      if (!b) return;
+
+      panToCoordinate(b.x, b.y, 1.8);
+      const overlay = document.getElementById('beacon-overlay-' + (idx + 1));
+      if (overlay) overlay.dispatchEvent(new Event('click'));
+    }
+
+    let simulationIndex = 0;
+    function cycleBeaconSimulation() {
+      focusBeacon(simulationIndex);
+      simulationIndex = (simulationIndex + 1) % BEACONS_DATA.length;
+    }
+
+    // Info Sheet Controls
+    const sheet = document.getElementById('info-sheet');
+    function openInfoSheet(icon, title, desc, minor, dist, beaconId, coord) {
+      document.getElementById('info-icon').innerText = icon;
+      document.getElementById('info-title').innerText = title;
+      document.getElementById('info-desc').innerText = desc;
+      document.getElementById('info-badge').innerText = beaconId ? (beaconId + ' • MINOR ' + minor) : ('BLE MINOR ' + (minor || '977'));
+      document.getElementById('info-dist').innerText = dist || '0.6m';
+      if (coord) document.getElementById('meta-coord').innerText = 'Tọa độ: ' + coord;
+
+      sheet.classList.remove('translate-y-[150%]', 'opacity-0');
+      sheet.classList.add('translate-y-0', 'opacity-100');
+
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(title + ". " + desc);
+        u.lang = 'vi-VN';
+        u.rate = 1.0;
+        window.speechSynthesis.speak(u);
+      }
+    }
+
+    function closeInfoSheet() {
+      sheet.classList.add('translate-y-[150%]', 'opacity-0');
+      sheet.classList.remove('translate-y-0', 'opacity-100');
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+      if (currentHighlight) currentHighlight.classList.remove('highlight-active');
+    }
+
+    let isAudioPlaying = true;
+    function toggleAudio() {
+      isAudioPlaying = !isAudioPlaying;
+      const btn = document.getElementById('btn-audio-play');
+      btn.innerText = isAudioPlaying ? '❚❚' : '▶';
+      if ('speechSynthesis' in window) {
+        if (isAudioPlaying) window.speechSynthesis.resume();
+        else window.speechSynthesis.pause();
+      }
+    }
+
+    window.addEventListener('load', () => {
+      if (localStorage.getItem('nha_tong_thong_theme') === 'light') {
+        toggleTheme();
+      }
+      initInteractions();
+      resetZoom();
+    });
+    window.addEventListener('resize', resetZoom);
+  </script>
+</body>
+</html>

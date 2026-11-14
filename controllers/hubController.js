@@ -63,7 +63,7 @@ class HubController {
 
   // POST /api/telemetry
   updateTelemetry(req, res) {
-    let { hubId, lat, lng, alt, yaw, pitch, roll, battery, isCharging, rawGps, imu } = req.body;
+    let { hubId, lat, lng, alt, yaw, pitch, roll, battery, isCharging, ble, rawGps, imu } = req.body;
 
     if (!hubId || lat === undefined || lng === undefined) {
       return res.status(400).json({ success: false, error: 'Thiếu hubId hoặc tọa độ lat, lng' });
@@ -78,6 +78,7 @@ class HubController {
       roll,
       battery,
       isCharging,
+      ble,
       rawGps,
       imu
     });
@@ -92,6 +93,25 @@ class HubController {
 
     // Tự động kích hoạt phát âm thanh nếu lọt vào tầm nhìn hiện vật hoặc tiếp cận cự ly gần
     gazeService.checkAndTriggerAutoGaze(updatedHub, socketManager);
+
+    // Cập nhật MongoDB Atlas tức thì
+    if (dbService.isMongoConnected) {
+      dbService.HubModel.updateOne(
+        { hubId: updatedHub.hubId },
+        {
+          $set: {
+            lat: updatedHub.lat,
+            lng: updatedHub.lng,
+            x: updatedHub.x,
+            y: updatedHub.y,
+            yaw: updatedHub.yaw,
+            battery: updatedHub.battery,
+            isOnline: true,
+            lastSeen: Date.now()
+          }
+        }
+      ).catch(() => {});
+    }
 
     // Tự động lưu bền vững trạng thái Hubs & vết di chuyển
     dbService.scheduleSave({

@@ -4,13 +4,18 @@
  */
 
 const MapCommon = {
-  // 1. KHỞI TẠO BẢN ĐỒ CƠ SỞ (MẶC ĐỊNH KHUÔN VIÊN NEU)
-  initMap(containerId = 'map', center = [20.99965, 105.84280], zoom = 18) {
+  // 1. KHỞI TẠO BẢN ĐỒ CƠ SỞ (GÓI GỌN KHU VỰC NHÀ TỔNG THỐNG)
+  initMap(containerId = 'map', center = [21.00010, 105.84245], zoom = 20) {
     const map = L.map(containerId, {
       center: center,
       zoom: zoom,
-      minZoom: 16,
+      minZoom: 18,
       maxZoom: 22,
+      maxBounds: [
+        [20.99940, 105.84160],
+        [21.00080, 105.84330]
+      ],
+      maxBoundsViscosity: 0.85,
       zoomControl: true
     });
 
@@ -46,17 +51,53 @@ const MapCommon = {
     return map;
   },
 
-  // 2. VẼ CÁC PHÂN KHU DI TÍCH (ZONES)
+  // 2. VẼ CÁC PHÂN KHU DI TÍCH (ZONES) & MẶT BẰNG BLUEPRINT KIẾN TRÚC
   renderZones(map, zones) {
     const zoneLayers = L.featureGroup().addTo(map);
 
+    // Đảm bảo CSS cho hiệu ứng vi định vị BLE Beacon và Blueprint luôn có sẵn
+    MapCommon.injectBeaconStyles();
+
     zones.forEach(zone => {
+      // Tự động overlay mặt bằng Blueprint SVG nếu phân khu có blueprintUrl & bounds
+      if (zone.blueprintUrl && zone.bounds) {
+        const blueprintOverlay = L.imageOverlay(zone.blueprintUrl, zone.bounds, {
+          opacity: 0.98,
+          interactive: true,
+          zIndex: 420,
+          className: 'zone-blueprint-overlay'
+        });
+
+        blueprintOverlay.bindTooltip(`🏛️ ${zone.shortName || zone.name} (Blueprint)`, {
+          permanent: false,
+          direction: 'top',
+          className: 'zone-label-tooltip'
+        });
+
+        blueprintOverlay.bindPopup(`
+          <div style="padding: 6px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+            <div style="font-size: 10.5px; text-transform: uppercase; font-weight: 800; color: #d97706; letter-spacing: 0.5px; margin-bottom: 2px;">
+              MẶT BẰNG BLUEPRINT KIẾN TRÚC
+            </div>
+            <div style="font-weight: 700; font-size: 14px; color: #1e293b; margin-bottom: 4px;">🏛️ ${zone.name}</div>
+            <div style="font-size: 12px; color: #475569; line-height: 1.45; margin-bottom: 6px;">
+              Mặt bằng kiến trúc vector tích hợp 3 trạm phát sóng vi định vị BLE Beacon (Cung Đông, Cổng Bắc, Tiền Sảnh) và các hiện vật lịch sử.
+            </div>
+            <div style="font-size: 11px; color: #0284c7; font-weight: 600;">
+              <i class="fa-solid fa-satellite-dish"></i> 3 Trạm BLE Beacon phát sóng thời gian thực
+            </div>
+          </div>
+        `);
+
+        zoneLayers.addLayer(blueprintOverlay);
+      }
+
       const polygon = L.polygon(zone.polygon, {
         color: zone.color || '#3b82f6',
-        weight: 2,
+        weight: zone.blueprintUrl ? 1.5 : 2,
         fillColor: zone.color || '#3b82f6',
-        fillOpacity: 0.16,
-        dashArray: '5, 5'
+        fillOpacity: zone.blueprintUrl ? 0.05 : 0.16,
+        dashArray: zone.blueprintUrl ? '4, 4' : '5, 5'
       });
 
       polygon.bindTooltip(zone.shortName || zone.name, {
@@ -69,6 +110,7 @@ const MapCommon = {
         <div style="padding: 4px;">
           <div style="font-weight: 700; color: ${zone.color}; margin-bottom: 4px;">${zone.name}</div>
           <div style="font-size: 0.76rem; color: #94a3b8;">${zone.floor ? `Mặt bằng: Tầng ${zone.floor}` : ''}</div>
+          ${zone.blueprintUrl ? `<div style="font-size: 0.72rem; color: #d97706; font-weight: 600; margin-top: 2px;">🏛️ Tích hợp sơ đồ Blueprint</div>` : ''}
         </div>
       `);
 
@@ -83,12 +125,154 @@ const MapCommon = {
     return null;
   },
 
-  // 4. VẼ CÁC ĐIỂM DI TÍCH (POIs) - DÙNG ICON CHỈ VỊ TRÍ CHUYÊN NGHIỆP (LOCATION PIN)
+  // TỰ ĐỘNG CHÈN CSS STYLES CHO BLE BEACON VÀ BLUEPRINT NẾU CHƯA CÓ
+  injectBeaconStyles() {
+    if (document.getElementById('map-common-beacon-styles')) return;
+    const styleEl = document.createElement('style');
+    styleEl.id = 'map-common-beacon-styles';
+    styleEl.innerHTML = `
+      .beacon-pin-wrapper {
+        position: relative;
+        width: 38px;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .beacon-pulse-ring {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: rgba(6, 182, 212, 0.45);
+        box-shadow: 0 0 16px rgba(6, 182, 212, 0.85);
+        animation: beaconPulseAnim 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+        pointer-events: none;
+      }
+      .beacon-pulse-ring-outer {
+        position: absolute;
+        width: 135%;
+        height: 135%;
+        border-radius: 50%;
+        border: 1.5px solid rgba(14, 165, 233, 0.65);
+        animation: beaconPulseOuterAnim 2.4s cubic-bezier(0, 0, 0.2, 1) infinite;
+        pointer-events: none;
+      }
+      @keyframes beaconPulseAnim {
+        0% { transform: scale(0.65); opacity: 1; }
+        100% { transform: scale(2.2); opacity: 0; }
+      }
+      @keyframes beaconPulseOuterAnim {
+        0% { transform: scale(0.8); opacity: 0.8; }
+        100% { transform: scale(2.7); opacity: 0; }
+      }
+      .beacon-pin-core {
+        position: relative;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #0284c7, #06b6d4);
+        border: 2px solid #ffffff;
+        box-shadow: 0 4px 12px rgba(2, 132, 199, 0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2;
+        color: #ffffff;
+        cursor: pointer;
+        transition: transform 0.2s ease;
+      }
+      .beacon-pin-core:hover {
+        transform: scale(1.15);
+      }
+      .beacon-pin-badge {
+        position: absolute;
+        top: -19px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(15, 23, 42, 0.92);
+        color: #38bdf8;
+        font-size: 9.5px;
+        font-weight: 800;
+        padding: 1.5px 6px;
+        border-radius: 4px;
+        white-space: nowrap;
+        border: 1px solid rgba(56, 189, 248, 0.5);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+        pointer-events: none;
+        z-index: 4;
+      }
+      .zone-blueprint-overlay {
+        filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.25));
+        transition: opacity 0.3s ease;
+      }
+    `;
+    document.head.appendChild(styleEl);
+  },
+
+  // 4. VẼ CÁC ĐIỂM DI TÍCH (POIs) - TỰ ĐỘNG PHÂN LOẠI TRẠM BLE BEACON HOẶC LOCATION PIN
   renderPOIs(map, pois, onPoiSelect = null) {
     const poiGroup = L.featureGroup().addTo(map);
 
+    // Đảm bảo CSS luôn sẵn sàng
+    MapCommon.injectBeaconStyles();
+
     pois.forEach(poi => {
-      // Icon ghim vị trí giọt nước (Teardrop Location Pin) có mũi kim nhọn cắm xuống tọa độ
+      // 4A. NẾU LÀ TRẠM PHÁT SÓNG BLE BEACON (NHÀ TỔNG THỐNG HOẶC CÓ BEACONID)
+      if (poi.beaconId) {
+        const beaconPinHtml = `
+          <div class="beacon-pin-wrapper" title="${poi.name}">
+            <div class="beacon-pulse-ring"></div>
+            <div class="beacon-pulse-ring-outer"></div>
+            <div class="beacon-pin-badge">📡 ${poi.beaconId}</div>
+            <div class="beacon-pin-core">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/>
+                <path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/>
+                <circle cx="12" cy="12" r="2" fill="#ffffff"/>
+                <path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/>
+                <path d="M19.1 4.9C23 8.8 23 15.2 19.1 19.1"/>
+              </svg>
+            </div>
+          </div>
+        `;
+
+        const beaconIcon = L.divIcon({
+          className: 'custom-beacon-marker',
+          html: beaconPinHtml,
+          iconSize: [38, 38],
+          iconAnchor: [19, 19],
+          popupAnchor: [0, -19]
+        });
+
+        const marker = L.marker([poi.lat, poi.lng], { icon: beaconIcon });
+
+        const popupHtml = `
+          <div style="padding: 6px; max-width: 290px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+              <span style="background: linear-gradient(135deg, #0284c7, #06b6d4); color: #fff; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 6px; letter-spacing: 0.5px;">
+                TRẠM BLE BEACON
+              </span>
+              <span style="font-size: 11px; color: #0284c7; font-weight: 700;">RSSI: ${poi.rssiThreshold || -65} dBm</span>
+            </div>
+            <div style="font-size: 13.5px; font-weight: 700; color: #0f172a; margin-bottom: 2px;">${poi.name}</div>
+            <div style="font-size: 11px; color: #64748b; margin-bottom: 6px;">ID: <strong>${poi.beaconId}</strong> | Major: ${poi.major || 1} | Minor: ${poi.minor || 977}</div>
+            <div style="font-size: 12px; color: #334155; line-height: 1.45; margin-bottom: 8px;">${poi.description}</div>
+            ${poi.audioGuide ? `
+              <button class="btn btn-primary btn-sm btn-block btn-read-poi" style="background: linear-gradient(135deg, #0284c7, #0369a1); border: none; color: #fff; font-weight: 600; padding: 7px 10px; border-radius: 8px; width: 100%; cursor: pointer;" data-poi-id="${poi.id}">
+                <i class="fa-solid fa-volume-high"></i> Nghe Thuyết Minh Trạm Beacon
+              </button>
+            ` : ''}
+          </div>
+        `;
+
+        marker.bindPopup(popupHtml);
+        if (onPoiSelect) marker.on('click', () => onPoiSelect(poi));
+        poiGroup.addLayer(marker);
+        return;
+      }
+
+      // 4B. ĐIỂM DI TÍCH POI TIÊU CHUẨN (GHIM GIỌT NƯỚC MÀU ĐỎ CẮM XUỐNG TỌA ĐỘ)
       const pinHtml = `
         <div class="poi-pin-wrapper" title="${poi.number}. ${poi.name}">
           <div class="poi-pin-badge">${poi.number}. ${poi.name}</div>
@@ -115,7 +299,7 @@ const MapCommon = {
         <div style="padding: 4px; max-width: 280px;">
           <div class="poi-popup-title">${poi.number}. ${poi.name}</div>
           ${poi.englishName ? `<div style="font-size: 0.72rem; color: #94a3b8; font-style: italic; margin-bottom: 4px;">${poi.englishName}</div>` : ''}
-          <div class="poi-popup-zone">${poi.zoneName || 'Khuôn Viên NEU'} ${poi.floor ? `(Tầng ${poi.floor})` : ''}</div>
+          <div class="poi-popup-zone">${poi.zoneName || 'Khu Di Tích'} ${poi.floor ? `(Tầng ${poi.floor})` : ''}</div>
           <div class="poi-popup-desc">${poi.description}</div>
           ${poi.audioGuide ? `
             <button class="btn btn-primary btn-sm btn-block btn-read-poi" style="margin-top: 8px;" data-poi-id="${poi.id}">
@@ -419,6 +603,9 @@ const MapCommon = {
         <div>Mã Thiết Bị: <strong>${hubId}</strong></div>
         <div>Dung lượng pin: <strong>${battery !== undefined ? battery + '%' : '---'}</strong></div>
         <div style="margin-top: 2px;">Hướng nhìn: <strong style="color: #fbbf24;">${Math.round(((Number(yaw) || 0) % 360 + 360) % 360)}°</strong></div>
+        <button type="button" class="btn btn-secondary btn-sm btn-block" style="margin-top: 8px; border-color: #fbbf24; color: #fbbf24; font-size: 0.74rem; width: 100%; cursor: pointer; padding: 4px;" onclick="if(window.panToHub) window.panToHub('${hubId}')">
+          Bật Xem Tầm Nhìn (5m, 45°)
+        </button>
         ${clusterNote}
       </div>
     `;

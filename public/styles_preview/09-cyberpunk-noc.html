@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🏛️ [Style #09 - Cyberpunk Security NOC (Phòng Giám Sát)] • 2Guide Cổng Điều Hành Ban Quản Lý</title>
+  
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <!-- Master Stylesheet -->
+  <link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="../css/style.css" />
+
+  <!-- Critical Inline Styles for Absolute Lock Screen Security -->
+  <style>
+    .auth-lock-overlay {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      z-index: 2147483647 !important;
+      background-color: #07090e !important;
+      background-image: 
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(14, 165, 233, 0.14), transparent 70%),
+        radial-gradient(ellipse 60% 40% at 50% 120%, rgba(30, 58, 138, 0.18), transparent 70%),
+        linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px) !important;
+      background-size: 100% 100%, 100% 100%, 32px 32px, 32px 32px !important;
+      backdrop-filter: blur(24px) saturate(180%) !important;
+      -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 20px !important;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    }
+    .auth-lock-card {
+      width: 100% !important;
+      max-width: 420px !important;
+      background: rgba(15, 23, 42, 0.92) !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      border-radius: 20px !important;
+      padding: 34px 30px !important;
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.03), 0 24px 60px -12px rgba(0, 0, 0, 0.8), 0 0 40px -10px rgba(14, 165, 233, 0.25) !important;
+      text-align: center !important;
+    }
+  </style>
+<style>
+
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+    :root {
+        --bg-primary: #05070a;
+        --bg-secondary: #0b0f15;
+        --bg-card: #10161f;
+        --border-color: rgba(0, 255, 102, 0.4);
+        --text-primary: #d1fae5;
+        --text-secondary: #34d399;
+        --accent-cyan: #00ff66;
+        --accent-green: #00ff66;
+        --accent-amber: #ffd700;
+        --accent-red: #ff3333;
+        --font-family: 'Share Tech Mono', monospace;
+        --radius-lg: 4px;
+    }
+    * {
+        font-family: 'Share Tech Mono', monospace;
+    }
+    body {
+        background: var(--bg-primary) !important;
+        color: var(--text-primary) !important;
+        padding-top: 48px !important;
+        height: 100vh !important;
+        overflow: hidden !important;
+    }
+    .top-navbar {
+        background: #0b0f15 !important;
+        border-bottom: 1px solid rgba(0, 255, 102, 0.4) !important;
+        display: flex !important;
+    }
+    .app-container {
+        display: flex !important;
+        height: calc(100vh - 48px - 54px) !important;
+    }
+    .sidebar {
+        background: #090d12 !important;
+        border-right: 1px solid rgba(0, 255, 102, 0.4) !important;
+    }
+    .card-section {
+        background: #10161f !important;
+        border: 1px solid rgba(0, 255, 102, 0.4) !important;
+        border-radius: 4px !important;
+        box-shadow: 0 0 20px rgba(0, 255, 102, 0.2) !important;
+    }
+    .form-control {
+        background: rgba(0, 0, 0, 0.3) !important;
+        border: 1px solid rgba(0, 255, 102, 0.4) !important;
+        color: var(--text-primary) !important;
+        border-radius: 4px !important;
+    }
+    .btn-primary {
+        background: #00ff66 !important;
+        border-radius: 4px !important;
+        color: #000 !important;
+        font-weight: 800 !important;
+    }
+    /* Hide auth lock overlay by default in preview mode, but allow toggling */
+    #admin-auth-lock-overlay {
+        display: none !important;
+        top: 48px !important;
+        height: calc(100vh - 48px) !important;
+    }
+    #admin-auth-lock-overlay.force-show {
+        display: flex !important;
+    }
+    
+        .card-section {
+            border: 1px solid rgba(0, 255, 102, 0.4) !important;
+            box-shadow: 0 0 12px rgba(0, 255, 102, 0.15) !important;
+        }
+        .brand-badge { background: #000 !important; border: 1px solid #00ff66 !important; color: #00ff66 !important; box-shadow: 0 0 10px #00ff66 !important; }
+        .tab-item.active { background: rgba(0, 255, 102, 0.15) !important; border-bottom: 2px solid #00ff66 !important; color: #00ff66 !important; }
+        .btn-primary { background: #00ff66 !important; color: #000 !important; font-weight: 800 !important; border: none !important; box-shadow: 0 0 15px rgba(0,255,102,0.5) !important; }
+        
+    
+</style>
+</head>
+<body>
+
+    <!-- Master Style Switcher Bar -->
+    <div id="master-style-switcher" style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 48px;
+        background: #090d16;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+        z-index: 2147483647;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 16px;
+        font-family: 'Plus Jakarta Sans', system-ui, sans-serif !important;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+    ">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <a href="index.html" style="
+                display: flex; align-items: center; gap: 6px; background: rgba(255, 255, 255, 0.1);
+                color: #fff; text-decoration: none; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 700;
+            ">🏠 Tất Cả Styles BQL</a>
+            <span style="
+                background: rgba(6, 182, 212, 0.2); color: #38bdf8; border: 1px solid rgba(6, 182, 212, 0.4);
+                padding: 4px 10px; border-radius: 8px; font-size: 11.5px; font-weight: 800; font-family: monospace;
+            ">STYLE #09 / 15</span>
+            <span style="color: #fff; font-size: 13px; font-weight: 700;">Cyberpunk Security NOC (Phòng Giám Sát)</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <a href="08-heritage-indochine.html" style="
+                background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15);
+                color: #fff; text-decoration: none; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 700;
+            ">◀ Trước</a>
+            <select onchange="location.href=this.value" style="
+                background: #1e293b; color: #fff; border: 1px solid rgba(255, 255, 255, 0.25);
+                border-radius: 6px; padding: 6px 12px; font-size: 12px; font-weight: 700; outline: none; cursor: pointer; max-width: 280px;
+            ">
+                <option value="01-tactical-command-center.html" >#01 - Tactical Command Center (Data-Dense)</option>
+<option value="02-hud-scifi-fui.html" >#02 - HUD / Sci-Fi Tactical FUI</option>
+<option value="03-heritage-luxury-glass.html" >#03 - Heritage Luxury Obsidian & Gold</option>
+<option value="04-bento-modular-grid.html" >#04 - Bento Box Modular Grid</option>
+<option value="05-dark-mode-oled.html" >#05 - Dark Mode OLED Studio (Pure Black)</option>
+<option value="06-apple-native-macos.html" >#06 - Apple Native macOS Experience</option>
+<option value="07-neubrutalism-command.html" >#07 - Neubrutalism Operations Panel</option>
+<option value="08-heritage-indochine.html" >#08 - Heritage Indochine Earth (Di Sản Á Đông)</option>
+<option value="09-cyberpunk-noc.html" selected="selected">#09 - Cyberpunk Security NOC (Phòng Giám Sát)</option>
+<option value="10-neumorphism-console.html" >#10 - Neumorphism Soft Hardware Console</option>
+<option value="11-minimalism-swiss.html" >#11 - Minimalism & Swiss Modernism</option>
+<option value="12-fluent-2-enterprise.html" >#12 - Microsoft Fluent 2 Enterprise</option>
+<option value="13-retro-futurism.html" >#13 - Retro-Futurism Synthwave 80s</option>
+<option value="14-liquid-glass-aurora.html" >#14 - Liquid Glass Aurora Glow</option>
+<option value="15-terminal-cli.html" >#15 - Terminal CLI Green Phosphor</option>
+
+            </select>
+            <a href="10-neumorphism-console.html" style="
+                background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15);
+                color: #fff; text-decoration: none; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 700;
+            ">Tiếp ▶</a>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <button type="button" onclick="toggleAuthLockView()" style="
+                background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2);
+                color: #e2e8f0; font-size: 11.5px; font-weight: 700; padding: 6px 12px; border-radius: 6px; cursor: pointer;
+            ">🔒 Xem Màn Hình Khóa</button>
+            <button type="button" onclick="applyThisStyle('09-cyberpunk-noc.html', 'Cyberpunk Security NOC (Phòng Giám Sát)')" style="
+                background: linear-gradient(135deg, #0284c7, #06b6d4); color: #fff; font-size: 11.5px;
+                font-weight: 800; padding: 6px 14px; border-radius: 6px; border: none; cursor: pointer; box-shadow: 0 0 15px rgba(2, 132, 199, 0.5);
+            ">⭐ Chọn Style Này</button>
+        </div>
+    </div>
+    
+
+  <!-- MÀN HÌNH KHÓA XÁC THỰC MÃ BÍ MẬT BAN QUẢN LÝ (LUÔN YÊU CẦU MỖI LẦN VÀO / RELOAD TRANG) -->
+  <div id="admin-auth-lock-overlay" class="auth-lock-overlay">
+    <div class="auth-lock-card">
+      <div class="brand-icon-wrapper">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          <rect x="9" y="11" width="6" height="4" rx="1"/>
+          <path d="M10 11V9a2 2 0 1 1 4 0v2"/>
+        </svg>
+      </div>
+
+
+      <h2 class="auth-lock-title">Ban Quản Lý Di Tích</h2>
+      <p class="auth-lock-desc">Cổng điều hành thực địa trung tâm. Vui lòng xác thực mã bảo mật Ban Quản Lý để mở quyền giám sát thời gian thực.</p>
+      
+      <div class="auth-form-group">
+        <label for="input-admin-auth-key" class="auth-label">Mã Bí Mật Quản Trị </label>
+        <div style="position: relative; display: flex; align-items: center;">
+          <span style="position: absolute; left: 14px; color: #64748b; display: flex; align-items: center; pointer-events: none;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="7.5" cy="15.5" r="5.5"/>
+              <path d="m21 2-9.6 9.6"/>
+              <path d="m15.5 7.5 3 3"/>
+            </svg>
+          </span>
+          <input type="password" id="input-admin-auth-key" class="form-control auth-input is-password" style="padding-left: 42px !important;" placeholder="Nhập mã bí mật..." autocomplete="off" />
+          <button type="button" id="btn-toggle-admin-key-vis" class="btn-toggle-vis" title="Hiện/ẩn mã">
+            <svg id="admin-svg-eye" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+        <div id="admin-auth-error-msg" class="auth-error-msg"></div>
+      </div>
+
+      <button type="button" id="btn-submit-admin-auth" class="btn btn-primary btn-block" style="padding: 12px; font-weight: 700; font-size: 0.92rem; border-radius: 10px; background: linear-gradient(180deg, #0284c7 0%, #0369a1 100%); border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 4px 16px rgba(2,132,199,0.35); cursor: pointer;">
+        Xác Thực & Mở Giao Diện
+      </button>
+
+      <div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid rgba(255, 255, 255, 0.06); display: flex; justify-content: space-between; align-items: center; font-size: 0.72rem; color: #64748b;">
+        <a href="/user" style="color: #94a3b8; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; transition: color 0.2s;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          <span>Cổng Tham Quan</span>
+        </a>
+        <span>2Guide Security Core</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- BANNER CẢNH BÁO KHẨN CẤP / PHÁT THANH -->
+  <div id="emergency-banner" class="emergency-banner" style="display: none;">
+    <span id="emergency-banner-text">THÔNG BÁO TỪ BAN QUẢN LÝ</span>
+  </div>
+
+  <!-- THANH ĐIỀU HƯỚNG TRÊN CÙNG (ẨN MẶC ĐỊNH CHO TỚI KHI NHẬP ĐÚNG KEY) -->
+  <header class="top-navbar" id="admin-top-navbar" style="display: none;">
+    <div class="brand-section">
+      <span class="brand-badge">2GUIDE</span>
+      <span class="brand-title">BAN QUẢN LÝ DI TÍCH</span>
+      <span class="brand-subtitle" id="site-name-display">Đang tải khu di tích...</span>
+    </div>
+
+    <div style="display: flex; gap: 8px; align-items: center;">
+      <button type="button" id="btn-admin-lock-screen" class="btn btn-secondary btn-sm" style="background: #1e293b; border: 1px solid #334155; color: #f1f5f9; padding: 5px 12px; border-radius: 6px; font-size: 0.76rem; font-weight: 700; cursor: pointer;">
+        🔒 Khóa Màn Hình
+      </button>
+      <a href="/api/admin/logout" class="btn btn-secondary btn-sm" style="text-decoration: none; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.35); color: #f87171; padding: 5px 12px; border-radius: 6px; font-size: 0.76rem; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
+        Đăng Xuất
+      </a>
+    </div>
+  </header>
+
+  <!-- KHUNG ỨNG DỤNG CHÍNH (ẨN MẶC ĐỊNH CHO TỚI KHI NHẬP ĐÚNG KEY) -->
+  <main class="app-container" id="admin-main-app" style="display: none;">
+
+    <!-- CỘT ĐIỀU HÀNH BÊN TRÁI (SIDEBAR) -->
+    <aside class="sidebar">
+      
+      <!-- CÁC TAB ĐIỀU KHIỂN CHỨC NĂNG -->
+      <div class="sidebar-tabs">
+        <button class="tab-item active" data-tab="tab-qr">Tạo Nhóm Hub</button>
+        <button class="tab-item" data-tab="tab-groups">Đoàn Đang Hoạt Động</button>
+        <button class="tab-item" data-tab="tab-hubs">Quản Lý Hub</button>
+        <button class="tab-item" data-tab="tab-voice">Phát Thanh</button>
+      </div>
+
+      <div class="sidebar-content">
+
+        <!-- ==============================================
+             TAB 1: GOM NHÓM THIẾT BỊ HUB CHO ĐOÀN KHÁCH
+             ============================================== -->
+        <div id="tab-qr" class="tab-panel active">
+          <div class="card-section">
+            <div class="section-header">
+              <span>Gom Nhóm Thiết Bị Hub</span>
+            </div>
+            
+            <p style="font-size: 0.78rem; color: var(--text-dim); margin-bottom: 12px;">
+              Nhập mã các cục Hub phát cho cùng một đoàn để hệ thống tự động kết nối các thành viên với nhau. Khách chỉ cần mở máy Hub là nhìn thấy toàn đoàn.
+            </p>
+
+            <div class="form-group">
+              <label class="form-label">Tên Đoàn Khách / Người Đại Diện:</label>
+              <input type="text" id="input-group-name" class="form-control" placeholder="Ví dụ: Đoàn sinh viên NEU K64" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Danh Sách Thiết Bị Hub Gom Nhóm (Dạng Thẻ Có Thể Xóa):</label>
+              <div id="selected-hubs-container" class="selected-hubs-tags">
+                <span id="empty-selected-hint" style="font-size: 0.74rem; color: var(--text-dim);">Chưa chọn Hub nào. Bấm vào danh sách rảnh rỗi bên dưới để thêm...</span>
+              </div>
+
+              <div style="display: flex; gap: 6px; margin-top: 4px;">
+                <input type="text" id="input-add-single-hub" class="form-control" placeholder="Hoặc gõ mã Hub (ví dụ: NEU001) rồi bấm Thêm..." style="flex: 1;" />
+                <button type="button" id="btn-add-single-hub" class="btn btn-secondary btn-sm">Thêm Thẻ</button>
+              </div>
+            </div>
+
+            <button id="btn-create-group" class="btn btn-primary btn-block" style="margin-top: 8px;">
+              Lưu & Gom Nhóm Hub
+            </button>
+          </div>
+
+          <!-- Danh sách Hub đang sẵn sàng tại quầy -->
+          <div class="card-section">
+            <div class="section-header">
+              <span>Hub Sẵn Sàng Tại Quầy (Rảnh Rỗi)</span>
+              <span id="count-idle-hubs" class="hub-badge badge-online">0 Hub</span>
+            </div>
+            <div id="idle-hubs-chips" style="display: flex; flex-wrap: wrap; gap: 6px;">
+              <!-- Javascript render chips -->
+            </div>
+          </div>
+        </div>
+
+        <!-- ==============================================
+             TAB 2: ĐOÀN KHÁCH ĐANG HOẠT ĐỘNG (ACTIVE TOURS)
+             ============================================== -->
+        <div id="tab-groups" class="tab-panel">
+          <div class="card-section">
+            <div class="section-header">
+              <span>Đoàn Khách Đang Tham Quan Thực Địa</span>
+              <span id="active-groups-count" class="hub-badge badge-active">0 Đoàn</span>
+            </div>
+
+            <p style="font-size: 0.76rem; color: var(--text-dim); margin-bottom: 10px;">
+              Tuyến đường di chuyển của đoàn chỉ hiển thị trong phiên tham quan để Ban Quản Lý theo dõi. Khi bấm "Kết thúc hành trình", toàn bộ dữ liệu tuyến đường di chuyển sẽ được xóa sạch.
+            </p>
+
+            <div id="active-groups-container" class="item-list">
+              <!-- Render danh sách đoàn -->
+            </div>
+          </div>
+        </div>
+
+        <!-- ==============================================
+             TAB 3: QUẢN LÝ THIẾT BỊ HUB
+             ============================================== -->
+        <div id="tab-hubs" class="tab-panel">
+
+          <div class="card-section">
+            <div class="section-header">
+              <span>Toàn Bộ Thiết Bị Hub (<span id="total-hubs-count">0</span>)</span>
+            </div>
+            <div id="all-hubs-container" class="item-list">
+              <!-- Render toàn bộ Hubs -->
+            </div>
+          </div>
+        </div>
+
+        <!-- ==============================================
+             TAB 4: PHÁT THANH KHẨN CẤP / CAN THIỆP LUỒNG TÍN HIỆU
+             ============================================== -->
+        <div id="tab-voice" class="tab-panel">
+          <div class="card-section">
+            <div class="section-header">
+              <span>Phát Thanh </span>
+            </div>
+
+            <p style="font-size: 0.78rem; color: var(--text-dim); margin-bottom: 12px;">
+              Cho phép Ban Quản Lý nói trực tiếp hoặc gửi thông báo tới Hub bất kỳ hoặc toàn bộ người dùng (Quyền hạn quản trị viên cao nhất).
+            </p>
+
+            <div class="form-group">
+              <label class="form-label">Phạm Vi Phát Thông Báo:</label>
+              <select id="select-broadcast-target" class="form-control">
+                <option value="ALL_HUBS">Toàn Bộ Thiết Bị & Khách Tham Quan</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Mức Độ Ưu Tiên:</label>
+              <select id="select-broadcast-urgency" class="form-control">
+                <option value="normal">Thông báo hướng dẫn bình thường</option>
+                <option value="high">Cảnh báo nhắc nhở khu vực</option>
+                <option value="emergency">Khẩn cấp (Tập trung, thời tiết xấu, lạc đoàn)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Nội Dung Thông Báo (Tự động đọc giọng nói tới Hub):</label>
+              <textarea id="input-broadcast-message" class="form-control" rows="3" placeholder="Nhập thông báo của ban quản lý... Ví dụ: Xin quý khách lưu ý di tích sắp đến giờ đóng cửa, xin vui lòng di chuyển về cổng Đại Trung."></textarea>
+            </div>
+
+            <button id="btn-send-broadcast" class="btn btn-danger btn-block">
+              Phát Lệnh Can Thiệp Tín Hiệu
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </aside>
+
+    <!-- BẢN ĐỒ THỰC ĐỊA 2D (LEAFLET) -->
+    <section class="map-wrapper">
+      <div id="map"></div>
+
+      <!-- BẢNG ĐIỀU KHIỂN NỔI TRÊN BẢN ĐỒ (LỚP BẢN ĐỒ & HIỆN VẬT) -->
+      <div class="map-floating-panel">
+        <div class="floating-title">Chế Độ Hiển Thị</div>
+
+        <div class="floating-switch-group">
+          <input type="checkbox" id="chk-toggle-zones" checked />
+          <label for="chk-toggle-zones" style="cursor: pointer;">Phân Khu Khuôn Viên</label>
+        </div>
+
+        <div class="floating-switch-group">
+          <input type="checkbox" id="chk-toggle-pois" checked />
+          <label for="chk-toggle-pois" style="cursor: pointer; font-weight: 700; color: #ef4444;">Điểm Di Tích (POI)</label>
+        </div>
+
+        <div class="floating-switch-group">
+          <input type="checkbox" id="chk-toggle-artifacts" checked />
+          <label for="chk-toggle-artifacts" style="cursor: pointer; font-weight: 700; color: #f59e0b;">Hiện Vật Lịch Sử</label>
+        </div>
+
+        
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Thư viện Javascript phụ trợ -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  
+  
+  
+    <script>
+    // Standalone Interactive Controller for 2Guide Admin Preview
+    document.addEventListener('DOMContentLoaded', () => {
+        // Tab switching
+        const tabBtns = document.querySelectorAll('.tab-item');
+        const tabPanels = document.querySelectorAll('.tab-panel');
+
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                tabBtns.forEach(b => b.classList.remove('active'));
+                tabPanels.forEach(p => p.classList.remove('active'));
+                btn.classList.add('active');
+                const targetId = btn.getAttribute('data-tab');
+                const targetPanel = document.getElementById(targetId);
+                if (targetPanel) targetPanel.classList.add('active');
+            });
+        });
+
+        // Populate Idle Hubs chips
+        const idleChipsContainer = document.getElementById('idle-hubs-chips');
+        const selectedContainer = document.getElementById('selected-hubs-container');
+        const emptyHint = document.getElementById('empty-selected-hint');
+        const idleCount = document.getElementById('count-idle-hubs');
+
+        const mockIdleHubs = [
+            { id: 'NEU001', battery: 96, status: 'idle' },
+            { id: 'NEU002', battery: 88, status: 'idle' },
+            { id: 'NEU005', battery: 92, status: 'idle' },
+            { id: 'BK008', battery: 100, status: 'idle' },
+            { id: 'BK009', battery: 84, status: 'idle' }
+        ];
+
+        if (idleCount) idleCount.textContent = mockIdleHubs.length + ' Hub';
+
+        if (idleChipsContainer) {
+            idleChipsContainer.innerHTML = '';
+            mockIdleHubs.forEach(hub => {
+                const chip = document.createElement('div');
+                chip.className = 'hub-chip';
+                chip.style.cssText = 'background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.35); padding: 5px 10px; border-radius: 6px; font-size: 0.74rem; font-weight: 700; color: #34d399; cursor: pointer; display: flex; align-items: center; gap: 5px;';
+                chip.innerHTML = `<span>⚡ ${hub.id} (${hub.battery}%)</span> <span style="font-size: 11px; opacity: 0.7;">+</span>`;
+                chip.addEventListener('click', () => {
+                    if (emptyHint) emptyHint.style.display = 'none';
+                    const tag = document.createElement('span');
+                    tag.className = 'hub-tag-selected';
+                    tag.style.cssText = 'background: #0284c7; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.74rem; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; margin: 2px;';
+                    tag.innerHTML = `${hub.id} <span style="cursor: pointer; opacity: 0.8;" onclick="this.parentElement.remove()">✕</span>`;
+                    selectedContainer.appendChild(tag);
+                    chip.style.opacity = '0.35';
+                    chip.style.pointerEvents = 'none';
+                });
+                idleChipsContainer.appendChild(chip);
+            });
+        }
+
+        // Populate Active Groups
+        const activeGroupsContainer = document.getElementById('active-groups-container');
+        const activeGroupsCount = document.getElementById('active-groups-count');
+        const mockGroups = [
+            { name: 'Đoàn SV Kinh Tế Quốc Dân (K64)', hubs: ['NEU003', 'NEU004', 'NEU006', 'NEU007'], location: 'Khuê Văn Các & Giếng Thiên Quang', time: '24 phút' },
+            { name: 'Đoàn Gia đình anh Tuấn (Hà Nội)', hubs: ['BK011', 'BK012', 'BK015'], location: 'Vườn Bia Tiến Sĩ (Khu 4)', time: '41 phút' }
+        ];
+
+        if (activeGroupsCount) activeGroupsCount.textContent = mockGroups.length + ' Đoàn';
+
+        if (activeGroupsContainer) {
+            activeGroupsContainer.innerHTML = '';
+            mockGroups.forEach((grp, idx) => {
+                const card = document.createElement('div');
+                card.style.cssText = 'background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 12px; margin-bottom: 8px;';
+                card.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <strong style="font-size: 0.84rem; color: #f8fafc;">${grp.name}</strong>
+                        <span style="background: rgba(16, 185, 129, 0.2); color: #34d399; font-size: 0.7rem; font-weight: 700; padding: 2px 6px; border-radius: 4px;">Đang tham quan</span>
+                    </div>
+                    <div style="font-size: 0.74rem; color: #94a3b8; margin-bottom: 6px;">
+                        📍 Vị trí: <strong style="color: #38bdf8;">${grp.location}</strong> (${grp.time})
+                    </div>
+                    <div style="font-size: 0.72rem; color: #64748b; margin-bottom: 8px;">
+                        Thiết bị Hub: ${grp.hubs.map(h => `<code style="background: rgba(0,0,0,0.3); padding: 1px 4px; border-radius: 3px; color: #cbd5e1;">${h}</code>`).join(' ')}
+                    </div>
+                    <div style="display: flex; gap: 6px;">
+                        <button type="button" class="btn btn-secondary btn-sm" style="flex: 1; padding: 4px 8px; font-size: 0.72rem;">Định vị trên bản đồ</button>
+                        <button type="button" class="btn btn-secondary btn-sm" style="padding: 4px 8px; font-size: 0.72rem; color: #ef4444;" onclick="alert('Đã kết thúc tour cho đoàn: ${grp.name}. Dữ liệu lịch trình đã được lưu vào nhật ký!')">Kết thúc tour</button>
+                    </div>
+                `;
+                activeGroupsContainer.appendChild(card);
+            });
+        }
+
+        // Populate All Hubs (Tab 3)
+        const allHubsContainer = document.getElementById('all-hubs-container');
+        const totalHubsCount = document.getElementById('total-hubs-count');
+        if (totalHubsCount) totalHubsCount.textContent = '26';
+
+        if (allHubsContainer) {
+            allHubsContainer.innerHTML = '';
+            const allHubs = [
+                { id: 'NEU001', battery: 96, status: 'Rảnh rỗi', color: '#10b981', group: 'Tại quầy lễ tân' },
+                { id: 'NEU002', battery: 88, status: 'Rảnh rỗi', color: '#10b981', group: 'Tại quầy lễ tân' },
+                { id: 'NEU003', battery: 74, status: 'Đang dùng', color: '#0284c7', group: 'Đoàn NEU K64' },
+                { id: 'NEU004', battery: 68, status: 'Đang dùng', color: '#0284c7', group: 'Đoàn NEU K64' },
+                { id: 'NEU005', battery: 92, status: 'Rảnh rỗi', color: '#10b981', group: 'Tại quầy lễ tân' },
+                { id: 'NEU006', battery: 65, status: 'Đang dùng', color: '#0284c7', group: 'Đoàn NEU K64' },
+                { id: 'NEU007', battery: 70, status: 'Đang dùng', color: '#0284c7', group: 'Đoàn NEU K64' },
+                { id: 'BK011', battery: 52, status: 'Đang dùng', color: '#0284c7', group: 'Gia đình anh Tuấn' },
+                { id: 'BK012', battery: 48, status: 'Đang dùng', color: '#0284c7', group: 'Gia đình anh Tuấn' },
+                { id: 'BK015', battery: 55, status: 'Đang dùng', color: '#0284c7', group: 'Gia đình anh Tuấn' },
+                { id: 'HUB022', battery: 18, status: 'Pin yếu', color: '#ef4444', group: 'Đang sạc tại trạm' },
+                { id: 'HUB026', battery: 14, status: 'Pin yếu', color: '#ef4444', group: 'Đang sạc tại trạm' }
+            ];
+
+            allHubs.forEach(h => {
+                const item = document.createElement('div');
+                item.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 7px 10px; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 0.76rem;';
+                item.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-weight: 700; font-family: monospace; color: #fff;">${h.id}</span>
+                        <span style="color: #64748b; font-size: 0.7rem;">(${h.group})</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-family: monospace; font-weight: 700; color: ${h.battery < 20 ? '#ef4444' : '#10b981'};">${h.battery}%</span>
+                        <span style="background: ${h.color}25; color: ${h.color}; border: 1px solid ${h.color}50; padding: 2px 6px; border-radius: 4px; font-size: 0.68rem; font-weight: 700;">${h.status}</span>
+                    </div>
+                `;
+                allHubsContainer.appendChild(item);
+            });
+        }
+
+        // Broadcast button trigger
+        const btnBroadcast = document.getElementById('btn-send-broadcast');
+        if (btnBroadcast) {
+            btnBroadcast.addEventListener('click', () => {
+                const msg = document.getElementById('input-broadcast-message').value.trim();
+                if (!msg) {
+                    alert('Vui lòng nhập nội dung phát thanh!');
+                    return;
+                }
+                alert('🔊 [LỆNH PHÁT THANH THÀNH CÔNG]\n\nNội dung: ' + msg + '\n\nHệ thống đã tổng hợp giọng nói AI và phát tới toàn bộ 26 thiết bị Hub đang hoạt động.');
+            });
+        }
+
+        // Initialize Leaflet Map with Heritage Zones & POIs
+        if (typeof L !== 'undefined') {
+            const mapContainer = document.getElementById('map');
+            if (mapContainer) {
+                const map = L.map('map', {
+                    center: [21.0288, 105.8355], // Văn Miếu - Quốc Tử Giám
+                    zoom: 18,
+                    minZoom: 16,
+                    maxZoom: 21,
+                    zoomControl: false
+                });
+
+                L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+                // Google Satellite Base Layer + OSM
+                const satLayer = L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+                    maxZoom: 21,
+                    attribution: 'Google Satellite'
+                }).addTo(map);
+
+                // Heritage Zones (Văn Miếu)
+                const zones = [
+                    { name: 'Khu 1: Nhập Đạo (Cổng Văn Miếu)', color: '#38bdf8', bounds: [[21.0275, 105.8352], [21.0281, 105.8358]] },
+                    { name: 'Khu 2: Cổng Đại Trung & Thành Đức', color: '#10b981', bounds: [[21.0281, 105.8352], [21.0286, 105.8358]] },
+                    { name: 'Khu 3: Khuê Văn Các & Giếng Thiên Quang', color: '#f59e0b', bounds: [[21.0286, 105.8351], [21.0292, 105.8359]] },
+                    { name: 'Khu 4: Vườn 82 Bia Tiến Sĩ', color: '#ef4444', bounds: [[21.0292, 105.8350], [21.0298, 105.8360]] },
+                    { name: 'Khu 5: Điện Đại Thành & Nhà Thái Học', color: '#a855f7', bounds: [[21.0298, 105.8349], [21.0305, 105.8361]] }
+                ];
+
+                zones.forEach(z => {
+                    L.rectangle(z.bounds, {
+                        color: z.color,
+                        weight: 2,
+                        dashArray: '4, 6',
+                        fillColor: z.color,
+                        fillOpacity: 0.15
+                    }).addTo(map).bindTooltip(z.name, { permanent: true, direction: 'center', className: 'zone-tooltip' });
+                });
+
+                // Key Heritage POIs
+                const pois = [
+                    { name: 'Cổng Đại Trung', lat: 21.0283, lng: 105.8355, desc: 'Cổng thứ hai dẫn vào khu vườn cây' },
+                    { name: 'Khuê Văn Các', lat: 21.0289, lng: 105.8355, desc: 'Biểu tượng thủ đô Hà Nội, xây năm 1805' },
+                    { name: 'Giếng Thiên Quang', lat: 21.0289, lng: 105.8352, desc: 'Hồ nước vuông soi bóng Khuê Văn Các' },
+                    { name: 'Bia Tiến Sĩ Số 01 (Khoa 1442)', lat: 21.0294, lng: 105.8353, desc: 'Bia tiến sĩ khoa Nhâm Tuất 1442' },
+                    { name: 'Điện Đại Thành', lat: 21.0301, lng: 105.8355, desc: 'Nơi thờ Khổng Tử và Tứ Phối' }
+                ];
+
+                pois.forEach(p => {
+                    L.circleMarker([p.lat, p.lng], {
+                        radius: 7,
+                        color: '#ffffff',
+                        weight: 2,
+                        fillColor: '#f59e0b',
+                        fillOpacity: 1
+                    }).addTo(map).bindPopup(`<strong>📍 ${p.name}</strong><br><span style="font-size: 11px; color: #475569;">${p.desc}</span>`);
+                });
+
+                // Live Active Tour Pins (Pulsing)
+                const tour1 = L.circleMarker([21.0289, 105.8356], {
+                    radius: 10,
+                    color: '#ffffff',
+                    weight: 3,
+                    fillColor: '#10b981',
+                    fillOpacity: 1
+                }).addTo(map).bindPopup('<strong>👥 Đoàn NEU K64 (8 người)</strong><br>Đang nghe thuyết minh: Khuê Văn Các');
+
+                const tour2 = L.circleMarker([21.0295, 105.8354], {
+                    radius: 10,
+                    color: '#ffffff',
+                    weight: 3,
+                    fillColor: '#38bdf8',
+                    fillOpacity: 1
+                }).addTo(map).bindPopup('<strong>👥 Gia đình anh Tuấn (4 người)</strong><br>Đang nghe thuyết minh: Bia Tiến Sĩ');
+            }
+        }
+    });
+
+    // Toggle Lock Screen preview
+    function toggleAuthLockView() {
+        const overlay = document.getElementById('admin-auth-lock-overlay');
+        if (overlay) {
+            overlay.classList.toggle('force-show');
+        }
+    }
+
+    // Apply style handler
+    function applyThisStyle(file, name) {
+        alert('⭐ Bạn đã chọn Style: ' + name + '!\n\nĐể dùng style này làm giao diện chính thức, bạn chỉ cần copy nội dung file "' + file + '" thay thế vào file "public/index.html".');
+    }
+    </script>
+    
+</body>
+</html>

@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>2Guide - Bản Đồ Tham Quan</title>
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <!-- Master Stylesheet -->
+  <link rel="stylesheet" href="/css/style.css" />
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+      height: 100vh;
+      height: 100dvh;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg-primary, #0b0f19);
+      color: var(--text-primary, #f8fafc);
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* HEADER */
+    .user-header {
+      background: var(--bg-secondary, #131b2e);
+      border-bottom: 1px solid var(--border-color, #2b3958);
+      padding: 8px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      z-index: 1000;
+      flex-shrink: 0;
+    }
+
+    .user-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .header-brand-block {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .group-badge-title {
+      font-weight: 800;
+      color: var(--accent-cyan, #06b6d4);
+      font-size: 0.92rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 200px;
+    }
+
+    .site-sub-badge {
+      font-size: 0.72rem;
+      color: var(--text-dim, #64748b);
+      white-space: nowrap;
+    }
+
+    .hub-input-group {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--bg-primary, #0b0f19);
+      border: 1px solid var(--border-color, #2b3958);
+      padding: 3px 8px;
+      border-radius: var(--radius-sm, 4px);
+      flex-shrink: 0;
+    }
+
+    .hub-input-label {
+      font-size: 0.74rem;
+      color: var(--text-dim, #64748b);
+      font-weight: 700;
+    }
+
+    .hub-input-field {
+      width: 72px;
+      background: transparent;
+      border: none;
+      color: var(--accent-amber, #f59e0b);
+      font-weight: 800;
+      font-size: 0.86rem;
+      text-transform: uppercase;
+      outline: none;
+      padding: 0;
+      text-align: center;
+    }
+
+    .btn-hub-change {
+      background: var(--accent-cyan, #06b6d4);
+      border: none;
+      color: #042f2e;
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 3px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    /* THANH CÔNG CỤ TÌM KIẾM THIẾT BỊ */
+    .user-tools-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .search-box-wrapper {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      position: relative;
+    }
+
+    .search-input {
+      flex: 1;
+      background: var(--bg-primary, #0b0f19);
+      border: 1px solid var(--border-color, #2b3958);
+      border-radius: var(--radius-sm, 4px);
+      color: #fff;
+      font-size: 0.78rem;
+      padding: 6px 10px;
+      padding-right: 28px;
+      outline: none;
+      min-height: 34px;
+    }
+    .search-input:focus {
+      border-color: var(--accent-cyan, #06b6d4);
+    }
+
+    .btn-clear-search {
+      position: absolute;
+      right: 104px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #94a3b8;
+      font-size: 13px;
+      cursor: pointer;
+      padding: 4px;
+      line-height: 1;
+      display: none;
+    }
+
+    .btn-search-hub {
+      background: #1e293b;
+      border: 1px solid #38bdf8;
+      color: #38bdf8;
+      font-size: 0.76rem;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm, 4px);
+      cursor: pointer;
+      white-space: nowrap;
+      min-height: 34px;
+    }
+    .btn-search-hub:hover {
+      background: #0284c7;
+      color: #fff;
+    }
+
+    .live-status-pill {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #22c55e;
+      white-space: nowrap;
+      padding: 2px 6px;
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      border-radius: 12px;
+    }
+
+    /* MAP CONTAINER */
+    .user-map-container {
+      flex: 1;
+      position: relative;
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    #user-map {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* LEAFLET ZOOM IN BOTTOM-LEFT */
+    .leaflet-bottom.leaflet-left {
+      bottom: max(16px, env(safe-area-inset-bottom, 16px)) !important;
+      left: 10px !important;
+      z-index: 480;
+    }
+
+    .leaflet-control-zoom {
+      border: 1px solid var(--border-color, #2b3958) !important;
+      border-radius: 8px !important;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5) !important;
+    }
+
+    .leaflet-control-zoom a {
+      width: 38px !important;
+      height: 38px !important;
+      line-height: 38px !important;
+      font-size: 18px !important;
+      background: rgba(15, 23, 42, 0.92) !important;
+      color: var(--accent-cyan, #06b6d4) !important;
+      border-bottom: 1px solid var(--border-color, #2b3958) !important;
+      backdrop-filter: blur(6px);
+    }
+    .leaflet-control-zoom a:hover {
+      background: var(--bg-hover, #263354) !important;
+      color: #fff !important;
+    }
+
+    /* THANH DANH SÁCH THÀNH VIÊN TRÊN ĐỈNH BẢN ĐỒ */
+    .members-scroll-bar {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      right: 10px;
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      white-space: nowrap;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      z-index: 450;
+      padding: 4px 6px;
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(10px);
+      border-radius: 24px;
+      border: 1px solid var(--border-color, #2b3958);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+    }
+    .members-scroll-bar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .member-chip {
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border-color, #2b3958);
+      color: var(--text-primary, #f8fafc);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      white-space: nowrap;
+      cursor: pointer;
+      flex-shrink: 0;
+      min-height: 32px;
+      display: inline-flex;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      transition: all 0.2s;
+    }
+    .member-chip:active {
+      transform: scale(0.95);
+    }
+    .member-chip.active-self {
+      border-color: var(--accent-amber, #f59e0b);
+      color: var(--accent-amber, #f59e0b);
+      background: rgba(245, 158, 11, 0.2);
+    }
+
+    /* TOAST FEEDBACK */
+    .search-feedback-toast {
+      position: absolute;
+      top: 56px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid #38bdf8;
+      color: #38bdf8;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      z-index: 500;
+      display: none;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.5);
+      white-space: nowrap;
+      pointer-events: none;
+    }
+    .search-feedback-toast.warning {
+      border-color: #f59e0b;
+      color: #fbbf24;
+    }
+    .search-feedback-toast.success {
+      border-color: #22c55e;
+      color: #4ade80;
+    }
+
+    /* NÚT ĐIỀU HƯỚNG NHANH FAB */
+    .user-fab-container {
+      position: absolute;
+      bottom: max(16px, env(safe-area-inset-bottom, 16px));
+      right: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 490;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+    .user-fab-container.hidden-by-sheet {
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(16px);
+    }
+
+    .fab-btn {
+      background: rgba(19, 27, 46, 0.92);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border-color, #2b3958);
+      color: #fff;
+      padding: 9px 15px;
+      border-radius: 24px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.5);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      min-height: 40px;
+      white-space: nowrap;
+      touch-action: manipulation;
+      transition: all 0.2s;
+    }
+    .fab-btn:active {
+      transform: scale(0.96);
+    }
+    .fab-self {
+      background: var(--accent-amber, #f59e0b);
+      color: #000;
+      border-color: #d97706;
+      font-weight: 800;
+    }
+    .fab-ai {
+      background: #2563eb;
+      border-color: #3b82f6;
+    }
+
+    /* POI BOTTOM SHEET */
+    .poi-bottom-sheet {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: var(--bg-secondary, #131b2e);
+      border-top: 2px solid var(--accent-amber, #f59e0b);
+      border-radius: 20px 20px 0 0;
+      padding: 14px 16px;
+      padding-bottom: max(16px, env(safe-area-inset-bottom, 16px));
+      z-index: 600;
+      box-shadow: 0 -10px 30px rgba(0,0,0,0.7);
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      max-height: 60vh;
+      max-height: 60dvh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .poi-bottom-sheet.open {
+      transform: translateY(0);
+    }
+
+    .sheet-drag-handle {
+      width: 36px;
+      height: 4px;
+      background: #475569;
+      border-radius: 2px;
+      margin: 0 auto 10px auto;
+      cursor: pointer;
+    }
+
+    .poi-audio-action-btn {
+      width: 100%;
+      min-height: 44px;
+      font-size: 0.88rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      border-radius: var(--radius-md, 8px);
+      margin-top: 10px;
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    /* AI CHAT DRAWER */
+    .ai-chat-drawer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      width: 100%;
+      height: 80vh;
+      height: 80dvh;
+      background: var(--bg-secondary, #131b2e);
+      border-top: 2px solid #3b82f6;
+      border-radius: 22px 22px 0 0;
+      padding: 12px 14px;
+      padding-bottom: max(16px, env(safe-area-inset-bottom, 16px));
+      box-shadow: 0 -12px 32px rgba(0, 0, 0, 0.85);
+      z-index: 1100;
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      pointer-events: none;
+    }
+    .ai-chat-drawer.open {
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin: 8px 0;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .chat-bubble {
+      padding: 9px 13px;
+      border-radius: 14px;
+      font-size: 0.82rem;
+      line-height: 1.48;
+      max-width: 90%;
+      word-break: break-word;
+    }
+    .chat-bubble.user {
+      align-self: flex-end;
+      background: #1e3a8a;
+      color: #eff6ff;
+      border-bottom-right-radius: 2px;
+    }
+    .chat-bubble.ai {
+      align-self: flex-start;
+      background: #1e293b;
+      color: #e2e8f0;
+      border: 1px solid #334155;
+      border-bottom-left-radius: 2px;
+    }
+    .chat-bubble .meta {
+      font-size: 0.68rem;
+      color: #94a3b8;
+      margin-bottom: 2px;
+      font-weight: 700;
+    }
+
+    .chat-input-row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .btn-mic {
+      background: #dc2626;
+      color: #fff;
+      border: none;
+      padding: 8px 12px;
+      border-radius: var(--radius-sm, 4px);
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      min-height: 38px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      touch-action: manipulation;
+    }
+    .btn-mic.listening {
+      background: #16a34a;
+    }
+
+    /* EMERGENCY BANNER */
+    .emergency-banner {
+      background: #b91c1c;
+      color: #fff;
+      padding: 8px 12px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      text-align: center;
+      display: none;
+      z-index: 2000;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- BANNER PHÁT THANH KHẨN CẤP TỪ BAN QUẢN LÝ -->
+  <div id="emergency-banner" class="emergency-banner">
+    <span id="emergency-banner-text">THÔNG BÁO TỪ BAN QUẢN LÝ</span>
+  </div>
+
+  <!-- HEADER DÀNH CHO USER: NHẬP TRỰC TIẾP HUB ID -->
+  <header class="user-header">
+    <div class="user-top-row">
+      <div class="header-brand-block">
+        <span class="group-badge-title" id="display-group-name">Đoàn Tham Quan</span>
+        <span class="site-sub-badge" id="display-site-name"></span>
+      </div>
+
+      <!-- Ô NHẬP MÃ THIẾT BỊ HUB -->
+      <div class="hub-input-group">
+        <span class="hub-input-label">Hub:</span>
+        <input type="text" id="input-my-hub-id" class="hub-input-field" placeholder="NEU001" value="NEU001" />
+        <button id="btn-save-hub-id" class="btn-hub-change">Đổi</button>
+      </div>
+    </div>
+
+    <!-- THANH CÔNG CỤ TÌM KIẾM THÀNH VIÊN TRONG ĐOÀN -->
+    <div class="user-tools-row">
+      <div class="search-box-wrapper">
+        <input type="text" id="input-search-hub" class="search-input" list="group-hubs-datalist" placeholder="Nhập mã Hub (ví dụ: NEU002)..." autocomplete="off" />
+        <datalist id="group-hubs-datalist"></datalist>
+        <button type="button" id="btn-clear-search" class="btn-clear-search" title="Xóa nhanh">✕</button>
+        <button id="btn-search-hub" class="btn-search-hub">Tìm Thiết Bị</button>
+      </div>
+      <span id="user-live-indicator" class="live-status-pill">● Trực tiếp</span>
+    </div>
+  </header>
+
+  <!-- BẢN ĐỒ USER CHÍNH -->
+  <main class="user-map-container">
+    <div id="user-map"></div>
+
+    <!-- THANH ĐIỀU KHIỂN ÂM LƯỢNG & 3D SPATIAL AUDIO -->
+    <div id="spatial-audio-bar" style="position: absolute; top: 12px; right: 12px; z-index: 1000; background: rgba(15, 23, 42, 0.92); border: 1px solid #38bdf8; border-radius: 30px; padding: 6px 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); backdrop-filter: blur(8px); display: flex; align-items: center; gap: 8px; font-size: 0.76rem;">
+      <div style="display: flex; align-items: center; gap: 5px; cursor: pointer;" id="btn-toggle-spatial-audio" title="Bật/Tắt Âm Thanh 3D Không Gian HRTF">
+        <span style="font-size: 1.05rem;">🎧</span>
+        <span style="font-weight: 800; color: #38bdf8; font-size: 0.72rem; letter-spacing: 0.5px;">3D AUDIO</span>
+      </div>
+
+      <div style="width: 1px; height: 16px; background: #334155;"></div>
+
+      <div style="display: flex; align-items: center; gap: 6px;">
+        <span id="vol-icon" style="font-size: 0.85rem; color: #94a3b8;">🔊</span>
+        <input type="range" id="slider-master-volume" min="1" max="100" value="50" style="width: 75px; accent-color: #38bdf8; cursor: pointer;" title="Âm lượng khách đặt (1% - 100%)" />
+        <span id="display-master-vol" style="font-family: monospace; font-weight: 700; color: #f1f5f9; min-width: 32px; font-size: 0.74rem;">50%</span>
+      </div>
+    </div>
+
+    <!-- HUD THÔNG TIN ÂM THANH 3D ĐỘNG (KHI ĐANG PHÁT THEO KHOẢNG CÁCH) -->
+    <div id="spatial-audio-hud" style="display: none; position: absolute; top: 58px; right: 12px; z-index: 999; background: rgba(11, 15, 25, 0.95); border: 1px solid #22c55e; border-radius: 8px; padding: 8px 12px; font-size: 0.74rem; color: #f8fafc; box-shadow: 0 4px 15px rgba(0,0,0,0.5); max-width: 290px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px;">
+        <span style="color: #22c55e; font-weight: 800; display: flex; align-items: center; gap: 4px;">
+          <span style="display: inline-block; width: 7px; height: 7px; background: #22c55e; border-radius: 50%; box-shadow: 0 0 6px #22c55e;"></span>
+          3D ĐANG PHÁT:
+        </span>
+        <span id="hud-actual-vol" style="color: #38bdf8; font-weight: 800; font-family: monospace;">65%</span>
+      </div>
+      <div id="hud-poi-name" style="font-weight: 700; color: #facc15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Tòa Nhà Thế Kỷ A2</div>
+      <div style="display: flex; justify-content: space-between; color: #94a3b8; font-size: 0.7rem; margin-top: 3px;">
+        <span id="hud-distance">Cự ly: 4.5m</span>
+        <span id="hud-direction">Hướng: 45° Phải</span>
+      </div>
+      <div style="margin-top: 4px; display: flex; justify-content: flex-end;">
+        <button id="btn-stop-spatial-audio" style="background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; font-size: 0.68rem; padding: 2px 8px; border-radius: 4px; cursor: pointer; font-weight: 700;">Dừng Phát 3D</button>
+      </div>
+    </div>
+
+    <!-- TOAST THÔNG BÁO TÌM KIẾM THIẾT BỊ -->
+    <div id="search-feedback-toast" class="search-feedback-toast"></div>
+
+    <!-- THANH DANH SÁCH THÀNH VIÊN CUỘN NGANG -->
+    <div class="members-scroll-bar" id="members-list-bar">
+      <!-- Render các chip thành viên -->
+    </div>
+
+    <!-- KHUNG HỘI THOẠI TRỢ LÝ AI -->
+    <div id="ai-chat-drawer" class="ai-chat-drawer">
+      <div class="sheet-drag-handle"></div>
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; padding-bottom: 6px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-weight: 800; color: #60a5fa; font-size: 0.85rem;">Trợ Lý Hướng Dẫn Viên AI</span>
+          <span id="ai-chat-ttl-badge" style="font-size: 0.68rem; padding: 2px 7px; border-radius: 10px; background: rgba(59, 130, 246, 0.15); border: 1px solid #3b82f6; color: #93c5fd; display: inline-flex; align-items: center; gap: 3px;" title="Đoạn chat & ID máy được lưu tạm 1 tiếng trên máy khách, sau đó tự xóa">
+            ⏱ <span id="ai-chat-ttl-text">Lưu 1h</span>
+          </span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <button id="btn-clear-ai-chat" class="btn btn-secondary btn-sm" style="padding: 2px 8px; font-size: 0.7rem; font-weight: 600; background: #1e293b; border: 1px solid #475569; color: #cbd5e1; border-radius: 4px; cursor: pointer;" title="Xóa dữ liệu chat ngay">Xóa chat</button>
+          <button id="btn-close-ai-chat" class="btn btn-secondary btn-sm" style="padding: 2px 8px; font-weight: 700; background: #334155; border: none; color: #fff; border-radius: 4px; cursor: pointer;">Đóng</button>
+        </div>
+      </div>
+
+      <!-- KHUNG TIN NHẮN -->
+      <div id="chat-messages" class="chat-messages">
+        <div class="chat-bubble ai">
+          <div class="meta">AI Tour Guide</div>
+          Xin chào! Tôi là Trợ Lý Hướng Dẫn Viên AI. Bạn có thể bấm nút Micro để nói chuyện trực tiếp hoặc gõ câu hỏi, tôi sẽ thuyết minh về các địa điểm tham quan!
+        </div>
+      </div>
+
+      <!-- GỢI Ý CÂU HỎI NHANH -->
+      <div style="display: flex; gap: 4px; overflow-x: auto; padding-bottom: 6px; -webkit-overflow-scrolling: touch;">
+        <button class="btn btn-secondary btn-sm" onclick="sendQuickPrompt('Tòa nhà Thế Kỷ A2 có gì đặc sắc?')" style="font-size: 0.68rem; white-space: nowrap; padding: 3px 8px; background: #1e293b; border: 1px solid #334155; color: #cbd5e1; border-radius: 4px; cursor: pointer;">
+          Tòa nhà A2
+        </button>
+        <button class="btn btn-secondary btn-sm" onclick="sendQuickPrompt('Thư viện Phạm Văn Đồng ở đâu và có những tiện ích gì?')" style="font-size: 0.68rem; white-space: nowrap; padding: 3px 8px; background: #1e293b; border: 1px solid #334155; color: #cbd5e1; border-radius: 4px; cursor: pointer;">
+          Thư viện
+        </button>
+        <button class="btn btn-secondary btn-sm" onclick="sendQuickPrompt('Không gian khởi nghiệp sáng tạo')" style="font-size: 0.68rem; white-space: nowrap; padding: 3px 8px; background: #1e293b; border: 1px solid #334155; color: #cbd5e1; border-radius: 4px; cursor: pointer;">
+          Khởi nghiệp
+        </button>
+        <button class="btn btn-secondary btn-sm" onclick="sendQuickPrompt('Khu thể thao và sân bóng đá ở đâu?')" style="font-size: 0.68rem; white-space: nowrap; padding: 3px 8px; background: #1e293b; border: 1px solid #334155; color: #cbd5e1; border-radius: 4px; cursor: pointer;">
+          Khu Thể thao
+        </button>
+      </div>
+
+      <!-- THANH NHẬP CÂU HỎI & NÓI MIC -->
+      <div class="chat-input-row">
+        <button id="btn-mic-record" class="btn-mic" title="Bấm để nói chuyện qua Micro">
+          Nói Mic
+        </button>
+        <input type="text" id="input-ai-chat" class="search-input" placeholder="Hỏi AI về các địa điểm tham quan..." style="flex: 1;" />
+        <button id="btn-send-ai-chat" class="btn btn-primary btn-sm" style="min-height: 38px; background: #2563eb; border: none; color: #fff; padding: 0 12px; border-radius: 4px; font-weight: 700; cursor: pointer;">Gửi</button>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px; font-size: 0.7rem; color: #94a3b8;">
+        <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
+          <input type="checkbox" id="chk-auto-speech" checked /> Tự động đọc câu trả lời
+        </label>
+        <span id="ai-status-indicator">Sẵn sàng</span>
+      </div>
+    </div>
+
+    <!-- NÚT ĐIỀU HƯỚNG NHANH GÓC PHẢI DƯỚI -->
+    <div class="user-fab-container">
+      <button id="btn-toggle-ai-chat" class="fab-btn fab-ai">
+        Hỏi AI
+      </button>
+      <button id="btn-locate-self" class="fab-btn fab-self">
+        Vị Trí Tôi
+      </button>
+      <button id="btn-fit-group" class="fab-btn">
+        Cả Đoàn
+      </button>
+    </div>
+
+    <!-- BOTTOM SHEET CHI TIẾT ĐIỂM DI TÍCH / POI -->
+    <div id="poi-sheet" class="poi-bottom-sheet">
+      <div class="sheet-drag-handle"></div>
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+        <div>
+          <h3 id="sheet-poi-title" style="color: var(--accent-amber, #f59e0b); font-size: 1.05rem; margin: 0;">1. Cổng chính</h3>
+          <div id="sheet-poi-zone" style="font-size: 0.74rem; color: var(--accent-cyan, #06b6d4); text-transform: uppercase;">Khuôn Viên</div>
+        </div>
+        <button id="btn-close-poi-sheet" class="btn btn-secondary btn-sm" style="padding: 2px 10px; font-weight: 700; background: #334155; border: none; color: #fff; border-radius: 4px; cursor: pointer;">Đóng</button>
+      </div>
+
+      <p id="sheet-poi-desc" style="font-size: 0.84rem; color: var(--text-secondary, #94a3b8); margin: 10px 0; line-height: 1.5;">
+        Mô tả điểm tham quan...
+      </p>
+
+      <button id="btn-play-poi-audio" class="poi-audio-action-btn">
+        🎧 Nghe Thuyết Minh 3D (Spatial Audio)
+      </button>
+    </div>
+  </main>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="/js/map-common.js?v=realtime_v6"></script>
+  <script src="/js/user.js?v=chat_ttl_v1"></script>
+</body>
+</html>

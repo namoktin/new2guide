@@ -19,12 +19,22 @@ const GROQ_API_KEY = (process.env.GROQ_API_KEY || '').trim();
 const GROQ_MODEL = (process.env.GROQ_MODEL || 'openai/gpt-oss-120b').trim();
 const MONGODB_URI = (process.env.MONGODB_URI || '').trim();
 
-// Chuẩn hóa mã Hub ID (Hỗ trợ 001, 1, NEU001, HUB-001 -> NEU001)
+// Chuẩn hóa mã Hub ID (Hỗ trợ HL-01, HL01, HL 01, HL 3, HL-3, 001, 1, NEU001, HUB-001)
 function normalizeHubId(rawId) {
-  if (!rawId) return `${SITE_CODE}001`;
+  if (!rawId) return 'HL-01';
   let s = String(rawId).trim().toUpperCase();
   if (s.startsWith('HUB-')) s = s.replace('HUB-', '');
   else if (s.startsWith('HUB')) s = s.replace('HUB', '');
+
+  // Chuẩn hóa dạng HL: HL-01, HL01, HL-1, HL1, HL 01, HL 3, HL-3, HL 0, HL0, v.v.
+  const hlMatch = s.match(/^HL[\s\-]*0*(\d+)$/);
+  if (hlMatch) {
+    const num = parseInt(hlMatch[1], 10);
+    if (hlMatch[1] === '0' || num === 0) return 'HL-00';
+    return 'HL-' + String(num).padStart(2, '0');
+  }
+  if (s === 'HL0' || s === 'HL-0' || s === 'HL 0' || s === 'HL00' || s === 'HL-00' || s === 'HL 00') return 'HL-00';
+  if (s === 'HL' || s === 'HL-' || s === 'HL ') return 'HL-01';
 
   if (s.startsWith(SITE_CODE)) {
     const numPart = s.slice(SITE_CODE.length);
@@ -35,7 +45,9 @@ function normalizeHubId(rawId) {
   }
 
   if (/^\d+$/.test(s)) {
-    return `${SITE_CODE}${s.padStart(3, '0')}`;
+    const num = parseInt(s, 10);
+    if (num === 0) return 'HL-00';
+    return 'HL-' + String(num).padStart(2, '0');
   }
 
   return s;

@@ -1,0 +1,995 @@
+/* 2Guide - Master Stylesheet (Zero Emojis, Clean Tech UI) */
+
+:root {
+  --bg-primary: #0b0f19;
+  --bg-secondary: #131b2e;
+  --bg-card: #1c2640;
+  --bg-hover: #263354;
+  --border-color: #2b3958;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-dim: #64748b;
+  --accent-cyan: #06b6d4;
+  --accent-green: #10b981;
+  --accent-blue: #3b82f6;
+  --accent-amber: #f59e0b;
+  --accent-red: #ef4444;
+  --accent-purple: #8b5cf6;
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-family);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  line-height: 1.5;
+}
+
+/* ====================================================
+   TOP NAVIGATION BAR
+   ==================================================== */
+.top-navbar {
+  height: 54px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  z-index: 1000;
+  position: relative;
+}
+
+.brand-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-badge {
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: var(--accent-cyan);
+  padding: 4px 10px;
+  background: rgba(6, 182, 212, 0.12);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  border-radius: var(--radius-sm);
+}
+
+.brand-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.brand-subtitle {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  margin-left: 6px;
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nav-link {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  transition: all 0.2s;
+}
+
+.nav-link:hover, .nav-link.active {
+  color: #fff;
+  background: var(--bg-card);
+  border-color: var(--border-color);
+}
+
+/* ====================================================
+   LAYOUT CONTAINER
+   ==================================================== */
+.app-container {
+  display: flex;
+  height: calc(100vh - 54px);
+  width: 100vw;
+  position: relative;
+}
+
+/* ====================================================
+   SIDEBAR (Admin Controls)
+   ==================================================== */
+.sidebar {
+  width: 380px;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  z-index: 500;
+  transition: transform 0.3s ease;
+  overflow: hidden;
+}
+
+.sidebar-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-primary);
+}
+
+.tab-item {
+  flex: 1;
+  padding: 10px 6px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  text-align: center;
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  text-transform: uppercase;
+}
+
+.tab-item:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.tab-item.active {
+  color: var(--accent-cyan);
+  border-bottom-color: var(--accent-cyan);
+  background: var(--bg-secondary);
+}
+
+.sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px;
+}
+
+.tab-panel {
+  display: none;
+}
+
+.tab-panel.active {
+  display: block;
+}
+
+/* ====================================================
+   MAP CONTAINER
+   ==================================================== */
+.map-wrapper {
+  flex: 1;
+  position: relative;
+  height: 100%;
+  background: #000;
+}
+
+#map {
+  width: 100%;
+  height: 100%;
+  z-index: 100;
+}
+
+/* Map Floating Overlays */
+.map-floating-panel {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: rgba(19, 27, 46, 0.88);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  z-index: 400;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+
+.floating-title {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.floating-switch-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+}
+
+/* ====================================================
+   CARDS & FORMS
+   ==================================================== */
+.card-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.section-header {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--accent-cyan);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  letter-spacing: 0.5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.form-group {
+  margin-bottom: 10px;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.form-control {
+  width: 100%;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.84rem;
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--accent-cyan);
+}
+
+/* ====================================================
+   BUTTONS
+   ==================================================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: var(--accent-cyan);
+  color: #042f2e;
+}
+.btn-primary:hover {
+  background: #22d3ee;
+}
+
+.btn-success {
+  background: var(--accent-green);
+  color: #022c22;
+}
+.btn-success:hover {
+  background: #34d399;
+}
+
+.btn-danger {
+  background: var(--accent-red);
+  color: #fff;
+}
+.btn-danger:hover {
+  background: #f87171;
+}
+
+.btn-secondary {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+.btn-secondary:hover {
+  background: var(--bg-hover);
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.btn-sm {
+  padding: 4px 8px;
+  font-size: 0.74rem;
+}
+
+/* ====================================================
+   DEVICE & GROUP LISTS
+   ==================================================== */
+.item-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.hub-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+}
+
+.hub-id {
+  font-weight: 700;
+  color: var(--accent-cyan);
+}
+
+.hub-badge {
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: 600;
+}
+.badge-online {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--accent-green);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+.badge-offline {
+  background: rgba(100, 116, 139, 0.15);
+  color: var(--text-dim);
+  border: 1px solid rgba(100, 116, 139, 0.3);
+}
+.badge-active {
+  background: rgba(59, 130, 246, 0.15);
+  color: var(--accent-blue);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.battery-tag {
+  font-weight: 600;
+  color: var(--accent-green);
+}
+.battery-low {
+  color: var(--accent-red);
+}
+
+/* ====================================================
+   MODAL DIALOG
+   ==================================================== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.modal-content {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  width: 90%;
+  max-width: 440px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+  text-align: center;
+}
+
+.modal-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: var(--text-primary);
+}
+
+.qr-preview-box {
+  background: #fff;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  display: inline-block;
+  margin: 12px 0;
+}
+
+.qr-image {
+  width: 220px;
+  height: 220px;
+  display: block;
+}
+
+/* ====================================================
+   MAP CUSTOM MARKERS & POPUPS
+   ==================================================== */
+.leaflet-popup-content-wrapper {
+  background: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5) !important;
+}
+.leaflet-popup-tip {
+  background: var(--bg-secondary) !important;
+}
+
+.poi-popup-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--accent-amber);
+  margin-bottom: 4px;
+}
+.poi-popup-zone {
+  font-size: 0.72rem;
+  color: var(--accent-cyan);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.poi-popup-desc {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* ====================================================
+   LOCATION POINTER PINS (ICON CHỈ VỊ TRÍ CHUYÊN NGHIỆP)
+   ==================================================== */
+
+/* 1. Pin Vị Trí Của Bản Thân ("BẠN") */
+.self-pin-wrapper {
+  position: relative;
+  width: 38px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translate(0, 0);
+}
+
+.self-ground-ripple {
+  position: absolute;
+  bottom: 0px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 26px;
+  height: 10px;
+  background: rgba(245, 158, 11, 0.45);
+  border-radius: 50%;
+  animation: radar-ripple 1.8s infinite ease-out;
+  pointer-events: none;
+}
+
+@keyframes radar-ripple {
+  0% { transform: translateX(-50%) scale(0.3); opacity: 1; }
+  100% { transform: translateX(-50%) scale(2.4); opacity: 0; }
+}
+
+.self-pin-svg {
+  filter: drop-shadow(0 4px 10px rgba(245, 158, 11, 0.75));
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+.self-pin-svg:hover {
+  transform: scale(1.15) translateY(-3px);
+}
+
+/* 2. Pin Vị Trí Thành Viên Trong Đoàn */
+.member-pin-wrapper {
+  position: relative;
+  width: 32px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.member-pin-svg {
+  filter: drop-shadow(0 3px 8px rgba(14, 165, 233, 0.65));
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+.member-pin-svg:hover {
+  transform: scale(1.15) translateY(-3px);
+}
+
+/* 3. Pin Điểm Di Tích (POI) Chuẩn Sơ Đồ */
+.poi-pin-wrapper {
+  position: relative;
+  width: 30px;
+  height: 38px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.poi-pin-svg {
+  filter: drop-shadow(0 3px 6px rgba(185, 28, 28, 0.55));
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+.poi-pin-svg:hover {
+  transform: scale(1.2) translateY(-4px);
+}
+
+.poi-pin-badge {
+  position: absolute;
+  top: -18px;
+  white-space: nowrap;
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid #b91c1c;
+  color: #fef08a;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.6);
+  pointer-events: none;
+  display: none;
+  z-index: 500;
+}
+.poi-pin-wrapper:hover .poi-pin-badge {
+  display: block;
+}
+
+/* 4. Pin Hiện Vật Lịch Sử & Văn Hóa (Artifacts) */
+.artifact-pin-wrapper {
+  position: relative;
+  width: 28px;
+  height: 36px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.artifact-pin-svg {
+  filter: drop-shadow(0 3px 8px rgba(217, 119, 6, 0.65));
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+.artifact-pin-svg:hover {
+  transform: scale(1.22) translateY(-4px);
+}
+
+.artifact-pin-badge {
+  position: absolute;
+  top: -18px;
+  white-space: nowrap;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid #d97706;
+  color: #fbbf24;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.6);
+  pointer-events: none;
+  display: none;
+  z-index: 500;
+}
+.artifact-pin-wrapper:hover .artifact-pin-badge {
+  display: block;
+}
+
+/* Toast Thông Báo Khi Điểm POI Trong Tầm Nhìn 1.5s */
+.vision-speech-toast {
+  position: fixed;
+  top: max(74px, calc(env(safe-area-inset-top) + 74px));
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid var(--accent-amber);
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  font-size: 0.8rem;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 8px;
+  max-width: calc(100vw - 24px);
+  width: max-content;
+  box-sizing: border-box;
+  z-index: 4000;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  animation: fadeInDown 0.3s ease;
+}
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translate(-50%, -10px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+
+/* Zone Polygon Label */
+.zone-label-tooltip {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid var(--accent-cyan);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.75rem;
+  border-radius: 4px;
+  padding: 3px 7px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+
+/* Emergency Alert Banner */
+.emergency-banner {
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--accent-red);
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  font-size: 0.88rem;
+  z-index: 9999;
+  box-shadow: 0 8px 24px rgba(239, 68, 68, 0.6);
+  display: none;
+  animation: blink 1.2s infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+/* Responsive for Mobile */
+@media (max-width: 768px) {
+  .app-container {
+    flex-direction: column-reverse;
+  }
+  .sidebar {
+    width: 100%;
+    height: 48vh;
+    border-right: none;
+    border-top: 1px solid var(--border-color);
+  }
+  .map-wrapper {
+    height: 52vh;
+  }
+}
+
+/* Hub Tag Chips inside Group Creation */
+.selected-hubs-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  min-height: 46px;
+  margin-bottom: 8px;
+  align-items: center;
+}
+
+.hub-tag-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(6, 182, 212, 0.18);
+  border: 1px solid var(--accent-cyan);
+  color: var(--accent-cyan);
+  padding: 3px 8px;
+  border-radius: 16px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  animation: fadeInTag 0.2s ease;
+}
+
+.btn-remove-tag {
+  background: transparent;
+  border: none;
+  color: #ef4444;
+  font-size: 0.8rem;
+  font-weight: 900;
+  cursor: pointer;
+  padding: 0 3px;
+  line-height: 1;
+  border-radius: 50%;
+  transition: all 0.15s;
+}
+.btn-remove-tag:hover {
+  color: #fff;
+  background: #ef4444;
+}
+
+@keyframes fadeInTag {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* ============================================================
+   5. MÀN HÌNH KHÓA XÁC THỰC MÃ BÍ MẬT (QUẢN LÝ & EDITOR)
+   ============================================================ */
+.auth-lock-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background-color: #07090e;
+  background-image: 
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(14, 165, 233, 0.14), transparent 70%),
+    radial-gradient(ellipse 60% 40% at 50% 120%, rgba(30, 58, 138, 0.18), transparent 70%),
+    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 32px 32px, 32px 32px;
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: authFadeIn 0.25s ease;
+  transition: opacity 0.3s ease;
+}
+
+.auth-lock-overlay.editor-theme {
+  background-image: 
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(245, 158, 11, 0.14), transparent 70%),
+    radial-gradient(ellipse 60% 40% at 50% 120%, rgba(180, 83, 9, 0.18), transparent 70%),
+    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+}
+
+.auth-lock-card {
+  width: 100%;
+  max-width: 420px;
+  background: rgba(15, 23, 42, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 34px 30px;
+  box-shadow: 
+    0 0 0 1px rgba(255, 255, 255, 0.03),
+    0 24px 60px -12px rgba(0, 0, 0, 0.8),
+    0 0 40px -10px rgba(14, 165, 233, 0.2);
+  text-align: center;
+  position: relative;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.auth-lock-card.editor-theme {
+  box-shadow: 
+    0 0 0 1px rgba(255, 255, 255, 0.03),
+    0 24px 60px -12px rgba(0, 0, 0, 0.8),
+    0 0 40px -10px rgba(245, 158, 11, 0.2);
+}
+
+.auth-lock-card.shake {
+  animation: authShake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@keyframes authShake {
+  10%, 90% { transform: translate3d(-2px, 0, 0); }
+  20%, 80% { transform: translate3d(3px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+  40%, 60% { transform: translate3d(4px, 0, 0); }
+}
+
+@keyframes authFadeIn {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.auth-lock-card .brand-icon-wrapper {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.15) 0%, rgba(15, 23, 42, 0.6) 100%);
+  border: 1px solid rgba(14, 165, 233, 0.3);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  box-shadow: 0 8px 20px -4px rgba(14, 165, 233, 0.25);
+}
+
+.auth-lock-card.editor-theme .brand-icon-wrapper {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(15, 23, 42, 0.6) 100%);
+  border-color: rgba(245, 158, 11, 0.3);
+  box-shadow: 0 8px 20px -4px rgba(245, 158, 11, 0.25);
+}
+
+.auth-lock-title {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 8px;
+  letter-spacing: -0.02em;
+}
+
+.auth-lock-desc {
+  font-size: 0.83rem;
+  color: #94a3b8;
+  margin-bottom: 22px;
+  line-height: 1.5;
+}
+
+.auth-form-group {
+  text-align: left;
+  margin-bottom: 18px;
+}
+
+.auth-label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #94a3b8;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.auth-input {
+  width: 100%;
+  background: #090e17 !important;
+  border: 1px solid #1e293b !important;
+  border-radius: 10px !important;
+  color: #ffffff !important;
+  padding: 12px 42px 12px 14px !important;
+  font-size: 0.95rem !important;
+  outline: none !important;
+  transition: all 0.2s ease !important;
+  letter-spacing: 2px;
+}
+
+.auth-input.is-text {
+  letter-spacing: normal !important;
+}
+
+.auth-input:focus {
+  border-color: #38bdf8 !important;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15), 0 0 16px rgba(56, 189, 248, 0.1) !important;
+  background: #0b121e !important;
+}
+
+.btn-toggle-vis {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #64748b;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: color 0.15s ease;
+}
+
+.btn-toggle-vis:hover {
+  color: #cbd5e1;
+}
+
+.auth-error-msg {
+  display: none;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: #fca5a5;
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin-top: 8px;
+  text-align: left;
+}
+
+@keyframes authFadeIn {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* ====================================================
+   FOV VISION CONE & HUD BANNER TRÊN BẢN ĐỒ ADMIN
+   ==================================================== */
+.custom-hub-marker-container {
+  cursor: pointer !important;
+  pointer-events: auto !important;
+}
+
+.active-vision-hud {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  background: rgba(15, 23, 42, 0.94);
+  border: 1px solid #fbbf24;
+  border-radius: 30px;
+  padding: 7px 18px;
+  color: #f8fafc;
+  font-size: 0.82rem;
+  font-weight: 600;
+  box-shadow: 0 4px 22px rgba(251, 191, 36, 0.35);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  backdrop-filter: blur(8px);
+  pointer-events: auto;
+}
+
+.hud-pulse-dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #fbbf24;
+  box-shadow: 0 0 10px #fbbf24;
+  animation: hudPulse 1.5s infinite;
+}
+
+@keyframes hudPulse {
+  0% { transform: scale(0.9); opacity: 0.7; }
+  50% { transform: scale(1.35); opacity: 1; }
+  100% { transform: scale(0.9); opacity: 0.7; }
+}
+
+.btn-hud-close {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 0.95rem;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+  transition: color 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-hud-close:hover {
+  color: #ef4444;
+}
+
+.hub-row.active-vision-row {
+  border-left: 3px solid #fbbf24 !important;
+  background: rgba(251, 191, 36, 0.08) !important;
+}
+
+

@@ -1,0 +1,3814 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Nhà Tổng Thống • Hệ thống Quản lý Thiết bị Thuyết minh | 2Guide Manager</title>
+
+  <!-- Google Fonts: Playfair Display (Serif Canva chuẩn) + Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <!-- Leaflet CSS & JS cho Bản đồ Giám sát Điều phối (chuẩn hoa-lo) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Bản đồ dùng chung hệ thống User & Quản lý -->
+  <script src="/js/map-common.js"></script>
+
+  <!-- Chart.js for smooth interactive statistics (Cả cục bộ lẫn CDN) -->
+  <script src="/js/chart.min.js"></script>
+  <script>
+    if (typeof Chart === 'undefined') {
+      document.write('<script src="https://cdn.jsdelivr.net/npm/chart.js"><\/script>');
+    }
+  </script>
+
+  <style>
+    :root {
+      /* Bảng màu chuẩn Canva theo mockup */
+      --bg-main: #f6f1e8;           /* Màu kem/parchment nền chính */
+      --bg-sidebar: #281d17;        /* Màu nâu cà phê đậm của thanh sidebar */
+      --bg-sidebar-active: #4a382e; /* Màu pill active menu sidebar */
+      --bg-card: #ffffff;          /* Thẻ trắng nổi */
+      --border-card: rgba(0, 0, 0, 0.05);
+      --text-dark: #1c1917;         /* Chữ đen đậm chính */
+      --text-muted: #57534e;        /* Chữ xám trung tính */
+      --text-sub: #78716c;          /* Chữ phụ mờ */
+      --accent-terracotta: #9a3412; /* Cam đất nhấn tiêu đề */
+      --accent-gold: #d97706;       /* Vàng kim loại */
+      --status-green: #15803d;      /* Xanh lá sẵn sàng */
+      --status-amber: #b45309;      /* Vàng cam đang sạc */
+      --status-blue: #0284c7;       /* Xanh dương đang thuê */
+      --status-red: #b91c1c;        /* Đỏ cảnh báo pin */
+      
+      --font-serif: 'Playfair Display', Georgia, serif;
+      --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg-main);
+      color: var(--text-dark);
+      min-height: 100vh;
+      display: flex;
+      overflow-x: hidden;
+    }
+
+    /* ============================================================
+       1. SIDEBAR NAVIGATION BÊN TRÁI (KHỚP 100% CANVA ẢNH)
+       ============================================================ */
+    .manager-sidebar {
+      width: 270px;
+      min-width: 270px;
+      background: var(--bg-sidebar);
+      color: #ffffff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 30px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .sidebar-header {
+      margin-bottom: 22px;
+    }
+
+    .sidebar-site-sub {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #c99369;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .sidebar-main-title {
+      font-family: var(--font-serif);
+      font-size: 23px;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.25;
+    }
+
+    .sidebar-divider {
+      height: 1px;
+      background: rgba(255, 255, 255, 0.1);
+      margin-bottom: 24px;
+    }
+
+    .sidebar-menu {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex: 1;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 18px;
+      border-radius: 12px;
+      color: #c8bcb4;
+      font-size: 14.5px;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .nav-item i {
+      font-size: 16px;
+      width: 20px;
+      text-align: center;
+      opacity: 0.85;
+    }
+
+    .nav-item:hover:not(.active) {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .nav-item.active {
+      background: var(--bg-sidebar-active);
+      color: #ffffff;
+      font-weight: 700;
+      border-color: rgba(214, 180, 150, 0.28);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+    }
+
+    .sidebar-footer {
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .sidebar-user-pill {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 10px 14px;
+      border-radius: 12px;
+    }
+
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #c99369;
+      color: #281d17;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 13px;
+    }
+
+    .user-meta-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.2;
+    }
+
+    .user-meta-role {
+      font-size: 11px;
+      color: #a89f99;
+    }
+
+    .btn-return-app {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #e5dcd6;
+      padding: 10px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .btn-return-app:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+
+    /* ============================================================
+       2. KHÔNG GIAN NỘI DUNG CHÍNH (MAIN CONTENT)
+       ============================================================ */
+    .manager-main {
+      flex: 1;
+      padding: 40px 48px;
+      overflow-y: auto;
+      min-width: 0;
+    }
+
+    /* Mobile Header Hamburger */
+    .mobile-top-bar {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    .btn-hamburger {
+      background: var(--bg-sidebar);
+      color: #fff;
+      border: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    /* Tiêu đề trang */
+    .page-header-wrap {
+      margin-bottom: 36px;
+    }
+
+    .page-pre-tag {
+      font-size: 11.5px;
+      font-weight: 800;
+      letter-spacing: 1.8px;
+      text-transform: uppercase;
+      color: var(--accent-terracotta);
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .page-main-headline {
+      font-family: var(--font-serif);
+      font-size: 34px;
+      font-weight: 700;
+      color: var(--text-dark);
+      line-height: 1.25;
+      margin-bottom: 10px;
+    }
+
+    .page-sub-desc {
+      font-size: 15px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* Section Headers */
+    .section-block {
+      margin-bottom: 34px;
+    }
+
+    .section-tag {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1.6px;
+      text-transform: uppercase;
+      color: var(--accent-terracotta);
+      margin-bottom: 4px;
+      display: block;
+    }
+
+    .section-title {
+      font-family: var(--font-serif);
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 18px;
+    }
+
+    /* 4 Thẻ chỉ số tổng quan (Stat Cards) */
+    .stat-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border-radius: 18px;
+      padding: 18px 22px;
+      border: 1px solid var(--border-card);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.035);
+      transition: transform 0.2s, box-shadow 0.2s;
+      position: relative;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 26px rgba(0, 0, 0, 0.06);
+    }
+
+    .stat-card-label {
+      font-size: 13.5px;
+      color: var(--text-dark);
+      font-weight: 500;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .stat-card-value {
+      font-family: var(--font-serif);
+      font-size: 34px;
+      font-weight: 700;
+      color: var(--text-dark);
+      line-height: 1;
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+    }
+
+    .stat-card-unit {
+      font-size: 22px;
+      font-weight: 600;
+      text-decoration: underline;
+    }
+
+    .stat-card-trend {
+      margin-top: 8px;
+      font-size: 11.5px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-weight: 600;
+    }
+
+    .trend-up { color: #16a34a; }
+    .trend-neutral { color: #78716c; }
+
+    /* Thẻ Biểu đồ: Thiết bị sử dụng theo thời gian */
+    .chart-card {
+      background: var(--bg-card);
+      border-radius: 20px;
+      padding: 22px 26px;
+      border: 1px solid var(--border-card);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.035);
+      margin-bottom: 24px;
+    }
+
+    .chart-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+      gap: 20px;
+    }
+
+    .chart-header-left h3 {
+      font-size: 18.5px;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 4px;
+    }
+
+    .chart-header-left p {
+      font-size: 13.5px;
+      color: var(--text-sub);
+    }
+
+    .chart-header-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+    }
+
+    .chart-filter-label {
+      font-size: 11.5px;
+      color: var(--text-sub);
+      font-weight: 600;
+    }
+
+    .chart-select-box {
+      background: #ffffff;
+      border: 1px solid #d6d3d1;
+      border-radius: 12px;
+      padding: 7px 32px 7px 14px;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-dark);
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2357534e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      background-size: 14px;
+      transition: border-color 0.2s;
+    }
+
+    .chart-select-box:focus {
+      border-color: var(--accent-terracotta);
+    }
+
+    .chart-canvas-container {
+      position: relative;
+      width: 100%;
+      height: 310px;
+      margin-top: 4px;
+    }
+
+    /* Các Tab nội dung phụ (Thiết bị, Lịch đặt thuê, Điều phối, Báo cáo, Cấu hình) */
+    .tab-content-pane {
+      display: none;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .tab-content-pane.active {
+      display: block;
+    }
+
+    /* Bảng dữ liệu thiết bị & lịch thuê */
+    .data-table-card {
+      background: var(--bg-card);
+      border-radius: 20px;
+      padding: 24px;
+      border: 1px solid var(--border-card);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.035);
+      margin-bottom: 28px;
+    }
+
+    .table-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .table-search-box {
+      background: #f5f5f4;
+      border: 1px solid #e7e5e4;
+      border-radius: 12px;
+      padding: 9px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 300px;
+    }
+
+    .table-search-input {
+      border: none;
+      background: transparent;
+      outline: none;
+      font-size: 13.5px;
+      width: 100%;
+    }
+
+    .table-actions-group {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-action-primary {
+      background: var(--bg-sidebar);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 10px 18px;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .btn-action-primary:hover {
+      background: #3b2a22;
+      transform: translateY(-1px);
+    }
+
+    .btn-action-secondary {
+      background: #f5f5f4;
+      color: var(--text-dark);
+      border: 1px solid #e7e5e4;
+      border-radius: 12px;
+      padding: 10px 16px;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .btn-action-secondary:hover {
+      background: #e7e5e4;
+    }
+
+    .custom-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 13.5px;
+    }
+
+    .custom-table th {
+      background: #faf8f5;
+      color: var(--text-sub);
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.6px;
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid #e7e5e4;
+    }
+
+    .custom-table td {
+      padding: 14px 16px;
+      border-bottom: 1px solid #f5f5f4;
+      color: var(--text-dark);
+      vertical-align: middle;
+    }
+
+    .custom-table tr:hover td {
+      background: #faf8f5;
+    }
+
+    /* Badges trạng thái */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .status-badge.in-use {
+      background: #e0f2fe;
+      color: #0369a1;
+    }
+
+    .status-badge.ready {
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    .status-badge.charging {
+      background: #fef3c7;
+      color: #b45309;
+    }
+
+    .status-badge.warning {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .status-badge.deposit {
+      background: #fef3c7;
+      color: #b45309;
+    }
+
+    .status-badge.completed {
+      background: #f5f5f4;
+      color: #78716c;
+    }
+
+    .guide-cell {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .guide-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #f5ebe6;
+      color: var(--accent-terracotta);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+
+    .guide-name {
+      font-weight: 700;
+      color: var(--text-dark);
+      font-size: 13.5px;
+    }
+
+    .guide-sub {
+      font-size: 11.5px;
+      color: #78716c;
+    }
+
+    .form-hint {
+      font-size: 11.5px;
+      color: #78716c;
+      margin-top: 5px;
+      display: block;
+      line-height: 1.4;
+    }
+
+    .battery-meter {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 12px;
+    }
+
+    .battery-bar {
+      width: 44px;
+      height: 8px;
+      background: #e7e5e4;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .battery-fill {
+      height: 100%;
+      border-radius: 4px;
+    }
+
+    /* Bố cục 2 cột cho Cảnh báo, Lịch đón & Nhật ký hoạt động */
+    .two-col-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-top: 24px;
+    }
+    @media (max-width: 900px) {
+      .two-col-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .alert-banner {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 13px 16px;
+      border-radius: 14px;
+      margin-bottom: 12px;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    .alert-banner.danger {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #991b1b;
+    }
+    .alert-banner.warning {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      color: #92400e;
+    }
+    .alert-banner.info {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      color: #166534;
+    }
+    .alert-banner i {
+      font-size: 16px;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+
+    .timeline-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 12px 0;
+      border-bottom: 1px solid #f5f5f4;
+    }
+    .timeline-item:last-child {
+      border-bottom: none;
+    }
+    .timeline-badge {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+    .timeline-badge.blue {
+      background: #e0f2fe;
+      color: #0284c7;
+    }
+    .timeline-badge.green {
+      background: #dcfce7;
+      color: #15803d;
+    }
+    .timeline-badge.amber {
+      background: #fef3c7;
+      color: #b45309;
+    }
+    .timeline-badge.red {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+    .timeline-content {
+      flex: 1;
+    }
+    .timeline-title {
+      font-weight: 700;
+      font-size: 13.5px;
+      color: var(--text-dark);
+    }
+    .timeline-desc {
+      font-size: 12px;
+      color: #78716c;
+      margin-top: 2px;
+    }
+    .timeline-time {
+      font-size: 11.5px;
+      color: #a8a29e;
+      white-space: nowrap;
+    }
+
+    .filter-chips-wrap {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .filter-chip {
+      background: #f5f5f4;
+      border: 1px solid #e7e5e4;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #57534e;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .filter-chip:hover {
+      background: #e7e5e4;
+    }
+    .filter-chip.active {
+      background: var(--bg-sidebar);
+      color: #ffffff;
+      border-color: var(--bg-sidebar);
+    }
+
+    /* Modal Form Cấp phát thiết bị */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.55);
+      backdrop-filter: blur(8px);
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-dialog {
+      background: #ffffff;
+      width: 100%;
+      max-width: 520px;
+      border-radius: 24px;
+      padding: 28px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+      animation: floatIn 0.3s ease;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .modal-header h3 {
+      font-family: var(--font-serif);
+      font-size: 21px;
+      font-weight: 700;
+    }
+
+    .modal-close-btn {
+      border: none;
+      background: none;
+      font-size: 20px;
+      color: #78716c;
+      cursor: pointer;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .form-control {
+      width: 100%;
+      background: #f5f5f4;
+      border: 1px solid #e7e5e4;
+      border-radius: 12px;
+      padding: 11px 14px;
+      font-size: 14px;
+      font-family: var(--font-sans);
+      outline: none;
+    }
+
+    .form-control:focus {
+      border-color: var(--accent-terracotta);
+      background: #fff;
+    }
+
+    /* Toast Notification */
+    .toast-notify {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--bg-sidebar);
+      color: #fff;
+      padding: 14px 20px;
+      border-radius: 14px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13.5px;
+      font-weight: 600;
+      z-index: 3000;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .toast-notify.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* ============================================================
+       RESPONSIVE CHO MÁY TÍNH BẢNG & SMARTPHONE
+       ============================================================ */
+    @media (max-width: 1024px) {
+      .stat-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 768px) {
+      body {
+        flex-direction: column;
+      }
+
+      .manager-sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        transform: translateX(-100%);
+        box-shadow: 10px 0 30px rgba(0, 0, 0, 0.4);
+      }
+
+      .manager-sidebar.open {
+        transform: translateX(0);
+      }
+
+      .mobile-top-bar {
+        display: flex;
+      }
+
+      .manager-main {
+        padding: 20px 16px;
+      }
+
+      .page-main-headline {
+        font-size: 26px;
+      }
+
+      .stat-cards-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+
+      .chart-card {
+        padding: 20px 16px;
+      }
+
+      .chart-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .chart-header-right {
+        align-items: flex-start;
+      }
+
+      .table-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .table-search-box {
+        width: 100%;
+      }
+    }
+
+    /* ============================================================
+       KHUNG BẢN ĐỒ ĐIỀU PHỐI (CHUẨN FORM DÁNG HOA-LO)
+       ============================================================ */
+    .manager-map-frame-card {
+      width: 100%;
+      height: 640px;
+      position: relative;
+      background: #f0ece1;
+      border-radius: 24px;
+      overflow: hidden;
+      border: 1px solid var(--border-card);
+      box-shadow: 0 6px 25px rgba(0, 0, 0, 0.05);
+    }
+
+    .manager-map-canvas {
+      width: 100%;
+      height: 100%;
+      background: #f0ece1;
+      z-index: 1;
+    }
+
+    /* Top Overlay Header */
+    .map-overlay-header {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      right: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 1000;
+      pointer-events: none;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .map-site-pill {
+      pointer-events: auto;
+      background: rgba(229, 236, 232, 0.95);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(28, 45, 39, 0.12);
+      border-radius: 30px;
+      padding: 7px 16px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+    }
+
+    .map-site-icon {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--bg-sidebar);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10.5px;
+    }
+
+    .map-site-title {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: #1c2d27;
+    }
+
+    .map-live-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #22c55e;
+      box-shadow: 0 0 6px #22c55e;
+      display: inline-block;
+    }
+
+    .map-layer-switcher {
+      pointer-events: auto;
+      display: flex;
+      gap: 8px;
+    }
+
+    .map-layer-btn {
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      padding: 7px 14px;
+      border-radius: 20px;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--text-dark);
+      cursor: pointer;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .map-layer-btn.active {
+      background: var(--bg-sidebar);
+      color: #ffffff;
+      border-color: transparent;
+    }
+
+    /* Bottom Floating Card (Khớp hoa-lo.html) */
+    .map-overlay-bottom-card {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 32px);
+      max-width: 600px;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-radius: 24px;
+      padding: 18px 22px;
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.12);
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      z-index: 1000;
+      pointer-events: auto;
+    }
+
+    .map-bottom-desc {
+      font-size: 13.5px;
+      color: var(--text-dark);
+      margin-bottom: 14px;
+      line-height: 1.45;
+      font-weight: 600;
+    }
+
+    .map-bottom-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .map-btn-action {
+      background: var(--bg-sidebar);
+      color: #ffffff;
+      border: none;
+      border-radius: 14px;
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      transition: all 0.2s;
+    }
+
+    .map-btn-action:hover {
+      background: #3b2a22;
+      transform: translateY(-1px);
+    }
+
+    .map-btn-action.secondary {
+      background: #f5f5f4;
+      color: var(--text-dark);
+    }
+
+    .map-btn-action.secondary:hover {
+      background: #e7e5e4;
+    }
+
+    /* Custom Leaflet Pin Marker matching hoa-lo */
+    .custom-hanoi-pin {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .pin-badge-wrap {
+      width: 36px;
+      height: 36px;
+      border-radius: 50% 50% 50% 0;
+      transform: rotate(-45deg);
+      background: #0284c7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.45);
+      border: 2.5px solid #ffffff;
+    }
+
+    .pin-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #ffffff;
+      transform: rotate(45deg);
+    }
+
+    .pin-label {
+      background: #ffffff;
+      color: #0369a1;
+      font-weight: 800;
+      font-size: 12px;
+      padding: 3px 10px;
+      border-radius: 8px;
+      margin-top: 5px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.14);
+      border: 1px solid rgba(2, 132, 199, 0.25);
+      white-space: nowrap;
+    }
+
+    /* ============================================================
+       MARKER & TOOLTIP STYLES (Đồng bộ với map-common.js & user/quản lý)
+       ============================================================ */
+    .zone-label-tooltip {
+      background: rgba(40, 29, 23, 0.92) !important;
+      border: 1px solid #38bdf8 !important;
+      color: #ffffff !important;
+      font-weight: 700 !important;
+      font-size: 0.72rem !important;
+      border-radius: 6px !important;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+      padding: 3px 8px !important;
+    }
+    .poi-pin-wrapper {
+      position: relative;
+      width: 30px;
+      height: 38px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .poi-pin-svg {
+      filter: drop-shadow(0 3px 6px rgba(185, 28, 28, 0.55));
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+    .poi-pin-svg:hover {
+      transform: scale(1.2) translateY(-4px);
+    }
+    .poi-pin-badge {
+      position: absolute;
+      top: -20px;
+      white-space: nowrap;
+      background: rgba(40, 29, 23, 0.95);
+      border: 1px solid #b91c1c;
+      color: #fef08a;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+      pointer-events: none;
+      display: none;
+      z-index: 500;
+    }
+    .poi-pin-wrapper:hover .poi-pin-badge {
+      display: block;
+    }
+    .artifact-pin-wrapper {
+      position: relative;
+      width: 28px;
+      height: 36px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .artifact-pin-svg {
+      filter: drop-shadow(0 3px 8px rgba(217, 119, 6, 0.65));
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+    .artifact-pin-svg:hover {
+      transform: scale(1.22) translateY(-4px);
+    }
+    .artifact-pin-badge {
+      position: absolute;
+      top: -20px;
+      white-space: nowrap;
+      background: rgba(40, 29, 23, 0.95);
+      border: 1px solid #d97706;
+      color: #fbbf24;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+      pointer-events: none;
+      display: none;
+      z-index: 500;
+    }
+    .artifact-pin-wrapper:hover .artifact-pin-badge {
+      display: block;
+    }
+    .member-pin-wrapper {
+      position: relative;
+      width: 28px;
+      height: 36px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .member-pin-svg {
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4));
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+    .member-pin-svg:hover {
+      transform: scale(1.15) translateY(-3px);
+    }
+    .member-pin-badge {
+      position: absolute;
+      top: -20px;
+      white-space: nowrap;
+      background: rgba(40, 29, 23, 0.92);
+      border: 1px solid #38bdf8;
+      color: #ffffff;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+      pointer-events: none;
+      display: none;
+      z-index: 500;
+    }
+    .member-pin-wrapper:hover .member-pin-badge {
+      display: block;
+    }
+    .poi-popup-title {
+      font-weight: 700;
+      color: #b91c1c;
+      font-size: 0.95rem;
+      margin-bottom: 2px;
+    }
+    .poi-popup-zone {
+      font-size: 0.72rem;
+      color: #64748b;
+      margin-bottom: 4px;
+    }
+    .poi-popup-desc {
+      font-size: 0.8rem;
+      color: #334155;
+      line-height: 1.4;
+    }
+    .btn-read-poi, .btn-read-artifact {
+      display: inline-block;
+      padding: 7px 12px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      border-radius: 8px;
+      cursor: pointer;
+      border: none;
+      background: #281d17;
+      color: #ffffff;
+      width: 100%;
+      margin-top: 8px;
+      text-align: center;
+      transition: background 0.2s;
+    }
+    .btn-read-poi:hover, .btn-read-artifact:hover {
+      background: #3b2a22;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes floatIn {
+      from { opacity: 0; transform: translateY(-12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  
+    /* BẢN ĐỒ VECTOR NHÀ TỔNG THỐNG BAN QUẢN LÝ (KHÔNG DÙNG LEAFLET) */
+    #mgr-svg-container {
+      width: 100%;
+      height: 100%;
+      cursor: grab;
+      user-select: none;
+      background: radial-gradient(circle at 50% 50%, #1e293b 0%, #090b10 100%);
+      position: relative;
+      overflow: hidden;
+      touch-action: none;
+    }
+    #mgr-svg-container:active {
+      cursor: grabbing;
+    }
+    #mgr-map-wrapper {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 800px;
+      height: 500px;
+      transform-origin: 0 0;
+      will-change: transform;
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    #mgr-svg-host {
+      width: 800px;
+      height: 500px;
+      position: relative;
+    }
+    #mgr-svg-host svg {
+      filter: drop-shadow(0 15px 35px rgba(0, 0, 0, 0.45));
+    }
+    @keyframes pulseRing {
+      0% { r: 6px; opacity: 1; stroke-width: 2.5px; }
+      100% { r: 35px; opacity: 0; stroke-width: 0.5px; }
+    }
+    .beacon-wave-1 {
+      animation: pulseRing 2.4s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+    }
+    .beacon-wave-2 {
+      animation: pulseRing 2.4s cubic-bezier(0.215, 0.61, 0.355, 1) infinite 0.7s;
+    }
+    .beacon-wave-3 {
+      animation: pulseRing 2.4s cubic-bezier(0.215, 0.61, 0.355, 1) infinite 1.4s;
+    }
+
+  
+    /* Manager Interactive Badges */
+    .interactive-marker {
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.2s ease;
+    }
+    .interactive-marker:hover {
+      transform: scale(1.12);
+      filter: drop-shadow(0 6px 16px rgba(0, 240, 255, 0.7)) !important;
+    }
+    .hover-glow {
+      cursor: pointer !important;
+    }
+    .hover-glow:hover {
+      filter: drop-shadow(0 0 14px #00f0ff) brightness(1.25) !important;
+    }
+    
+  </style>
+</head>
+<body>
+
+  <!-- ============================================================
+       SIDEBAR ĐIỀU HÀNH BÊN TRÁI (KHỚP 100% CANVA MOCKUP)
+       ============================================================ -->
+  <aside id="app-sidebar" class="manager-sidebar">
+    <div class="sidebar-header">
+      <span class="sidebar-site-sub">NHÀ TỔNG THỐNG</span>
+      <h1 class="sidebar-main-title">Quản lý thiết bị</h1>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <nav class="sidebar-menu">
+      <a class="nav-item active" onclick="switchNavTab('overview', this)">
+        <i class="fa-solid fa-chart-pie"></i>
+        <span>Tổng quan</span>
+      </a>
+      <a class="nav-item" onclick="switchNavTab('devices', this)">
+        <i class="fa-solid fa-walkie-talkie"></i>
+        <span>Thiết bị</span>
+      </a>
+      <a class="nav-item" onclick="switchNavTab('map', this)">
+        <i class="fa-solid fa-map-location-dot"></i>
+        <span>Bản đồ</span>
+      </a>
+      <a class="nav-item" onclick="switchNavTab('finance', this)">
+        <i class="fa-solid fa-file-invoice-dollar"></i>
+        <span>Báo cáo tài chính</span>
+      </a>
+      <a class="nav-item" onclick="switchNavTab('settings', this)">
+        <i class="fa-solid fa-sliders"></i>
+        <span>Cấu hình</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user-pill">
+        <div class="user-avatar">BQL</div>
+        <div>
+          <div class="user-meta-name">Ban Quản Lý Di Tích</div>
+          <div class="user-meta-role">Điều hành Trực ban</div>
+        </div>
+      </div>
+      <a href="/user" class="btn-return-app" target="_blank">
+        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+        <span>Xem Cổng Khách Tham Quan</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- ============================================================
+       KHÔNG GIAN NỘI DUNG CHÍNH (MAIN CONTENT)
+       ============================================================ -->
+  <main class="manager-main">
+
+    <!-- Mobile Top Bar -->
+    <div class="mobile-top-bar">
+      <button class="btn-hamburger" onclick="toggleSidebar()">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+      <div style="font-family: var(--font-serif); font-size: 18px; font-weight: 700;">
+        Nhà Tổng Thống
+      </div>
+      <a href="/user" style="color: var(--text-dark); font-size: 18px;"><i class="fa-solid fa-map"></i></a>
+    </div>
+
+    <!-- TIÊU ĐỀ TRANG CHÍNH (THEO CANVA) -->
+    <div class="page-header-wrap">
+      <span class="page-pre-tag">NHÀ TỔNG THỐNG</span>
+      <h2 class="page-main-headline">Hệ thống quản lý thiết bị thuyết minh</h2>
+      <p class="page-sub-desc">Quản lý kho, lịch thuê, điều phối và doanh thu trong một giao diện.</p>
+    </div>
+
+    <!-- ========================================================
+         TAB 1: TỔNG QUAN (KHỚP 100% ẢNH CANVA CỦA BẠN)
+         ======================================================== -->
+    <div id="pane-overview" class="tab-content-pane active">
+
+      <div class="section-block">
+        <span class="section-tag">TỔNG QUAN</span>
+        <h3 class="section-title">Tình hình vận hành hôm nay</h3>
+
+        <!-- 4 THẺ CHỈ SỐ STAT CARDS -->
+        <div class="stat-cards-grid">
+          
+          <!-- Thẻ 1: Lượt thuê hôm nay -->
+          <div class="stat-card">
+            <span class="stat-card-label">Lượt thuê hôm nay</span>
+            <div class="stat-card-value" id="val-rentals-today">48</div>
+            <div class="stat-card-trend trend-up">
+              <i class="fa-solid fa-arrow-trend-up"></i> +12% so với hôm qua
+            </div>
+          </div>
+
+          <!-- Thẻ 2: Đang cho thuê -->
+          <div class="stat-card">
+            <span class="stat-card-label">Đang cho thuê</span>
+            <div class="stat-card-value" id="val-rentals-active">24</div>
+            <div class="stat-card-trend trend-neutral">
+              <i class="fa-solid fa-circle-dot"></i> Chiếm 48% tổng thiết bị
+            </div>
+          </div>
+
+          <!-- Thẻ 3: Tổng số thiết bị -->
+          <div class="stat-card">
+            <span class="stat-card-label">Tổng số thiết bị</span>
+            <div class="stat-card-value" id="val-devices-total">5</div>
+            <div class="stat-card-trend trend-neutral">
+              <i class="fa-solid fa-check"></i> <span id="val-devices-trend-text">5 sẵn sàng, 0 đang thuê</span>
+            </div>
+          </div>
+
+          <!-- Thẻ 4: Doanh thu hôm nay -->
+          <div class="stat-card">
+            <span class="stat-card-label">Doanh thu hôm nay</span>
+            <div class="stat-card-value" id="val-revenue-today">
+              2.400.000 <span class="stat-card-unit">đ</span>
+            </div>
+            <div class="stat-card-trend trend-up">
+              <i class="fa-solid fa-arrow-trend-up"></i> Đơn giá: 50.000 đ/lượt
+            </div>
+          </div>
+
+        </div>
+
+        <!-- THẺ BIỂU ĐỒ: THIẾT BỊ SỬ DỤNG THEO THỜI GIAN -->
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <div class="chart-header-left">
+              <h3>Thiết bị sử dụng theo thời gian</h3>
+              <p>Theo dõi số thiết bị đang được sử dụng.</p>
+            </div>
+            <div class="chart-header-right">
+              <span class="chart-filter-label">Khoảng thời gian</span>
+              <select id="select-chart-timeframe" class="chart-select-box" onchange="updateUsageChart(this.value)">
+                <option value="day" selected>Ngày</option>
+                <option value="week">Tuần</option>
+                <option value="month">Tháng</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="chart-canvas-container">
+            <canvas id="usageTimelineChart"></canvas>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ========================================================
+         TAB 2: THIẾT BỊ (QUẢN LÝ THIẾT BỊ & CẤP PHÁT ĐOÀN)
+         ======================================================== -->
+    <div id="pane-devices" class="tab-content-pane">
+      <div class="section-block">
+        <span class="section-tag">KHO THIẾT BỊ BQL</span>
+        <h3 class="section-title">Quản lý kho & Trạng thái thiết bị thuyết minh (Hubs)</h3>
+
+        <div class="data-table-card">
+          <!-- Hàng Filter chips thuần tiếng Việt -->
+          <div class="filter-chips-wrap">
+            <button class="filter-chip active" id="chip-status-all" onclick="filterDeviceByStatus('all', this)">Tất cả (5)</button>
+            <button class="filter-chip" id="chip-status-available" onclick="filterDeviceByStatus('Sẵn sàng', this)">Sẵn sàng (5)</button>
+            <button class="filter-chip" id="chip-status-rented" onclick="filterDeviceByStatus('Đang thuê', this)">Đang thuê (0)</button>
+            <button class="filter-chip" id="chip-status-maint" onclick="filterDeviceByStatus('Bảo trì', this)">Bảo trì (0)</button>
+            <button class="filter-chip" id="chip-status-warning" onclick="filterDeviceByStatus('warning', this)">Pin yếu &lt;20% (0)</button>
+          </div>
+
+          <div class="table-toolbar">
+            <div class="table-search-box">
+              <i class="fa-solid fa-magnifying-glass" style="color: #78716c;"></i>
+              <input type="text" class="table-search-input" placeholder="Tìm theo mã máy (HL-01...), tên, đoàn..." oninput="filterDeviceTable(this.value)" />
+            </div>
+
+            <div class="table-actions-group">
+              <button class="btn-action-primary" onclick="openBulkRentalModal()">
+                <i class="fa-solid fa-layer-group"></i> Cho thuê theo đoàn
+              </button>
+              <button class="btn-action-secondary" onclick="openRentalModal()">
+                <i class="fa-solid fa-handshake"></i> Cho thuê 1 máy
+              </button>
+              <button class="btn-action-secondary" onclick="openBulkReturnModal()">
+                <i class="fa-solid fa-rotate-left"></i> Trả máy theo đoàn
+              </button>
+              <button class="btn-action-secondary" onclick="openNewDeviceModal()">
+                <i class="fa-solid fa-box-archive"></i> Nhập máy mới
+              </button>
+              <button class="btn-action-secondary" onclick="openMaintenanceModal()">
+                <i class="fa-solid fa-screwdriver-wrench"></i> Báo bảo trì
+              </button>
+              <button class="btn-action-secondary" onclick="quickInventoryCheck()">
+                <i class="fa-solid fa-clipboard-check"></i> Kiểm kê kho
+              </button>
+            </div>
+          </div>
+
+          <table class="custom-table" id="table-devices">
+            <thead>
+              <tr>
+                <th>Mã máy</th>
+                <th>Tên & Model thiết bị</th>
+                <th>Trạng thái</th>
+                <th>Mức Pin</th>
+                <th>Ngôn ngữ</th>
+                <th>Mã QR</th>
+                <th>Thao tác</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-device-list">
+              <!-- Render động bằng JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================
+         TAB 4: BẢN ĐỒ DI TÍCH (GIÁM SÁT THIẾT BỊ)
+         ======================================================== -->
+    <div id="pane-map" class="tab-content-pane">
+      <div class="section-block">
+        <span class="section-tag">BẢN ĐỒ DI TÍCH</span>
+        <h3 class="section-title">Bản đồ Giám sát Thiết bị & Vi định vị Nhà Tổng Thống</h3>
+
+        <!-- KHUNG MAP THIẾT KẾ GIỐNG HOA-LO.HTML -->
+                <div class="manager-map-frame-card" style="height: 640px; position: relative; overflow: hidden; border-radius: 20px; background: #0b0d13;">
+          <!-- BẢN ĐỒ VECTOR PHÒNG TỔNG THỐNG (KHÔNG DÙNG LEAFLET) -->
+          <div id="mgr-svg-container">
+            <div id="mgr-map-wrapper">
+              <div id="mgr-svg-host">
+                <svg xmlns="http://www.w3.org/2000/svg" id="natural-artisan-svg-mgr" viewBox="0 0 800 500" width="800" height="500" class="w-full h-full select-none"><defs><pattern id="pattern-terracotta-tile" width="36" height="22" patternUnits="userSpaceOnUse"><rect width="36" height="22" fill="#c2410c"/><path d="M0,11 Q9,2 18,11 Q27,2 36,11" stroke="#7c2d12" stroke-width="1.8" fill="#ea580c" fill-opacity="0.45"/><path d="M-9,22 Q0,13 9,22 Q18,13 27,22 Q36,13 45,22" stroke="#431407" stroke-width="2" fill="#9a3412" fill-opacity="0.6"/><line x1="18" y1="0" x2="18" y2="10" stroke="#fed7aa" stroke-width="0.8" opacity="0.4"/><line x1="9" y1="11" x2="9" y2="21" stroke="#fed7aa" stroke-width="0.8" opacity="0.4"/><line x1="27" y1="11" x2="27" y2="21" stroke="#fed7aa" stroke-width="0.8" opacity="0.4"/></pattern><pattern id="pattern-ancient-brick" width="44" height="24" patternUnits="userSpaceOnUse"><rect width="44" height="24" fill="#a16207"/><rect x="0" y="0" width="44" height="24" fill="#78350f"/><rect x="1" y="1" width="20" height="10" rx="1" fill="#b45309" stroke="#92400e" stroke-width="0.6"/><rect x="23" y="1" width="20" height="10" rx="1" fill="#c2410c" stroke="#9a3412" stroke-width="0.6"/><rect x="-10" y="13" width="20" height="10" rx="1" fill="#c2410c" stroke="#9a3412" stroke-width="0.6"/><rect x="12" y="13" width="20" height="10" rx="1" fill="#b45309" stroke="#78350f" stroke-width="0.6"/><rect x="34" y="13" width="20" height="10" rx="1" fill="#9a3412" stroke="#78350f" stroke-width="0.6"/><circle cx="8" cy="6" r="1" fill="#451a03" opacity="0.6"/><circle cx="30" cy="5" r="1.2" fill="#365314" opacity="0.7"/><circle cx="20" cy="18" r="1.2" fill="#451a03" opacity="0.6"/><circle cx="40" cy="17" r="1" fill="#65a30d" opacity="0.6"/></pattern><pattern id="pattern-ancient-stone" width="60" height="40" patternUnits="userSpaceOnUse"><rect width="60" height="40" fill="#78716c"/><rect x="1" y="1" width="32" height="18" fill="#a8a29e" stroke="#57534e" stroke-width="1.2"/><rect x="34" y="1" width="25" height="18" fill="#8c857b" stroke="#57534e" stroke-width="1.2"/><rect x="1" y="20" width="22" height="19" fill="#8c857b" stroke="#57534e" stroke-width="1.2"/><rect x="24" y="20" width="35" height="19" fill="#a8a29e" stroke="#57534e" stroke-width="1.2"/><circle cx="15" cy="10" r="1.5" fill="#44403c" opacity="0.5"/><circle cx="45" cy="8" r="1.2" fill="#292524" opacity="0.6"/><circle cx="10" cy="30" r="1.5" fill="#292524" opacity="0.6"/><circle cx="40" cy="28" r="1.8" fill="#44403c" opacity="0.5"/></pattern><pattern id="pattern-moss-stone" width="64" height="64" patternUnits="userSpaceOnUse"><rect width="64" height="64" fill="#44403c"/><line x1="0" y1="32" x2="64" y2="32" stroke="#292524" stroke-width="2"/><line x1="32" y1="0" x2="32" y2="32" stroke="#292524" stroke-width="2"/><line x1="48" y1="32" x2="48" y2="64" stroke="#292524" stroke-width="2"/><line x1="16" y1="32" x2="16" y2="64" stroke="#292524" stroke-width="2"/><ellipse cx="20" cy="32" rx="14" ry="6" fill="#3f6212" opacity="0.9"/><ellipse cx="22" cy="31" rx="8" ry="3" fill="#65a30d" opacity="0.85"/><ellipse cx="48" cy="48" rx="12" ry="7" fill="#365314" opacity="0.9"/><ellipse cx="49" cy="46" rx="6" ry="4" fill="#84cc16" opacity="0.8"/><circle cx="10" cy="14" r="5" fill="#4d7c0f" opacity="0.75"/><circle cx="54" cy="18" r="7" fill="#3f6212" opacity="0.8"/></pattern><pattern id="pattern-wood-grain" width="160" height="120" patternUnits="userSpaceOnUse"><rect width="160" height="120" fill="#78350f"/><path d="M0,15 Q40,10 80,18 T160,12 M0,35 Q50,42 100,32 T160,38 M0,60 Q30,55 90,65 T160,58 M0,85 Q60,92 110,80 T160,88 M0,105 Q45,100 85,110 T160,104" stroke="#451a03" stroke-width="3.2" fill="none" opacity="0.7"/><path d="M0,5 Q55,2 95,8 T160,4 M0,25 Q35,30 85,22 T160,26 M0,48 Q70,40 120,50 T160,46 M0,72 Q25,78 75,68 T160,74 M0,96 Q65,102 125,92 T160,98 M0,115 Q30,118 90,112 T160,116" stroke="#92400e" stroke-width="1.6" fill="none" opacity="0.85"/><ellipse cx="70" cy="50" rx="9" ry="6" fill="#3b1502" opacity="0.9"/><ellipse cx="70" cy="50" rx="17" ry="12" stroke="#521f06" stroke-width="2" fill="none" opacity="0.7"/></pattern><pattern id="pattern-bamboo-weave" width="40" height="40" patternUnits="userSpaceOnUse"><rect width="40" height="40" fill="#ca8a04"/><rect x="0" y="1" width="18" height="17" rx="1" fill="#b45309" stroke="#78350f" stroke-width="0.8"/><line x1="2" y1="6" x2="16" y2="6" stroke="#fde047" stroke-width="0.8" opacity="0.5"/><line x1="2" y1="12" x2="16" y2="12" stroke="#78350f" stroke-width="0.8" opacity="0.5"/><rect x="20" y="21" width="18" height="17" rx="1" fill="#b45309" stroke="#78350f" stroke-width="0.8"/><line x1="22" y1="26" x2="36" y2="26" stroke="#fde047" stroke-width="0.8" opacity="0.5"/><line x1="22" y1="32" x2="36" y2="32" stroke="#78350f" stroke-width="0.8" opacity="0.5"/><rect x="21" y="1" width="17" height="18" rx="1" fill="#d97706" stroke="#78350f" stroke-width="0.8"/><line x1="26" y1="3" x2="26" y2="17" stroke="#fef08a" stroke-width="0.8" opacity="0.5"/><line x1="32" y1="3" x2="32" y2="17" stroke="#78350f" stroke-width="0.8" opacity="0.5"/><rect x="1" y="21" width="17" height="18" rx="1" fill="#d97706" stroke="#78350f" stroke-width="0.8"/><line x1="6" y1="23" x2="6" y2="37" stroke="#fef08a" stroke-width="0.8" opacity="0.5"/><line x1="12" y1="23" x2="12" y2="37" stroke="#78350f" stroke-width="0.8" opacity="0.5"/></pattern><pattern id="pattern-thatch-straw" width="60" height="30" patternUnits="userSpaceOnUse"><rect width="60" height="30" fill="#d97706"/><path d="&#10;            M0,5 L8,25 M5,4 L14,26 M12,3 L19,25 M18,5 L26,27 &#10;            M24,4 L32,25 M30,3 L38,26 M36,5 L44,27 M42,4 L50,25 &#10;            M48,3 L56,26 M54,5 L62,27&#10;          " stroke="#92400e" stroke-width="1.8" stroke-linecap="round" opacity="0.85"/><path d="&#10;            M3,6 L10,24 M15,5 L22,25 M28,4 L35,26 M40,6 L48,25 M52,4 L58,26&#10;          " stroke="#fde68a" stroke-width="1.2" stroke-linecap="round" opacity="0.75"/><line x1="0" y1="12" x2="60" y2="12" stroke="#78350f" stroke-width="1" stroke-dasharray="3 3" opacity="0.5"/></pattern><pattern id="pattern-marble-vein" width="120" height="120" patternUnits="userSpaceOnUse"><rect width="120" height="120" fill="#f8fafc"/><path d="M-10,25 C30,10 65,70 130,40 L130,70 C80,100 35,50 -10,80 Z" fill="#e2e8f0" opacity="0.8"/><path d="M0,20 Q30,45 60,30 T100,60 T120,50" stroke="#64748b" stroke-width="1.8" fill="none" opacity="0.7"/><path d="M5,18 Q33,48 63,32 T102,63 T122,52" stroke="#334155" stroke-width="1" fill="none" opacity="0.8"/><path d="M60,32 Q80,15 115,22 M55,33 Q70,55 85,90 T115,115" stroke="#475569" stroke-width="0.9" fill="none" opacity="0.6"/></pattern><pattern id="pattern-water-ripples" width="90" height="90" patternUnits="userSpaceOnUse"><rect width="90" height="90" fill="#0284c7"/><circle cx="45" cy="45" r="10" stroke="#bae6fd" stroke-width="2.5" fill="none" opacity="0.85"/><circle cx="45" cy="45" r="22" stroke="#7dd3fc" stroke-width="2" fill="none" opacity="0.7"/><circle cx="45" cy="45" r="34" stroke="#38bdf8" stroke-width="1.5" fill="none" opacity="0.55"/><circle cx="45" cy="45" r="44" stroke="#0ea5e9" stroke-width="1" fill="none" opacity="0.4"/><circle cx="0" cy="0" r="16" stroke="#7dd3fc" stroke-width="1.5" fill="none" opacity="0.6"/><circle cx="90" cy="0" r="16" stroke="#7dd3fc" stroke-width="1.5" fill="none" opacity="0.6"/><circle cx="0" cy="90" r="16" stroke="#7dd3fc" stroke-width="1.5" fill="none" opacity="0.6"/><circle cx="90" cy="90" r="16" stroke="#7dd3fc" stroke-width="1.5" fill="none" opacity="0.6"/></pattern></defs><g id="elem-1794647838985" class="cursor-move group"><g opacity="1"><rect x="-5" y="-5" width="805" height="20" fill="#78716c" stroke="#44403c" stroke-width="2"/><line x1="-5" y1="-5" x2="800" y2="15" stroke="#44403c" stroke-width="0.8" opacity="0.35"/><line x1="800" y1="-5" x2="-5" y2="15" stroke="#44403c" stroke-width="0.8" opacity="0.35"/></g></g><g id="elem-1794647846874-0" class="cursor-move group"><g opacity="1"><rect x="-5" y="5" width="25" height="505" fill="#78716c" stroke="#44403c" stroke-width="2"/><line x1="-5" y1="5" x2="20" y2="510" stroke="#44403c" stroke-width="0.8" opacity="0.35"/><line x1="20" y1="5" x2="-5" y2="510" stroke="#44403c" stroke-width="0.8" opacity="0.35"/></g></g><g id="elem-1794647906409-0" class="cursor-move group"><g opacity="1"><rect x="790" y="-5" width="25" height="505" fill="#78716c" stroke="#44403c" stroke-width="2"/><line x1="790" y1="-5" x2="815" y2="500" stroke="#44403c" stroke-width="0.8" opacity="0.35"/><line x1="815" y1="-5" x2="790" y2="500" stroke="#44403c" stroke-width="0.8" opacity="0.35"/></g></g><g id="elem-1794647913394-0" class="cursor-move group"><g opacity="1"><rect x="-5" y="490" width="805" height="20" fill="#78716c" stroke="#44403c" stroke-width="2"/><line x1="-5" y1="490" x2="800" y2="510" stroke="#44403c" stroke-width="0.8" opacity="0.35"/><line x1="800" y1="490" x2="-5" y2="510" stroke="#44403c" stroke-width="0.8" opacity="0.35"/></g></g><g id="elem-1794647921492" class="cursor-move group"><g opacity="1"><rect x="240" y="220" width="20" height="20" fill="#e2e8f0" stroke="#451a03" stroke-width="1.6"/><circle cx="250" cy="230" r="8" fill="#78350f" stroke="#451a03" stroke-width="2"/><circle cx="250" cy="230" r="1.5" fill="#451a03"/></g></g><g id="elem-1794647978990-0" class="cursor-move group"><g opacity="1"><rect x="240" y="105" width="20" height="20" fill="#e2e8f0" stroke="#451a03" stroke-width="1.6"/><circle cx="250" cy="115" r="8" fill="#78350f" stroke="#451a03" stroke-width="2"/><circle cx="250" cy="115" r="1.5" fill="#451a03"/></g></g><g id="elem-1794647947024" class="cursor-pointer group" style="cursor: pointer;"><g opacity="1"><rect x="20" y="64.25" width="18.9" height="31.499999999999996" rx="1" fill="url(#pattern-wood-grain)" stroke="#451a03" stroke-width="1.5"/><rect x="156.1" y="64.25" width="18.9" height="31.499999999999996" rx="1" fill="url(#pattern-wood-grain)" stroke="#451a03" stroke-width="1.5"/><rect x="51.5" y="39" width="92" height="82" rx="2" fill="url(#pattern-wood-grain)" stroke="#451a03" stroke-width="2"/><circle cx="97.5" cy="80" r="3" fill="#78350f"/></g></g><g id="elem-1794647957226" class="cursor-pointer group" style="cursor: pointer;"><g opacity="1"><ellipse cx="715" cy="427.5" rx="65" ry="52.5" fill="url(#pattern-ancient-stone)" stroke="#451a03" stroke-width="2"/><rect x="646" y="424.5" width="5" height="6" rx="1" fill="#451a03"/><rect x="779" y="424.5" width="5" height="6" rx="1" fill="#451a03"/><ellipse cx="715" cy="427.5" rx="39" ry="31.5" fill="#78350f" opacity="0.6"/><circle cx="715" cy="427.5" r="2" fill="#ef4444"/></g></g><g id="elem-1794647998825" class="cursor-move group"><circle cx="745" cy="258" r="10" fill="#f8fafc" stroke="#1e293b" stroke-width="2" opacity="1"/></g><g id="elem-1794652492383-0" class="cursor-move group"><circle cx="550" cy="25" r="10" fill="#f8fafc" stroke="#1e293b" stroke-width="2" opacity="1"/></g><g id="elem-1794652502322-0" class="cursor-move group"><circle cx="310" cy="340" r="10" fill="#f8fafc" stroke="#1e293b" stroke-width="2" opacity="1"/></g>
+
+  <!-- BEACON OVERLAY 1: BEACONTAG-1 (Cung Đông) -->
+  <g id="beacon-overlay-1" class="beacon-group-marker" data-beacon-idx="0" onclick="onBeaconClick(0)" transform="translate(745, 258)" style="cursor: pointer;">
+    <circle cx="0" cy="0" r="10" fill="none" stroke="#00f0ff" stroke-width="2" class="beacon-wave-1"/>
+    <circle cx="0" cy="0" r="18" fill="none" stroke="#00f0ff" stroke-width="1.5" class="beacon-wave-2"/>
+    <circle cx="0" cy="0" r="26" fill="none" stroke="#00f0ff" stroke-width="1" class="beacon-wave-3"/>
+    <circle cx="0" cy="0" r="9" fill="#00e5ff" stroke="#ffffff" stroke-width="2"/>
+    <circle cx="0" cy="0" r="3" fill="#ffffff"/>
+    <rect x="-35" y="14" width="70" height="15" rx="4" fill="rgba(15, 23, 42, 0.92)" stroke="#00f0ff" stroke-width="0.8"/>
+    <text x="0" y="24" font-size="8.5" font-weight="bold" fill="#00f0ff" text-anchor="middle">BEACONTAG-1</text>
+  </g>
+
+  <!-- BEACON OVERLAY 2: BEACONTAG-2 (Cổng Bắc) -->
+  <g id="beacon-overlay-2" class="beacon-group-marker" data-beacon-idx="1" onclick="onBeaconClick(1)" transform="translate(550, 25)" style="cursor: pointer;">
+    <circle cx="0" cy="0" r="10" fill="none" stroke="#00f0ff" stroke-width="2" class="beacon-wave-1"/>
+    <circle cx="0" cy="0" r="18" fill="none" stroke="#00f0ff" stroke-width="1.5" class="beacon-wave-2"/>
+    <circle cx="0" cy="0" r="26" fill="none" stroke="#00f0ff" stroke-width="1" class="beacon-wave-3"/>
+    <circle cx="0" cy="0" r="9" fill="#00e5ff" stroke="#ffffff" stroke-width="2"/>
+    <circle cx="0" cy="0" r="3" fill="#ffffff"/>
+    <rect x="-35" y="14" width="70" height="15" rx="4" fill="rgba(15, 23, 42, 0.92)" stroke="#00f0ff" stroke-width="0.8"/>
+    <text x="0" y="24" font-size="8.5" font-weight="bold" fill="#00f0ff" text-anchor="middle">BEACONTAG-2</text>
+  </g>
+
+  <!-- BEACON OVERLAY 3: BEACONTAG-3 (Tiền Sảnh) -->
+  <g id="beacon-overlay-3" class="beacon-group-marker" data-beacon-idx="2" onclick="onBeaconClick(2)" transform="translate(310, 340)" style="cursor: pointer;">
+    <circle cx="0" cy="0" r="10" fill="none" stroke="#00f0ff" stroke-width="2" class="beacon-wave-1"/>
+    <circle cx="0" cy="0" r="18" fill="none" stroke="#00f0ff" stroke-width="1.5" class="beacon-wave-2"/>
+    <circle cx="0" cy="0" r="26" fill="none" stroke="#00f0ff" stroke-width="1" class="beacon-wave-3"/>
+    <circle cx="0" cy="0" r="9" fill="#00e5ff" stroke="#ffffff" stroke-width="2"/>
+    <circle cx="0" cy="0" r="3" fill="#ffffff"/>
+    <rect x="-35" y="14" width="70" height="15" rx="4" fill="rgba(15, 23, 42, 0.92)" stroke="#00f0ff" stroke-width="0.8"/>
+    <text x="0" y="24" font-size="8.5" font-weight="bold" fill="#00f0ff" text-anchor="middle">BEACONTAG-3</text>
+  </g>
+
+
+  <!-- LỚP THIẾT BỊ HUBS GIÁM SÁT THỜI GIAN THỰC -->
+  <g id="mgr-hubs-layer"></g>
+</svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- Thẻ badge trên cùng bản đồ: Nhà Tổng Thống -->
+          <div class="map-overlay-header">
+            <div class="map-site-pill">
+              <div class="map-site-icon"><i class="fa-solid fa-building-columns"></i></div>
+              <span class="map-site-title" id="map-site-title-badge">Nhà Tổng Thống</span>
+              
+            </div>
+            <div class="map-layer-switcher">
+              <button class="map-layer-btn active" id="btn-mgr-beacons" onclick="toggleMgrBeacons()">
+                <i class="fa-solid fa-satellite-dish"></i> 3 Trạm Beacon
+              </button>
+              <button class="map-layer-btn active" id="btn-mgr-hubs" onclick="toggleMgrHubs()">
+                <i class="fa-solid fa-walkie-talkie"></i> Thiết Bị (Hubs)
+              </button>
+              
+            </div>
+          </div>
+
+          <!-- NÚT ZOOM & FIT GÓC PHẢI -->
+          <div style="position: absolute; right: 16px; bottom: 85px; z-index: 25; display: flex; flex-direction: column; gap: 8px;">
+            <button onclick="zoomMgrIndoor(1.25)" class="zoom-circle-btn" style="width: 36px; height: 36px; border-radius: 12px; background: rgba(15,23,42,0.9); color: #fff; font-weight: 900; border: 1px solid rgba(255,255,255,0.2); cursor: pointer; display: flex; align-items: center; justify-content: center;">+</button>
+            <button onclick="zoomMgrIndoor(0.8)" class="zoom-circle-btn" style="width: 36px; height: 36px; border-radius: 12px; background: rgba(15,23,42,0.9); color: #fff; font-weight: 900; border: 1px solid rgba(255,255,255,0.2); cursor: pointer; display: flex; align-items: center; justify-content: center;">-</button>
+            <button onclick="fitMgrIndoorMap()" class="zoom-circle-btn" style="width: 36px; height: 36px; border-radius: 12px; background: rgba(15,23,42,0.9); color: #38bdf8; font-weight: 700; font-size: 11px; border: 1px solid rgba(255,255,255,0.2); cursor: pointer; display: flex; align-items: center; justify-content: center;">Fit</button>
+          </div>
+
+          <!-- Thẻ nổi phía dưới (Đồng bộ Hiện Vật Khách & Quản lý) -->
+          <div class="map-overlay-bottom-card" id="mgr-card-box">
+            <div id="mgr-card-header" style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+              <span id="mgr-card-icon" style="font-size: 20px;">🏛️</span>
+              <div>
+                <span id="mgr-card-badge" style="font-size: 10px; font-weight: 800; color: #0284c7; text-transform: uppercase; letter-spacing: 0.5px;">Khu Di Tích</span>
+                <h4 id="mgr-card-title" style="font-size: 14.5px; font-weight: 800; color: #0f172a; margin: 0; line-height: 1.2;">Nhà Tổng Thống</h4>
+              </div>
+            </div>
+            <p class="map-bottom-desc" id="manager-map-bottom-desc" style="margin-bottom: 12px; font-size: 13px; line-height: 1.45; color: #475569;">Bấm vào bất kỳ hiện vật (Bàn làm việc, Bàn họp đá cổ, Cột trụ) hoặc Trạm Beacon trên mặt bằng để xem thông tin chi tiết.</p>
+            <div class="map-bottom-actions">
+              <button class="map-btn-action" onclick="fitMgrIndoorMap()">
+                <i class="fa-solid fa-crosshairs"></i> Căn giữa phòng
+              </button>
+              <button class="map-btn-action secondary" onclick="window.open('/user', '_blank')">
+                <i class="fa-solid fa-arrow-up-right-from-square"></i> Xem Bản đồ Khách
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================
+         TAB 5: BÁO CÁO TÀI CHÍNH (FINANCE - MỤC 4.4 ĐẶC TẢ BQL)
+         ======================================================== -->
+    <div id="pane-finance" class="tab-content-pane">
+      <div class="section-block">
+        <span class="section-tag">DOANH THU & KẾ TOÁN</span>
+        <h3 class="section-title">Báo cáo tài chính & Sổ cái giao dịch cho thuê thiết bị</h3>
+
+        <!-- 4 THẺ CHỈ SỐ TÀI CHÍNH TÁCH BẠCH THEO MỤC 4.4 ĐẶC TẢ BQL -->
+        <div class="stat-cards-grid">
+          <div class="stat-card">
+            <span class="stat-card-label">Doanh thu dịch vụ (SERVICE_REVENUE)</span>
+            <div class="stat-card-value" id="val-fin-service-revenue">68.500.000 <span class="stat-card-unit">đ</span></div>
+            <div class="stat-card-trend trend-up"><i class="fa-solid fa-arrow-trend-up"></i> +18.4% so tháng trước (1.370 lượt)</div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-card-label">Tiền cọc đang tạm giữ (DEPOSIT_HELD)</span>
+            <div class="stat-card-value" id="val-fin-deposit-held">12.500.000 <span class="stat-card-unit">đ</span></div>
+            <div class="stat-card-trend trend-neutral"><i class="fa-solid fa-shield-halved"></i> Bảo lãnh các đoàn đang tham quan</div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-card-label">Tiền cọc đã hoàn trả (DEPOSIT_REFUNDED)</span>
+            <div class="stat-card-value" id="val-fin-deposit-refunded">45.000.000 <span class="stat-card-unit">đ</span></div>
+            <div class="stat-card-trend trend-neutral"><i class="fa-solid fa-rotate-left"></i> Hoàn trả 100% khi nhận đủ máy</div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-card-label">Phí phạt trễ / Bồi hoàn (FEES_PENALTY)</span>
+            <div class="stat-card-value" id="val-fin-fees-penalty">1.250.000 <span class="stat-card-unit">đ</span></div>
+            <div class="stat-card-trend trend-up"><i class="fa-solid fa-circle-check"></i> Đền bù mất phụ kiện tai nghe</div>
+          </div>
+        </div>
+
+        <!-- Lưu ý nghiệp vụ kế toán theo mục 4.4 -->
+        <div class="alert-banner info">
+          <i class="fa-solid fa-circle-info"></i>
+          <div>
+            <strong>Quy tắc hạch toán tài chính BQL (Mục 4.4 Đặc tả):</strong> 
+            Doanh thu dịch vụ được theo dõi độc lập. Tiền đặt cọc của du khách chỉ mang tính chất bảo đảm tài sản và được hoàn trả khi trả máy nguyên vẹn, <em>tuyệt đối không được tính tiền cọc hoàn lại là doanh thu dịch vụ</em>.
+          </div>
+        </div>
+
+        <div class="data-table-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <h4 style="font-family: var(--font-serif); font-size: 18px; font-weight: 700;">Sổ cái giao dịch tài chính</h4>
+              <span class="status-badge ready" style="font-size: 11px;">Đối soát khớp 100%</span>
+            </div>
+            <div style="display: flex; gap: 10px;">
+              <button class="btn-action-secondary" onclick="showToast('Đã đối soát ca trực: Không có chênh lệch tồn quỹ!')">
+                <i class="fa-solid fa-scale-balanced"></i> Đối soát ca trực
+              </button>
+              <button class="btn-action-primary" onclick="showToast('Đang kết xuất sổ cái giao dịch ra file Excel...')">
+                <i class="fa-solid fa-file-excel"></i> Xuất file Excel
+              </button>
+            </div>
+          </div>
+
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>Mã GD</th>
+                <th>Thời gian</th>
+                <th>Khách hàng / Đoàn</th>
+                <th>Hình thức thanh toán</th>
+                <th>Số tiền</th>
+                <th>Thu ngân</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-finance-transactions">
+              <tr>
+                <td><strong>#TX-8821</strong></td>
+                <td>09:15 Hôm nay</td>
+                <td>Đoàn THPT Chu Văn An (14 máy)</td>
+                <td>Chuyển khoản VietQR</td>
+                <td><strong style="color: #15803d;">+700.000 đ</strong></td>
+                <td>Nguyễn Thu Hà</td>
+              </tr>
+              <tr>
+                <td><strong>#TX-8820</strong></td>
+                <td>09:30 Hôm nay</td>
+                <td>JTB Travel - Đoàn Nhật Bản (8 máy)</td>
+                <td>Thẻ Visa Doanh nghiệp</td>
+                <td><strong style="color: #15803d;">+400.000 đ</strong></td>
+                <td>Trần Quốc Toản</td>
+              </tr>
+              <tr>
+                <td><strong>#TX-8819</strong></td>
+                <td>10:05 Hôm nay</td>
+                <td>Anh Nguyễn Hoàng Nam (Khách lẻ 2 máy)</td>
+                <td>Quét mã VietQR</td>
+                <td><strong style="color: #15803d;">+100.000 đ</strong></td>
+                <td>Nguyễn Thu Hà</td>
+              </tr>
+              <tr>
+                <td><strong>#TX-8818</strong></td>
+                <td>10:20 Hôm nay</td>
+                <td>Đoàn Cựu Chiến Binh Hải Phòng (12 máy)</td>
+                <td>Tiền mặt</td>
+                <td><strong style="color: #15803d;">+600.000 đ</strong></td>
+                <td>Trần Quốc Toản</td>
+              </tr>
+              <tr>
+                <td><strong>#TX-8817</strong></td>
+                <td>10:45 Hôm nay</td>
+                <td>Khách tham quan lẻ (1 máy)</td>
+                <td>Tiền mặt</td>
+                <td><strong style="color: #15803d;">+50.000 đ</strong></td>
+                <td>Nguyễn Thu Hà</td>
+              </tr>
+              <tr>
+                <td><strong>#TX-8816</strong></td>
+                <td>11:15 Hôm nay</td>
+                <td>Đoàn Du Khách Pháp (6 máy)</td>
+                <td>Thẻ Master Card</td>
+                <td><strong style="color: #15803d;">+300.000 đ</strong></td>
+                <td>Trần Quốc Toản</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================
+         TAB 6: CẤU HÌNH (SETTINGS)
+         ======================================================== -->
+    <div id="pane-settings" class="tab-content-pane">
+      <div class="section-block">
+        <span class="section-tag">CÀI ĐẶT VẬN HÀNH</span>
+        <h3 class="section-title">Cấu hình Thuê Thiết bị & Quản lý Kho</h3>
+        <p style="color: #78716c; font-size: 13.5px; margin-bottom: 24px;">Các thiết lập thực tế và trực quan dành cho ban quản lý di tích và quầy tiếp đón.</p>
+
+        <div style="max-width: 720px;">
+          
+          <!-- Thẻ Cấu hình Thuê máy & Đặt cọc -->
+          <div class="data-table-card">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 18px;">
+              <div style="width: 36px; height: 36px; border-radius: 10px; background: #f5ebe6; color: var(--accent-terracotta); display: flex; align-items: center; justify-content: center; font-size: 16px;">
+                <i class="fa-solid fa-receipt"></i>
+              </div>
+              <div>
+                <h4 style="font-family: var(--font-serif); font-size: 17px; font-weight: 700;">Quy định Cho thuê máy & Đặt cọc</h4>
+                <p style="font-size: 12px; color: #78716c;">Mức phí, hình thức bảo đảm và cài đặt ngôn ngữ thiết bị</p>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Đơn giá thuê mỗi máy / lượt</label>
+              <input type="text" class="form-control" id="cfg-rental-price" value="50.000 đ" />
+              <small class="form-hint">Mức phí dịch vụ áp dụng cho 1 khách tham quan theo tour hoặc khách lẻ.</small>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Hình thức bảo đảm giữ máy</label>
+              <select class="form-control" id="cfg-deposit-type">
+                <option value="id-card" selected>Giữ CCCD / Hộ chiếu / Bằng lái xe</option>
+                <option value="cash">Đặt cọc tiền mặt (100.000 đ / máy)</option>
+                <option value="guide">Trưởng đoàn bảo lãnh</option>
+                <option value="none">Miễn đặt cọc</option>
+              </select>
+              <small class="form-hint">Quy định áp dụng tại quầy phát máy để đảm bảo thu hồi đầy đủ thiết bị.</small>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Ngôn ngữ mặc định khi khởi động máy</label>
+              <select class="form-control" id="cfg-default-lang">
+                <option value="vi" selected>🇻🇳 Tiếng Việt (Mặc định)</option>
+                <option value="en">🇬🇧 Tiếng Anh (English)</option>
+                <option value="fr">🇫🇷 Tiếng Pháp (Français)</option>
+                <option value="zh">🇨🇳 Tiếng Trung (中文)</option>
+                <option value="ja">🇯🇵 Tiếng Nhật (日本語)</option>
+                <option value="ko">🇰🇷 Tiếng Hàn (한국어)</option>
+              </select>
+              <small class="form-hint">Ngôn ngữ tự động nạp vào tai nghe khi nhân viên bật nguồn thiết bị.</small>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Cảnh báo pin yếu cần sạc đổi máy</label>
+              <select class="form-control" id="cfg-battery-threshold">
+                <option value="20" selected>Khi pin dưới 20% (Báo động sớm cho nhân viên)</option>
+                <option value="15">Khi pin dưới 15%</option>
+                <option value="25">Khi pin dưới 25%</option>
+              </select>
+              <small class="form-hint">Khi máy chạm ngưỡng này, hệ thống sẽ hiện cảnh báo đỏ trên màn hình quản lý.</small>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Số điện thoại hỗ trợ Ban Quản Lý</label>
+              <input type="text" class="form-control" id="cfg-hotline" value="024 3934 2253 (Lễ tân Di tích)" />
+              <small class="form-hint">Số liên hệ khẩn cấp in trên tem nhãn máy.</small>
+            </div>
+          </div>
+
+        </div>
+
+        <div style="display: flex; gap: 14px; margin-top: 24px; max-width: 720px; justify-content: flex-end;">
+          <button class="btn-action-secondary" onclick="resetConfigToDefault()">
+            <i class="fa-solid fa-rotate-left"></i> Khôi phục mặc định
+          </button>
+          <button class="btn-action-primary" onclick="saveOperationalConfig()">
+            <i class="fa-solid fa-floppy-disk"></i> Lưu cấu hình vận hành
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ============================================================
+       MODAL 1: CẤP PHÁT CHO THUÊ 1 MÁY
+       ============================================================ -->
+  <div id="rental-modal" class="modal-backdrop" onclick="closeRentalModal(event)">
+    <div class="modal-dialog" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Cấp phát cho thuê thiết bị (1 máy)</h3>
+        <button class="modal-close-btn" onclick="closeRentalModal()">✕</button>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Chọn thiết bị sẵn sàng trong kho *</label>
+        <select id="modal-select-hub" class="form-control">
+          <!-- Render động danh sách máy Sẵn sàng -->
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Tên khách hoặc Tên đoàn</label>
+        <input type="text" id="modal-customer-name" class="form-control" placeholder="Ví dụ: Anh Nam (Khách lẻ), Đoàn Hà Nội..." />
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+        <div class="form-group">
+          <label class="form-label">Gán đoàn tham quan</label>
+          <select id="modal-select-group" class="form-control">
+            <option value="Khách lẻ" selected>Khách lẻ</option>
+            <option value="Đoàn 1">Đoàn 1</option>
+            <option value="Đoàn 2">Đoàn 2</option>
+            <option value="Đoàn 3">Đoàn 3</option>
+            <option value="Đoàn 4">Đoàn 4</option>
+            <option value="Đoàn 5">Đoàn 5</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ngôn ngữ thuyết minh *</label>
+          <select id="modal-select-lang" class="form-control">
+            <option value="🇻🇳 Tiếng Việt" selected>🇻🇳 Tiếng Việt</option>
+            <option value="🇬🇧 Tiếng Anh">🇬🇧 Tiếng Anh (English)</option>
+            <option value="🇫🇷 Tiếng Pháp">🇫🇷 Tiếng Pháp (Français)</option>
+            <option value="🇨🇳 Tiếng Trung">🇨🇳 Tiếng Trung (中文)</option>
+            <option value="🇯🇵 Tiếng Nhật">🇯🇵 Tiếng Nhật (日本語)</option>
+            <option value="🇰🇷 Tiếng Hàn">🇰🇷 Tiếng Hàn (한국어)</option>
+            <option value="🇩🇪 Tiếng Đức">🇩🇪 Tiếng Đức (Deutsch)</option>
+            <option value="🇪🇸 Tiếng T.Ban Nha">🇪🇸 Tiếng Tây Ban Nha (Español)</option>
+            <option value="🇷🇺 Tiếng Nga">🇷🇺 Tiếng Nga (Русский)</option>
+            <option value="🇮🇹 Tiếng Ý">🇮🇹 Tiếng Ý (Italiano)</option>
+            <option value="🇹🇭 Tiếng Thái">🇹🇭 Tiếng Thái (ไทย)</option>
+          </select>
+        </div>
+      </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+        <div class="form-group">
+          <label class="form-label">Hình thức thanh toán *</label>
+          <select id="modal-select-payment" class="form-control" style="font-weight: 700; color: #0f172a;">
+            <option value="Chuyển khoản VietQR" selected>Chuyển khoản VietQR</option>
+            <option value="Tiền mặt tại quầy">Tiền mặt tại quầy</option>
+            <option value="Thẻ Visa/Mastercard">Thẻ Visa / Mastercard</option>
+            <option value="Apple Pay / Thẻ Quốc Tế">Apple Pay / Thẻ Quốc Tế</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phí dịch vụ & Tiền cọc</label>
+          <input type="text" class="form-control" value="50.000 đ (Cọc: 200.000 đ)" readonly style="background: #f8fafc; font-weight: 700; color: #15803d;" />
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 10px; margin-top: 24px;">
+        <button class="btn-action-secondary" style="flex: 1;" onclick="closeRentalModal()">Hủy</button>
+        <button class="btn-action-primary" style="flex: 1; justify-content: center;" onclick="confirmRental()">Xác nhận cấp máy</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       MODAL 2: CHO THUÊ THEO ĐOÀN (CẤP NHIỀU MÁY CÙNG LÚC - KHẮC PHỤC MẤT THỜI GIAN)
+       ============================================================ -->
+  <div id="bulk-rental-modal" class="modal-backdrop" onclick="closeBulkRentalModal(event)">
+    <div class="modal-dialog" style="max-width: 540px;" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-layer-group" style="color: #9a3412; margin-right: 8px;"></i> Cấp phát thiết bị theo đoàn (Nhiều máy)</h3>
+        <button class="modal-close-btn" onclick="closeBulkRentalModal()">✕</button>
+      </div>
+
+      <div style="background: #fdfaf7; border: 1px solid #e7ded6; border-radius: 8px; padding: 12px 14px; margin-bottom: 16px; font-size: 12.5px; color: #78716c;">
+        <i class="fa-solid fa-circle-info" style="color: #9a3412;"></i> Cấp nhanh cho đoàn đông: Hệ thống tự động chọn số lượng máy đang <strong>Sẵn sàng</strong> có pin cao nhất để gán vào đoàn chỉ trong 1 lần bấm.
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+        <div class="form-group">
+          <label class="form-label">Chọn Đoàn gán *</label>
+          <select id="bulk-select-group" class="form-control">
+            <option value="Đoàn 1" selected>Đoàn 1</option>
+            <option value="Đoàn 2">Đoàn 2</option>
+            <option value="Đoàn 3">Đoàn 3</option>
+            <option value="Đoàn 4">Đoàn 4</option>
+            <option value="Đoàn 5">Đoàn 5</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Số lượng máy cần cấp *</label>
+          <input type="number" id="bulk-device-count" class="form-control" value="10" min="1" max="50" oninput="updateBulkPreview()" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Tên đoàn / Đơn vị tham quan</label>
+        <input type="text" id="bulk-group-name" class="form-control" placeholder="Ví dụ: Trường THPT Chu Văn An, Đoàn Cựu Chiến Binh..." value="Đoàn Khách Tham Quan" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Ngôn ngữ thuyết minh cho đoàn *</label>
+        <select id="bulk-select-lang" class="form-control">
+          <option value="🇻🇳 Tiếng Việt" selected>🇻🇳 Tiếng Việt</option>
+          <option value="🇬🇧 Tiếng Anh">🇬🇧 Tiếng Anh (English)</option>
+          <option value="🇫🇷 Tiếng Pháp">🇫🇷 Tiếng Pháp (Français)</option>
+          <option value="🇨🇳 Tiếng Trung">🇨🇳 Tiếng Trung (中文)</option>
+          <option value="🇯🇵 Tiếng Nhật">🇯🇵 Tiếng Nhật (日本語)</option>
+          <option value="🇰🇷 Tiếng Hàn">🇰🇷 Tiếng Hàn (한국어)</option>
+          <option value="🇩🇪 Tiếng Đức">🇩🇪 Tiếng Đức (Deutsch)</option>
+          <option value="🇪🇸 Tiếng T.Ban Nha">🇪🇸 Tiếng Tây Ban Nha (Español)</option>
+          <option value="🇷🇺 Tiếng Nga">🇷🇺 Tiếng Nga (Русский)</option>
+          <option value="🇮🇹 Tiếng Ý">🇮🇹 Tiếng Ý (Italiano)</option>
+          <option value="🇹🇭 Tiếng Thái">🇹🇭 Tiếng Thái (ไทย)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Danh sách máy sẵn sàng sẽ cấp tự động:</label>
+        <div id="bulk-preview-hubs" style="display: flex; gap: 6px; flex-wrap: wrap; background: #ffffff; border: 1px solid #d6cfc7; border-radius: 8px; padding: 10px; min-height: 44px; max-height: 90px; overflow-y: auto;">
+          <!-- Render danh sách chip máy -->
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: #f5ebe6; border-radius: 8px; margin-top: 8px;">
+        <span style="font-size: 13px; font-weight: 600; color: #281d17;">Tạm thu tiền dịch vụ (50.000đ/máy):</span>
+        <strong id="bulk-deposit-display" style="font-size: 15px; color: #9a3412;">500.000 đ</strong>
+      </div>
+
+            <div class="form-group" style="margin-top: 8px;">
+        <label class="form-label">Hình thức thanh toán của đoàn *</label>
+        <select id="bulk-select-payment" class="form-control" style="font-weight: 700; color: #0f172a;">
+          <option value="Chuyển khoản VietQR" selected>Chuyển khoản VietQR</option>
+          <option value="Tiền mặt tại quầy">Tiền mặt tại quầy</option>
+          <option value="Thẻ Visa Doanh nghiệp">Thẻ Visa Doanh nghiệp</option>
+          <option value="Hợp đồng BQL / Xuất hóa đơn VAT">Hợp đồng BQL / Xuất hóa đơn VAT</option>
+        </select>
+      </div>
+
+      <div style="display: flex; gap: 10px; margin-top: 20px;">
+        <button class="btn-action-secondary" style="flex: 1;" onclick="closeBulkRentalModal()">Hủy</button>
+        <button class="btn-action-primary" style="flex: 1; justify-content: center;" onclick="confirmBulkRental()">Xác nhận cấp phát cả đoàn</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       MODAL 3: TRẢ MÁY CỦA 1 ĐOÀN (THU HỒI TOÀN BỘ MÁY ĐOÀN 1 LẦN)
+       ============================================================ -->
+  <div id="bulk-return-modal" class="modal-backdrop" onclick="closeBulkReturnModal(event)">
+    <div class="modal-dialog" style="max-width: 520px;" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-rotate-left" style="color: #15803d; margin-right: 8px;"></i> Thu hồi & Trả máy theo đoàn</h3>
+        <button class="modal-close-btn" onclick="closeBulkReturnModal()">✕</button>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Chọn đoàn khách hoàn trả thiết bị *</label>
+        <select id="return-select-group" class="form-control" onchange="onReturnGroupSelected()">
+          <!-- Nạp động các đoàn đang mượn máy -->
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Các thiết bị thuộc đoàn này đang mượn:</label>
+        <div id="return-group-hubs-list" style="display: flex; gap: 6px; flex-wrap: wrap; background: #ffffff; border: 1px solid #d6cfc7; border-radius: 8px; padding: 12px; min-height: 50px; max-height: 120px; overflow-y: auto;">
+          <!-- Render danh sách máy đoàn đang giữ -->
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Vị trí đưa máy về sau khi thu hồi</label>
+        <select id="return-dock-select" class="form-control">
+          <option value="Dock Sạc A">Trạm sạc Dock Sạc A (Cổng chính)</option>
+          <option value="Dock Sạc B">Trạm sạc Dock Sạc B (Nhà tiếp đón)</option>
+        </select>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: #ecfdf5; border-radius: 8px; margin-top: 8px;">
+        <span style="font-size: 13px; font-weight: 600; color: #166534;">Tình trạng: Đã kiểm tra nguyên vẹn</span>
+        <span style="font-size: 13px; font-weight: 700; color: #15803d;">Hoàn trả cọc</span>
+      </div>
+
+      <div style="display: flex; gap: 10px; margin-top: 20px;">
+        <button class="btn-action-secondary" style="flex: 1;" onclick="closeBulkReturnModal()">Hủy</button>
+        <button class="btn-action-primary" style="flex: 1; justify-content: center; background: #15803d;" onclick="confirmBulkReturn()">Xác nhận trả toàn bộ máy đoàn</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       MODAL NHẬP THIẾT BỊ MỚI (MỤC 4.1 ĐẶC TẢ BQL)
+       ============================================================ -->
+  <div id="new-device-modal" class="modal-backdrop" onclick="closeNewDeviceModal(event)">
+    <div class="modal-dialog" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Nhập thiết bị thuyết minh mới (Asset Onboarding)</h3>
+        <button class="modal-close-btn" onclick="closeNewDeviceModal()">✕</button>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Mã định danh thiết bị (Asset Code) *</label>
+        <input type="text" id="new-device-id" class="form-control" placeholder="Ví dụ: HL-26, HL-27..." value="HL-26" />
+        <span class="form-hint">Mã tài sản cố định chuẩn hóa của Ban Quản lý Di tích Hỏa Lò</span>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+        <div class="form-group">
+          <label class="form-label">Tên thiết bị & Phiên bản</label>
+          <input type="text" id="new-device-name" class="form-control" value="Hub 2Guide v2.1 Pro" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Số Serial phần cứng</label>
+          <input type="text" id="new-device-serial" class="form-control" placeholder="SN-2026-HL026" value="SN-2026-HL026" />
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+        <div class="form-group">
+          <label class="form-label">Vị trí lưu kho ban đầu</label>
+          <select id="new-device-location" class="form-control">
+            <option value="Dock Sạc A (Cổng chính)">Dock Sạc A (Cổng chính)</option>
+            <option value="Dock Sạc B (Nhà tiếp đón)">Dock Sạc B (Nhà tiếp đón)</option>
+            <option value="Kho Kỹ Thuật BQL">Kho Kỹ Thuật BQL</option>
+            <option value="Tủ Dự Phòng Lễ Tân">Tủ Dự Phòng Lễ Tân</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Dung lượng pin xuất xưởng</label>
+          <input type="number" id="new-device-battery" class="form-control" value="100" min="1" max="100" />
+        </div>
+      </div>
+      <div style="display: flex; gap: 10px; margin-top: 24px;">
+        <button class="btn-action-secondary" style="flex: 1;" onclick="closeNewDeviceModal()">Hủy</button>
+        <button class="btn-action-primary" style="flex: 1; justify-content: center;" onclick="confirmNewDevice()">Xác nhận nhập kho</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       MODAL LẬP PHIẾU BẢO TRÌ / SỬA CHỮA (MỤC 4.1 ĐẶC TẢ BQL)
+       ============================================================ -->
+  <div id="maintenance-modal" class="modal-backdrop" onclick="closeMaintenanceModal(event)">
+    <div class="modal-dialog" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Lập phiếu tiếp nhận bảo trì / Sửa chữa</h3>
+        <button class="modal-close-btn" onclick="closeMaintenanceModal()">✕</button>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Chọn thiết bị gặp sự cố *</label>
+        <select id="maint-device-select" class="form-control">
+          <option value="HL-08">HL-08 (Pin yếu 14% • Cần sạc / kiểm tra chai pin)</option>
+          <option value="HL-21">HL-21 (Đang bảo trì • Lỗi Jack cắm tai nghe 3.5mm)</option>
+          <option value="HL-22">HL-22 (Đang bảo trì • Nứt vỏ máy, kiểm tra bo mạch)</option>
+          <option value="HL-01">HL-01 (Đoàn Chu Văn An)</option>
+          <option value="HL-05">HL-05 (Sẵn sàng)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Phân loại lỗi kỹ thuật *</label>
+        <select id="maint-issue-type" class="form-control">
+          <option value="Jack cắm tai nghe lỏng / mất âm thanh">Jack cắm tai nghe lỏng / mất âm thanh</option>
+          <option value="Pin tụt nhanh dưới 30 phút / Chai pin">Pin tụt nhanh dưới 30 phút / Chai pin</option>
+          <option value="Nút bấm nguồn / tăng giảm âm lượng kẹt">Nút bấm nguồn / tăng giảm âm lượng kẹt</option>
+          <option value="Vỡ nứt vỏ máy / Cần thay thế linh kiện">Vỡ nứt vỏ máy / Cần thay thế linh kiện</option>
+          <option value="Lỗi kết nối / Mất tín hiệu">Lỗi kết nối / Mất tín hiệu</option>
+        </select>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+        <div class="form-group">
+          <label class="form-label">Kỹ thuật viên tiếp nhận</label>
+          <input type="text" id="maint-technician" class="form-control" value="KTV. Trần Văn Bình" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mức độ ưu tiên</label>
+          <select id="maint-priority" class="form-control">
+            <option value="Cao">Ưu tiên cao (Trong ngày)</option>
+            <option value="Trung bình" selected>Trung bình (24h - 48h)</option>
+            <option value="Thấp">Thấp (Chờ linh kiện)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Ghi chú kiểm tra chi tiết</label>
+        <input type="text" id="maint-notes" class="form-control" placeholder="Mô tả hiện tượng khi nhận lại từ khách..." value="Khách phản hồi nghe bị rè khi đi vào khu vực Cachot" />
+      </div>
+      <div style="display: flex; gap: 10px; margin-top: 24px;">
+        <button class="btn-action-secondary" style="flex: 1;" onclick="closeMaintenanceModal()">Hủy</button>
+        <button class="btn-action-primary" style="flex: 1; justify-content: center; background: #b45309;" onclick="confirmMaintenanceTicket()">Lưu phiếu & Chuyển sang BẢO TRÌ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       MODAL TEM ĐỊNH DANH & MÃ QR THIẾT BỊ
+       ============================================================ -->
+  <div id="qr-modal" class="modal-backdrop" onclick="closeQrModal(event)">
+    <div class="modal-dialog" style="max-width: 440px; text-align: center;" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3 id="qr-modal-title">Tem định danh & Mã QR Máy HL-01</h3>
+        <button class="modal-close-btn" onclick="closeQrModal()">✕</button>
+      </div>
+      <div style="padding: 20px 0;">
+        <div style="width: 180px; height: 180px; margin: 0 auto 16px auto; background: #ffffff; border: 2px dashed #a87545; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.06);">
+          <svg width="140" height="140" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="100" height="100" fill="#ffffff"/>
+            <!-- Top Left Finder -->
+            <rect x="5" y="5" width="30" height="30" rx="3" fill="#1c1917"/>
+            <rect x="10" y="10" width="20" height="20" rx="2" fill="#ffffff"/>
+            <rect x="15" y="15" width="10" height="10" rx="1" fill="#9a3412"/>
+            <!-- Top Right Finder -->
+            <rect x="65" y="5" width="30" height="30" rx="3" fill="#1c1917"/>
+            <rect x="70" y="10" width="20" height="20" rx="2" fill="#ffffff"/>
+            <rect x="75" y="15" width="10" height="10" rx="1" fill="#9a3412"/>
+            <!-- Bottom Left Finder -->
+            <rect x="5" y="65" width="30" height="30" rx="3" fill="#1c1917"/>
+            <rect x="10" y="70" width="20" height="20" rx="2" fill="#ffffff"/>
+            <rect x="15" y="75" width="10" height="10" rx="1" fill="#9a3412"/>
+            <!-- Pattern -->
+            <rect x="42" y="8" width="6" height="6" fill="#1c1917"/>
+            <rect x="52" y="8" width="6" height="12" fill="#1c1917"/>
+            <rect x="42" y="22" width="16" height="6" fill="#1c1917"/>
+            <rect x="8" y="42" width="12" height="6" fill="#1c1917"/>
+            <rect x="26" y="42" width="6" height="16" fill="#1c1917"/>
+            <rect x="40" y="40" width="8" height="8" fill="#a87545"/>
+            <rect x="52" y="38" width="8" height="8" fill="#1c1917"/>
+            <rect x="68" y="42" width="14" height="6" fill="#1c1917"/>
+            <rect x="88" y="42" width="6" height="14" fill="#1c1917"/>
+            <rect x="42" y="54" width="8" height="14" fill="#1c1917"/>
+            <rect x="56" y="54" width="14" height="8" fill="#1c1917"/>
+            <rect x="76" y="60" width="8" height="8" fill="#1c1917"/>
+            <rect x="42" y="74" width="14" height="8" fill="#1c1917"/>
+            <rect x="62" y="74" width="8" height="14" fill="#1c1917"/>
+            <rect x="76" y="78" width="16" height="8" fill="#1c1917"/>
+            <rect x="42" y="88" width="22" height="6" fill="#1c1917"/>
+          </svg>
+        </div>
+        <div id="qr-modal-code" style="font-family: var(--font-mono); font-size: 16px; font-weight: 800; color: #1c1917; margin-bottom: 4px;">HL-01 • SN-2026-HL001</div>
+        <p style="font-size: 12.5px; color: #78716c; max-width: 320px; margin: 0 auto; line-height: 1.5;">Quét tem QR để kiểm tra lịch sử bàn giao/thu hồi, tình trạng sạc pin hoặc đối soát tài sản trong kho Ban Quản Lý.</p>
+      </div>
+      <div style="display: flex;">
+        <button class="btn-action-secondary" style="flex: 1; justify-content: center; padding: 10px;" onclick="closeQrModal()">Đóng cửa sổ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast-notify" class="toast-notify">
+    <i class="fa-solid fa-circle-check" style="color: #4ade80;"></i>
+    <span id="toast-text">Thông báo hệ thống</span>
+  </div>
+
+  <script>
+    // Dữ liệu thiết bị đồng bộ thời gian thực từ MongoDB Atlas
+    let HUBS_DATA = [];
+
+    // Cập nhật số lượng thiết bị trên các chip lọc và thẻ thống kê
+    function updateDeviceFilterChips() {
+      const total = HUBS_DATA.length;
+      const ready = HUBS_DATA.filter(h => h.status === 'Sẵn sàng').length;
+      const rented = HUBS_DATA.filter(h => h.status === 'Đang thuê').length;
+      const maint = HUBS_DATA.filter(h => h.status === 'Bảo trì').length;
+      const warning = HUBS_DATA.filter(h => h.battery <= 20).length;
+
+      const chipAll = document.getElementById('chip-status-all');
+      if (chipAll) chipAll.textContent = `Tất cả (${total})`;
+
+      const chipReady = document.getElementById('chip-status-available');
+      if (chipReady) chipReady.textContent = `Sẵn sàng (${ready})`;
+
+      const chipRented = document.getElementById('chip-status-rented');
+      if (chipRented) chipRented.textContent = `Đang thuê (${rented})`;
+
+      const chipMaint = document.getElementById('chip-status-maint');
+      if (chipMaint) chipMaint.textContent = `Bảo trì (${maint})`;
+
+      const chipWarn = document.getElementById('chip-status-warning');
+      if (chipWarn) chipWarn.textContent = `Pin yếu <20% (${warning})`;
+
+      const elDevTotal = document.getElementById('val-devices-total');
+      if (elDevTotal) elDevTotal.textContent = total;
+
+      const trendText = document.getElementById('val-devices-trend-text');
+      if (trendText) {
+        trendText.textContent = `${ready} sẵn sàng, ${rented} đang thuê`;
+      }
+    }
+
+    let usageChart = null;
+    let currentStatusFilter = 'all';
+
+    // Chuyển Tab Sidebar
+    function switchNavTab(tabKey, el) {
+      document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+      if (el) el.classList.add('active');
+
+      document.querySelectorAll('.tab-content-pane').forEach(p => p.classList.remove('active'));
+      const activePane = document.getElementById(`pane-${tabKey}`);
+      if (activePane) activePane.classList.add('active');
+
+      const sidebar = document.getElementById('app-sidebar');
+      if (sidebar) sidebar.classList.remove('open');
+
+      if (tabKey === 'overview' && usageChart) {
+        setTimeout(() => usageChart.resize(), 100);
+      }
+      if (tabKey === 'map') {
+        initManagerMap();
+        setTimeout(() => {
+          if (managerMap) managerMap.invalidateSize();
+        }, 120);
+      }
+    }
+
+    function toggleSidebar() {
+      const sidebar = document.getElementById('app-sidebar');
+      if (sidebar) sidebar.classList.toggle('open');
+    }
+
+    // Khởi tạo Biểu đồ Chart.js
+    function initChart() {
+      const ctx = document.getElementById('usageTimelineChart');
+      if (!ctx) return;
+
+      if (typeof Chart === 'undefined') {
+        console.warn('[Manager] Chart.js chưa nạp xong, thử lại...');
+        setTimeout(initChart, 150);
+        return;
+      }
+
+      if (usageChart) {
+        try { usageChart.destroy(); } catch (e) {}
+        usageChart = null;
+      }
+
+      const activeCount = (typeof HUBS_DATA !== 'undefined' && Array.isArray(HUBS_DATA)) 
+        ? HUBS_DATA.filter(h => h.status === 'Đang thuê').length 
+        : 24;
+
+      const labels = ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'];
+      const dataPoints = [4, 18, 24, 22, 12, 10, 20, 26, activeCount, 6];
+
+      usageChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Số lượng thiết bị đang dùng',
+            data: dataPoints,
+            borderColor: '#9a3412',
+            backgroundColor: 'rgba(154, 52, 18, 0.08)',
+            borderWidth: 2.5,
+            pointBackgroundColor: '#9a3412',
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 2,
+            pointRadius: 4.5,
+            pointHoverRadius: 7,
+            fill: true,
+            tension: 0.35
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          layout: {
+            padding: {
+              top: 14,
+              bottom: 8,
+              left: 4,
+              right: 12
+            }
+          },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#281d17',
+              titleColor: '#ffffff',
+              bodyColor: '#e5dcd6',
+              padding: 12,
+              borderRadius: 10,
+              displayColors: false,
+              callbacks: {
+                label: function(context) {
+                  return `Đang sử dụng: ${context.parsed.y} thiết bị`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: 'rgba(0, 0, 0, 0.04)' },
+              ticks: { 
+                color: '#78716c', 
+                font: { family: 'Plus Jakarta Sans', size: 12 },
+                padding: 6
+              }
+            },
+            y: {
+              min: 0,
+              max: 50,
+              title: {
+                display: true,
+                text: 'Số lượng thiết bị',
+                color: '#78716c',
+                font: { family: 'Plus Jakarta Sans', size: 12, weight: '600' }
+              },
+              grid: { color: 'rgba(0, 0, 0, 0.05)' },
+              ticks: {
+                stepSize: 10,
+                color: '#78716c',
+                font: { family: 'Plus Jakarta Sans', size: 12 }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function updateUsageChart(timeframe) {
+      if (!usageChart) return;
+
+      const selectBox = document.getElementById('select-chart-timeframe');
+      if (selectBox && selectBox.value !== timeframe) {
+        selectBox.value = timeframe;
+      }
+
+      if (timeframe === 'week') {
+        usageChart.data.labels = ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ Nhật'];
+        usageChart.data.datasets[0].data = [28, 32, 35, 30, 42, 48, 50];
+        usageChart.options.scales.y.min = 0;
+        usageChart.options.scales.y.max = 60;
+        usageChart.options.scales.y.ticks.stepSize = 10;
+        usageChart.options.scales.y.title.text = 'Số lượng thiết bị đang dùng';
+      } else if (timeframe === 'month') {
+        usageChart.data.labels = ['Tuần 1', 'Tuần 2', 'Tuần 3', 'Tuần 4'];
+        usageChart.data.datasets[0].data = [210, 245, 290, 320];
+        usageChart.options.scales.y.min = 0;
+        usageChart.options.scales.y.max = 360;
+        usageChart.options.scales.y.ticks.stepSize = 60;
+        usageChart.options.scales.y.title.text = 'Lượt cấp phát tích lũy';
+      } else {
+        const activeCount = (typeof HUBS_DATA !== 'undefined' && Array.isArray(HUBS_DATA)) 
+          ? HUBS_DATA.filter(h => h.status === 'Đang thuê').length 
+          : 24;
+        usageChart.data.labels = ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'];
+        usageChart.data.datasets[0].data = [4, 18, 24, 22, 12, 10, 20, 26, activeCount, 6];
+        usageChart.options.scales.y.min = 0;
+        usageChart.options.scales.y.max = 50;
+        usageChart.options.scales.y.ticks.stepSize = 10;
+        usageChart.options.scales.y.title.text = 'Số lượng thiết bị';
+      }
+      usageChart.update();
+      showToast(`Đã cập nhật biểu đồ theo: ${timeframe === 'day' ? 'Hôm nay' : (timeframe === 'week' ? 'Tuần này' : 'Tháng này')}`);
+    }
+
+    // Nạp danh sách bảng thiết bị thuần Tiếng Việt (9 cột rõ ràng)
+    function renderDeviceTable(data = HUBS_DATA) {
+      const tbody = document.getElementById('tbody-device-list');
+      if (!tbody) return;
+
+      if (data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#78716c; padding:24px;">Không tìm thấy thiết bị nào phù hợp</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = data.map(hub => {
+        let statusBadge = '';
+        if (hub.status === 'Sẵn sàng') {
+          statusBadge = '<span class="status-badge ready"><i class="fa-solid fa-circle-check"></i> Sẵn sàng</span>';
+        } else if (hub.status === 'Đang thuê') {
+          statusBadge = '<span class="status-badge in-use"><i class="fa-solid fa-headphones"></i> Đang thuê</span>';
+        } else if (hub.status === 'Đã giữ chỗ') {
+          statusBadge = '<span class="status-badge deposit"><i class="fa-solid fa-bookmark"></i> Đã giữ chỗ</span>';
+        } else if (hub.status === 'Bảo trì') {
+          statusBadge = '<span class="status-badge warning" style="background:#fef3c7; color:#b45309;"><i class="fa-solid fa-screwdriver-wrench"></i> Bảo trì</span>';
+        } else if (hub.status === 'Thất lạc') {
+          statusBadge = '<span class="status-badge danger" style="background:#fee2e2; color:#dc2626;"><i class="fa-solid fa-triangle-exclamation"></i> Thất lạc</span>';
+        } else {
+          statusBadge = `<span class="status-badge">${hub.status}</span>`;
+        }
+
+        let batteryColor = '#15803d';
+        if (hub.battery <= 20) batteryColor = '#b91c1c';
+        else if (hub.battery <= 50) batteryColor = '#b45309';
+
+        let actionBtn = '';
+        if (hub.status === 'Đang thuê') {
+          actionBtn = `<button class="btn-action-secondary" style="padding: 4px 8px; font-size: 11.5px; margin-left: 4px;" onclick="quickReturnDevice('${hub.id}')" title="Thu hồi máy về dock sạc"><i class="fa-solid fa-arrow-rotate-left"></i> Trả</button>`;
+        } else if (hub.status === 'Sẵn sàng') {
+          actionBtn = `<button class="btn-action-secondary" style="padding: 4px 8px; font-size: 11.5px; margin-left: 4px;" onclick="quickRentDevice('${hub.id}')" title="Cấp phát máy cho khách"><i class="fa-solid fa-handshake"></i> Thuê</button>`;
+        } else if (hub.status === 'Bảo trì') {
+          actionBtn = `<button class="btn-action-secondary" style="padding: 4px 8px; font-size: 11.5px; margin-left: 4px; color:#15803d;" onclick="completeMaintenance('${hub.id}')" title="Hoàn tất bảo trì & kiểm tra"><i class="fa-solid fa-check"></i> Xong</button>`;
+        }
+
+        return `
+          <tr>
+            <td><strong style="font-family: var(--font-mono);">${hub.id}</strong></td>
+            <td>
+              <div><strong>${hub.name}</strong></div>
+              <div style="font-size: 11px; color: #78716c; font-family: var(--font-mono);">${hub.serial}</div>
+            </td>
+            <td>
+              ${statusBadge}
+              ${hub.status === 'Đang thuê' && hub.user && hub.user !== '-' ? `<div style="font-size: 11px; color: #15803d; font-weight: 600; margin-top: 3px;"><i class="fa-solid fa-user"></i> ${hub.user}</div>` : ''}
+            </td>
+            <td>
+              <div class="battery-meter">
+                <div class="battery-bar">
+                  <div class="battery-fill" style="width: ${hub.battery}%; background: ${batteryColor};"></div>
+                </div>
+                <span style="font-weight: 600; color: ${hub.battery <= 20 ? '#dc2626' : '#292524'};">${hub.battery}%</span>
+              </div>
+            </td>
+            <td><span style="font-size: 12px; font-weight: 600;">${hub.lang || '🇻🇳 Tiếng Việt'}</span></td>
+            <td>
+              <button class="btn-action-secondary" style="padding: 4px 8px; font-size: 11.5px;" onclick="showDeviceQr('${hub.id}')">
+                <i class="fa-solid fa-qrcode"></i> Xem QR
+              </button>
+            </td>
+            <td style="white-space: nowrap;">
+              <button class="btn-action-secondary" style="padding: 4px 8px; font-size: 11.5px;" onclick="pingHub('${hub.id}')" title="Phát tín hiệu âm thanh định vị máy">
+                <i class="fa-solid fa-bell"></i> Tìm máy
+              </button>
+              ${actionBtn}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Lọc thiết bị theo thẻ chip thuần Tiếng Việt
+    function filterDeviceByStatus(status, chipElement) {
+      currentStatusFilter = status;
+      document.querySelectorAll('.filter-chips-wrap .filter-chip').forEach(c => c.classList.remove('active'));
+      if (chipElement) chipElement.classList.add('active');
+
+      let filtered = HUBS_DATA;
+      if (status === 'Sẵn sàng') {
+        filtered = HUBS_DATA.filter(h => h.status === 'Sẵn sàng');
+      } else if (status === 'Đang thuê') {
+        filtered = HUBS_DATA.filter(h => h.status === 'Đang thuê');
+      } else if (status === 'Bảo trì') {
+        filtered = HUBS_DATA.filter(h => h.status === 'Bảo trì');
+      } else if (status === 'warning') {
+        filtered = HUBS_DATA.filter(h => h.battery <= 20);
+      }
+      renderDeviceTable(filtered);
+      showToast(`Đang lọc thiết bị: ${status === 'all' ? 'Tất cả' : status}`);
+    }
+
+    function filterDeviceTable(query) {
+      const q = query.toLowerCase().trim();
+      const filtered = HUBS_DATA.filter(h => 
+        h.id.toLowerCase().includes(q) || 
+        h.name.toLowerCase().includes(q) || 
+        h.serial.toLowerCase().includes(q) || 
+        h.user.toLowerCase().includes(q) ||
+        h.location.toLowerCase().includes(q) ||
+        h.group.toLowerCase().includes(q) ||
+        (h.lang && h.lang.toLowerCase().includes(q))
+      );
+      renderDeviceTable(filtered);
+    }
+
+    function pingHub(hubId) {
+      showToast(`🔔 Đang phát âm thanh Chime 85dB định vị máy ${hubId}...`);
+    }
+
+    // Cho thuê 1 máy lẻ
+    function quickRentDevice(hubId) {
+      openRentalModal(hubId);
+    }
+
+    async function quickReturnDevice(hubId) {
+      const hub = HUBS_DATA.find(h => h.id === hubId);
+      if (hub) {
+        hub.status = 'Sẵn sàng';
+        hub.user = '-';
+        hub.group = '-';
+        hub.location = 'Dock Sạc A';
+        renderDeviceTable();
+        updateActiveCountKPI();
+      }
+      try {
+        const res = await fetch('/api/rentals/return', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ hubId })
+        });
+        const json = await res.json();
+        if (json.success) {
+          showToast(`✅ Đã thu hồi máy ${hubId} về Dock Sạc A và cập nhật database!`);
+          await loadServerData();
+        } else {
+          showToast(`⚠️ Lỗi thu hồi máy trên database: ${json.error}`);
+        }
+      } catch (err) {
+        console.error('[Return Error]:', err);
+        showToast(`Đã thu hồi máy ${hubId} trên giao diện!`);
+      }
+    }
+
+    function updateActiveCountKPI() {
+      const activeCount = HUBS_DATA.filter(h => h.status === 'Đang thuê').length;
+      const el = document.getElementById('val-rentals-active');
+      if (el) el.textContent = activeCount;
+    }
+
+    // Modal cho thuê 1 máy (không lấy SĐT, có chọn đoàn 1-5 và ngôn ngữ)
+    function openRentalModal(preselectedHubId) {
+      const select = document.getElementById('modal-select-hub');
+      if (select) {
+        const availableHubs = HUBS_DATA.filter(h => h.status === 'Sẵn sàng' || h.id === preselectedHubId);
+        select.innerHTML = availableHubs.map(h => `
+          <option value="${h.id}" ${h.id === preselectedHubId ? 'selected' : ''}>
+            ${h.id} (Pin ${h.battery}% • Sẵn sàng tại ${h.location})
+          </option>
+        `).join('');
+      }
+      const modal = document.getElementById('rental-modal');
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function closeRentalModal(e) {
+      const modal = document.getElementById('rental-modal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    async function confirmRental() {
+      const hubId = document.getElementById('modal-select-hub').value;
+      if (!hubId) {
+        alert('Vui lòng chọn thiết bị muốn cho thuê!');
+        return;
+      }
+      const cust = document.getElementById('modal-customer-name').value.trim() || 'Khách tham quan';
+      const group = document.getElementById('modal-select-group').value;
+      const lang = document.getElementById('modal-select-lang').value;
+      
+      // 1. Cập nhật giao diện ngay lập tức
+      const hub = HUBS_DATA.find(h => h.id === hubId);
+      if (hub) {
+        hub.status = 'Đang thuê';
+        hub.user = cust;
+        hub.group = group;
+        hub.lang = lang;
+        hub.location = 'Khu di tích';
+      }
+      renderDeviceTable();
+      closeRentalModal();
+      updateActiveCountKPI();
+
+      // 2. Gửi API lưu bền vững vào MongoDB Atlas
+      try {
+        const res = await fetch('/api/rentals/rent', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            hubId,
+            renterName: cust,
+            phoneNumber: '',
+            rentalFee: 50000,
+            depositAmount: 200000,
+            paymentMethod: document.getElementById('modal-select-payment')?.value || 'Chuyển khoản VietQR',
+            notes: `Cấp phát tại quầy BQL - ${group}`
+          })
+        });
+        const json = await res.json();
+        if (json.success) {
+          showToast(`✅ Đã lưu MongoDB: Cấp máy ${hubId} cho "${cust}" thành công!`);
+          await loadServerData();
+        } else {
+          showToast(`⚠️ Không thể lưu MongoDB: ${json.error || 'Lỗi không xác định'}`);
+        }
+      } catch (err) {
+        console.error('[BQL Rental Error]:', err);
+        showToast('⚠️ Lỗi kết nối khi gửi dữ liệu thuê máy lên database!');
+      }
+    }
+
+    
+    // ============================================================
+    // ĐỒNG BỘ DỮ LIỆU BỀN VỮNG VỚI MÁY CHỦ (MONGODB ATLAS & REST API)
+    // ============================================================
+    async function loadServerData() {
+      try {
+        const [resDevices, resGroups, resFinance, resTx] = await Promise.all([
+          fetch('/api/devices').then(r => r.json()).catch(() => null),
+          fetch('/api/groups').then(r => r.json()).catch(() => null),
+          fetch('/api/finance/overview').then(r => r.json()).catch(() => null),
+          fetch('/api/finance/transactions?limit=20').then(r => r.json()).catch(() => null)
+        ]);
+
+        const serverGroups = (resGroups && resGroups.success && resGroups.data) ? resGroups.data : [];
+        const activeGroups = serverGroups.filter(g => g.status === 'ACTIVE');
+
+        // 1. Đồng bộ Lịch đặt thuê (BOOKINGS_DATA) từ database
+        if (activeGroups.length > 0) {
+          BOOKINGS_DATA = activeGroups.map(g => {
+            const count = (g.hubIds && g.hubIds.length) ? g.hubIds.length : (g.memberCount || 1);
+            return {
+              id: g.groupId,
+              token: g.token,
+              groupName: g.groupName,
+              group: g.leaderName || 'Đoàn 1',
+              devicesCount: count,
+              hubIds: g.hubIds || [],
+              time: g.createdAt ? new Date(g.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : 'Hôm nay',
+              lang: g.lang || '🇻🇳 Tiếng Việt',
+              deposit: `${(count * 50000).toLocaleString('vi-VN')} đ`,
+              isDbGroup: true
+            };
+          });
+        }
+
+        // 2. Đồng bộ Kho thiết bị (HUBS_DATA) - CHỈ LẤY ĐÚNG CÁC HUB TỪ DATABASE
+        if (resDevices && resDevices.success && Array.isArray(resDevices.data) && resDevices.data.length > 0) {
+          HUBS_DATA = resDevices.data.map(mDev => {
+            let status = mDev.status || 'Sẵn sàng';
+            let group = mDev.group || '-';
+            let user = mDev.user || '-';
+            if (mDev.currentGroupId) {
+              const grp = activeGroups.find(g => g.groupId === mDev.currentGroupId);
+              status = 'Đang thuê';
+              group = grp ? (grp.leaderName || 'Đoàn 1') : 'Đoàn 1';
+              user = grp ? grp.groupName : 'Đoàn khách tham quan';
+            }
+            return {
+              id: mDev.hubId,
+              name: mDev.name || `Hub 2Guide v2.1 (${mDev.hubId})`,
+              serial: mDev.serial || `SN-2026-${mDev.hubId.replace('-', '')}`,
+              status: status,
+              battery: mDev.battery !== undefined ? Number(mDev.battery) : 100,
+              lang: mDev.lang || '🇻🇳 Tiếng Việt',
+              group: group,
+              user: user,
+              location: mDev.location || 'Nhà Tổng Thống',
+              lat: mDev.lat || 21.00010,
+              lng: mDev.lng || 105.84245,
+              yaw: mDev.yaw || 0
+            };
+          });
+        }
+
+        // 3. Tải báo cáo tổng quan tài chính từ MongoDB Atlas
+        if (resFinance && resFinance.success && resFinance.data) {
+          const fin = resFinance.data;
+          const elRentToday = document.getElementById('val-rentals-today');
+          const elRentActive = document.getElementById('val-rentals-active');
+          const elDevTotal = document.getElementById('val-devices-total');
+          const elRevToday = document.getElementById('val-revenue-today');
+
+          if (elRentToday) elRentToday.textContent = fin.rentalsToday || 0;
+          if (elRentActive) elRentActive.textContent = fin.rentalsActive || 0;
+          if (elDevTotal) elDevTotal.textContent = (HUBS_DATA.length > 0 ? HUBS_DATA.length : (fin.devicesTotal || 5));
+          if (elRevToday) elRevToday.innerHTML = `${(fin.revenueToday || 0).toLocaleString('vi-VN')} <span class="stat-card-unit">đ</span>`;
+
+          const elFinServRev = document.getElementById('val-fin-service-revenue');
+          const elFinDepHeld = document.getElementById('val-fin-deposit-held');
+          const elFinDepRef = document.getElementById('val-fin-deposit-refunded');
+          const elFinPenalty = document.getElementById('val-fin-fees-penalty');
+
+          if (elFinServRev) elFinServRev.innerHTML = `${(fin.serviceRevenue || 0).toLocaleString('vi-VN')} <span class="stat-card-unit">đ</span>`;
+          if (elFinDepHeld) elFinDepHeld.innerHTML = `${(fin.depositHeld || 0).toLocaleString('vi-VN')} <span class="stat-card-unit">đ</span>`;
+          if (elFinDepRef) elFinDepRef.innerHTML = `${(fin.depositRefunded || 0).toLocaleString('vi-VN')} <span class="stat-card-unit">đ</span>`;
+          if (elFinPenalty) elFinPenalty.innerHTML = `${(fin.feesPenalty || 0).toLocaleString('vi-VN')} <span class="stat-card-unit">đ</span>`;
+        }
+
+        // 4. Tải sổ cái giao dịch tài chính từ MongoDB Atlas
+        if (resTx && resTx.success && resTx.data && resTx.data.length > 0) {
+          const tbodyTx = document.getElementById('tbody-finance-transactions');
+          if (tbodyTx) {
+            tbodyTx.innerHTML = resTx.data.map(tx => `
+              <tr>
+                <td><strong>#${tx.txId}</strong></td>
+                <td>${tx.timeStr || 'Hôm nay'}</td>
+                <td>${tx.customerName || 'Khách tham quan'}</td>
+                <td>${tx.paymentMethod || 'VietQR'}</td>
+                <td><strong style="color: #15803d;">+${(tx.amount || 0).toLocaleString('vi-VN')} đ</strong></td>
+                <td>${tx.cashier || 'Hệ thống'}</td>
+              </tr>
+            `).join('');
+          }
+        }
+
+        // 5. Cập nhật giao diện kho và các chip thống kê
+        updateDeviceFilterChips();
+        renderDeviceTable();
+        updateActiveCountKPI();
+      } catch (err) {
+        console.warn('[BQL] Lỗi tải dữ liệu từ máy chủ:', err);
+      }
+    }
+
+    // ============================================================
+    // CHỨC NĂNG THU HỒI & TRẢ MÁY THEO ĐOÀN (1 LẦN BẤM XONG CẢ ĐOÀN)
+    // ============================================================
+    function openBulkReturnModal() {
+      const select = document.getElementById('return-select-group');
+      if (!select) return;
+
+      // Lấy danh sách các đoàn đang có máy thuê
+      const activeGroups = [...new Set(HUBS_DATA.filter(h => h.status === 'Đang thuê').map(h => h.group))];
+      
+      if (activeGroups.length === 0) {
+        select.innerHTML = '<option value="">Hiện không có đoàn nào đang mượn máy</option>';
+      } else {
+        select.innerHTML = activeGroups.map(g => {
+          const count = HUBS_DATA.filter(h => h.status === 'Đang thuê' && h.group === g).length;
+          return `<option value="${g}">${g} (Đang mượn ${count} máy)</option>`;
+        }).join('');
+      }
+
+      onReturnGroupSelected();
+      const modal = document.getElementById('bulk-return-modal');
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function closeBulkReturnModal(e) {
+      if (e && e.target && e.target.id !== 'bulk-return-modal' && !e.target.classList.contains('modal-close-btn')) return;
+      const modal = document.getElementById('bulk-return-modal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function onReturnGroupSelected() {
+      const select = document.getElementById('return-select-group');
+      const listBox = document.getElementById('return-group-hubs-list');
+      if (!select || !listBox) return;
+
+      const group = select.value;
+      if (!group) {
+        listBox.innerHTML = '<span style="color:#78716c; font-size:12px;">Chưa chọn đoàn</span>';
+        return;
+      }
+
+      const hubs = HUBS_DATA.filter(h => h.status === 'Đang thuê' && h.group === group);
+      if (hubs.length === 0) {
+        listBox.innerHTML = '<span style="color:#78716c; font-size:12px;">Đoàn này không có thiết bị nào đang lưu hành.</span>';
+        return;
+      }
+
+      listBox.innerHTML = hubs.map(h => `
+        <span class="status-badge in-use" style="font-size: 11px; padding: 3px 8px;">
+          <i class="fa-solid fa-headphones"></i> ${h.id} (${h.battery}%)
+        </span>
+      `).join('');
+    }
+
+    async function confirmBulkReturn() {
+      const select = document.getElementById('return-select-group');
+      const dock = document.getElementById('return-dock-select').value;
+      if (!select || !select.value) {
+        showToast('⚠️ Vui lòng chọn đoàn khách cần trả máy!');
+        return;
+      }
+
+      const group = select.value;
+      const hubs = HUBS_DATA.filter(h => h.status === 'Đang thuê' && h.group === group);
+      
+      if (hubs.length === 0) {
+        showToast(`Đoàn ${group} không còn máy nào cần trả.`);
+        closeBulkReturnModal();
+        return;
+      }
+
+      hubs.forEach(h => {
+        h.status = 'Sẵn sàng';
+        h.group = '-';
+        h.user = '-';
+        h.location = dock;
+      });
+
+      renderDeviceTable();
+      updateActiveCountKPI();
+      closeBulkReturnModal();
+      showToast(`⏳ Đang hoàn tất trả máy và cập nhật hệ thống...`);
+
+      // Tìm booking / đoàn tương ứng trên database để gọi API kết thúc tour
+      const b = BOOKINGS_DATA.find(x => x.group === group || x.assignedGroup === group);
+      if (b && b.id) {
+        try {
+          await fetch(`/api/groups/${encodeURIComponent(b.id)}/end`, { method: 'POST' });
+        } catch (err) {
+          console.warn('[BQL] Lỗi kết thúc đoàn trên server:', err);
+        }
+      }
+
+      await loadServerData();
+      showToast(`✅ Đã thu hồi đủ ${hubs.length} máy của ${group} về ${dock}. Hoàn tất trả cọc & cập nhật database!`);
+    }
+
+    // Modal Nhập thiết bị mới
+    function openNewDeviceModal() {
+      const modal = document.getElementById('new-device-modal');
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function closeNewDeviceModal(e) {
+      if (e && e.target && e.target.id !== 'new-device-modal' && !e.target.classList.contains('modal-close-btn')) return;
+      const modal = document.getElementById('new-device-modal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function confirmNewDevice() {
+      const id = document.getElementById('new-device-id').value.trim() || `HL-${HUBS_DATA.length + 1}`;
+      const name = document.getElementById('new-device-name').value.trim() || 'Hub 2Guide v2.1 Pro';
+      const serial = document.getElementById('new-device-serial').value.trim() || `SN-2026-${id}`;
+      const location = document.getElementById('new-device-location').value;
+      const battery = parseInt(document.getElementById('new-device-battery').value) || 100;
+
+      if (HUBS_DATA.some(h => h.id.toUpperCase() === id.toUpperCase())) {
+        showToast(`⚠️ Mã máy ${id} đã tồn tại trong hệ thống!`);
+        return;
+      }
+
+      HUBS_DATA.push({
+        id: id,
+        name: name,
+        serial: serial,
+        status: 'Sẵn sàng',
+        battery: battery,
+        lang: '🇻🇳 Tiếng Việt',
+        group: '-',
+        user: '-',
+        location: location
+      });
+
+      renderDeviceTable();
+      closeNewDeviceModal();
+      showToast(`Đã nhập kho thiết bị mới: ${id} (${serial}) vào ${location}!`);
+    }
+
+    // Modal Lập phiếu bảo trì
+    function openMaintenanceModal(hubId) {
+      const modal = document.getElementById('maintenance-modal');
+      if (hubId) {
+        const select = document.getElementById('maint-device-select');
+        if (select) select.value = hubId;
+      }
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function closeMaintenanceModal(e) {
+      if (e && e.target && e.target.id !== 'maintenance-modal' && !e.target.classList.contains('modal-close-btn')) return;
+      const modal = document.getElementById('maintenance-modal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function confirmMaintenanceTicket() {
+      const hubId = document.getElementById('maint-device-select').value;
+      const issue = document.getElementById('maint-issue-type').value;
+      const tech = document.getElementById('maint-technician').value;
+
+      const hub = HUBS_DATA.find(h => h.id === hubId);
+      if (hub) {
+        hub.status = 'Bảo trì';
+        hub.user = `${issue} (${tech})`;
+        hub.group = '-';
+        hub.location = 'Bàn Kỹ Thuật';
+      }
+      renderDeviceTable();
+      closeMaintenanceModal();
+      showToast(`Đã lập phiếu bảo trì cho máy ${hubId}: ${issue}`);
+    }
+
+    function completeMaintenance(hubId) {
+      const hub = HUBS_DATA.find(h => h.id === hubId);
+      if (hub) {
+        hub.status = 'Sẵn sàng';
+        hub.battery = 100;
+        hub.user = '-';
+        hub.group = '-';
+        hub.location = 'Dock Sạc B';
+        renderDeviceTable();
+        showToast(`Thiết bị ${hubId} đã hoàn tất bảo dưỡng, pin 100% và đưa vào Dock B!`);
+      }
+    }
+
+    // Modal Xem Mã QR
+    function showDeviceQr(hubId) {
+      const hub = HUBS_DATA.find(h => h.id === hubId);
+      if (!hub) return;
+      const title = document.getElementById('qr-modal-title');
+      const code = document.getElementById('qr-modal-code');
+      if (title) title.textContent = `Tem định danh & Mã QR Máy ${hub.id}`;
+      if (code) code.textContent = `${hub.id} • ${hub.serial}`;
+      const modal = document.getElementById('qr-modal');
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function closeQrModal(e) {
+      if (e && e.target && e.target.id !== 'qr-modal' && !e.target.classList.contains('modal-close-btn')) return;
+      const modal = document.getElementById('qr-modal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    // Kiểm kê kho nhanh
+    function quickInventoryCheck() {
+      const total = HUBS_DATA.length;
+      const avail = HUBS_DATA.filter(h => h.status === 'Sẵn sàng').length;
+      const rented = HUBS_DATA.filter(h => h.status === 'Đang thuê').length;
+      const reserved = HUBS_DATA.filter(h => h.status === 'Đã giữ chỗ').length;
+      const maint = HUBS_DATA.filter(h => h.status === 'Bảo trì').length;
+      const lost = HUBS_DATA.filter(h => h.status === 'Thất lạc').length;
+      
+      showToast(`Kiểm kê kho: Tổng ${total} máy (${avail} Sẵn sàng, ${rented} Đang thuê, ${reserved} Giữ chỗ, ${maint} Bảo trì, ${lost} Thất lạc).`);
+    }
+
+    // Toast
+    function showToast(msg) {
+      const toast = document.getElementById('toast-notify');
+      const text = document.getElementById('toast-text');
+      if (!toast || !text) return;
+      text.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3200);
+    }
+
+    
+
+    async function returnBooking(bookingId) {
+      const b = BOOKINGS_DATA.find(x => x.id === bookingId);
+      if (b) {
+        showToast(`⏳ Đang xử lý hoàn trả cho đoàn "${b.groupName}"...`);
+
+        try {
+          await fetch(`/api/groups/${encodeURIComponent(b.id)}/end`, { method: 'POST' });
+        } catch (err) {
+          console.warn('[BQL] Lỗi gọi API kết thúc tour:', err);
+        }
+
+        const hubs = HUBS_DATA.filter(h => (h.group === b.group || h.group === b.assignedGroup) && h.status === 'Đang thuê');
+        hubs.forEach(h => {
+          h.status = 'Sẵn sàng';
+          h.group = '-';
+          h.user = '-';
+          h.location = 'Dock Sạc A';
+        });
+
+        await loadServerData();
+        showToast(`✅ Đoàn "${b.groupName}" (${b.group || b.assignedGroup}) đã hoàn tất trả ${b.devicesCount} máy. Đã hoàn tiền cọc & lưu database!`);
+      }
+    }
+
+    function showBookingDetail(bookingId) {
+      const b = BOOKINGS_DATA.find(x => x.id === bookingId);
+      if (b) {
+        showToast(`Đoàn: ${b.groupName} (${b.group}) • ${b.devicesCount} máy • Ngôn ngữ: ${b.lang} • Cọc: ${b.deposit}`);
+      }
+    }
+
+    // ============================================================
+    // CẤU HÌNH VẬN HÀNH THỰC TẾ (RÚT GỌN CHO BQL)
+    // ============================================================
+    function saveOperationalConfig() {
+      showToast('Đã lưu cấu hình thuê thiết bị & bảo đảm thành công!');
+    }
+
+    function resetConfigToDefault() {
+      document.getElementById('cfg-rental-price').value = '50.000 đ';
+      document.getElementById('cfg-deposit-type').value = 'id-card';
+      document.getElementById('cfg-default-lang').value = 'vi';
+      document.getElementById('cfg-battery-threshold').value = '20';
+      document.getElementById('cfg-hotline').value = '024 3934 2253 (Lễ tân Di tích)';
+      showToast('Đã khôi phục cài đặt vận hành về giá trị mặc định!');
+    }
+
+    // ============================================================
+    // BẢN ĐỒ GIÁM SÁT & ĐIỀU PHỐI (THEO CHUẨN HOA-LO & HỆ THỐNG QUẢN LÝ / USER)
+    // ============================================================
+    let managerMap = null;
+    let managerSiteData = null;
+    let managerSiteCenter = [20.99965, 105.84280];
+    let managerSiteZoom = 18;
+    let zoneLayerGroup = null;
+    let poisLayerGroup = null;
+    let artifactsLayerGroup = null;
+    let hubsLayerGroup = null;
+    let showHubs = true;
+    let showPois = true;
+    let showArtifacts = true;
+
+    
+    // ========================================================
+    // ĐỘNG CƠ BẢN ĐỒ INDOOR SVG CHO BAN QUẢN LÝ (NO LEAFLET)
+    // ========================================================
+    let mgrScale = 1;
+    let mgrPanX = 0;
+    let mgrPanY = 0;
+    let isDraggingMgr = false;
+    let startMgrDragX = 0;
+    let startMgrDragY = 0;
+    let showMgrBeacons = true;
+    let showMgrHubs = true;
+
+    function updateMgrIndoorTransform(useTransition = true) {
+      const wrapper = document.getElementById('mgr-map-wrapper');
+      if (wrapper) {
+        wrapper.style.transition = useTransition ? 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)' : 'none';
+        wrapper.style.transform = `translate(${mgrPanX}px, ${mgrPanY}px) scale(${mgrScale})`;
+      }
+    }
+
+    function fitMgrIndoorMap() {
+      const container = document.getElementById('mgr-svg-container');
+      if (!container) return;
+      const cW = container.clientWidth || 900;
+      const cH = container.clientHeight || 640;
+      const svgW = 800;
+      const svgH = 500;
+      const fitScale = Math.min((cW - 32) / svgW, (cH - 160) / svgH);
+      mgrScale = Math.max(0.6, Math.min(fitScale, 1.5));
+      mgrPanX = (cW - svgW * mgrScale) / 2;
+      mgrPanY = (cH - 80 - svgH * mgrScale) / 2;
+      updateMgrIndoorTransform(true);
+    }
+
+    function zoomMgrIndoor(factor) {
+      const container = document.getElementById('mgr-svg-container');
+      const cW = container ? container.clientWidth : 900;
+      const cH = container ? container.clientHeight : 640;
+      const centerX = cW / 2;
+      const centerY = (cH - 100) / 2;
+      const prevScale = mgrScale;
+      mgrScale = Math.max(0.6, Math.min(mgrScale * factor, 2.5));
+      mgrPanX = centerX - (centerX - mgrPanX) * (mgrScale / prevScale);
+      mgrPanY = centerY - (centerY - mgrPanY) * (mgrScale / prevScale);
+      updateMgrIndoorTransform(true);
+    }
+
+    // ========================================================
+    // ĐỒNG BỘ HIỆN VẬT QUẢN LÝ (KHỚP 100% VỚI KHÁCH THAM QUAN & MONGODB)
+    // ========================================================
+    const MGR_INTERACTIVE_ITEMS = [
+      {
+        id: 'desk',
+        svgId: 'elem-1794647947024',
+        name: 'Bàn Làm Việc Tổng Thống',
+        category: 'HIỆN VẬT LỊCH SỬ • GỖ GÕ ĐỎ',
+        icon: '🪑',
+        x: 97.5,
+        y: 80,
+        desc: 'Bàn làm việc chạm khắc vân gỗ gõ đỏ nguyên khối theo phong cách cổ điển thập niên 1960. Nơi ký kết các sắc lệnh bang giao và chỉ đạo các cuộc họp tối mật của Tổng Thống.',
+        tags: ['Gỗ gõ đỏ quý hiếm', 'Thập niên 1960', 'Kích thước: 2.2m x 1.4m']
+      },
+      {
+        id: 'table',
+        svgId: 'elem-1794647957226',
+        name: 'Bàn Họp Hội Nghị Bầu Dục (Mặt Đá Cổ)',
+        category: 'NỘI THẤT HỘI NGHỊ • ĐÁ CẨM THẠCH',
+        icon: '🏛️',
+        x: 715,
+        y: 427.5,
+        desc: 'Bàn hội nghị hình bầu dục mặt đá cẩm thạch cổ vân rêu kết hợp khung gỗ gụ. Nơi tổ chức các phiên họp nội các cấp cao và đón tiếp các phái đoàn ngoại giao quốc tế.',
+        tags: ['Đá cẩm thạch vân rêu', 'Bầu dục 12 ghế', 'Trọng lượng: ~1.5 tấn']
+      },
+      {
+        id: 'pillar1',
+        svgId: 'elem-1794647921492',
+        name: 'Cột Trụ Chịu Lực Trung Tâm (Bắc)',
+        category: 'KIẾN TRÚC KẾT CẤU • ĐÁ GRANITE',
+        icon: '🏛️',
+        x: 250,
+        y: 230,
+        desc: 'Cột trụ chịu lực kiến trúc kiên cố bằng đá granite nguyên khối, kết hợp kết cấu bê tông dự ứng lực chống rung chấn và bom đạn của dinh thự.',
+        tags: ['Đá Granite hoa cương', 'Chiều cao: 4.2m', 'Đường kính: 0.8m']
+      },
+      {
+        id: 'pillar2',
+        svgId: 'elem-1794647978990-0',
+        name: 'Cột Trụ Chịu Lực Tiền Sảnh (Nam)',
+        category: 'KIẾN TRÚC KẾT CẤU • ĐÁ GRANITE',
+        icon: '🏛️',
+        x: 250,
+        y: 115,
+        desc: 'Cột trụ đối xứng trục đông - tây, nối liền kết cấu đại sảnh tiếp đón khách ngoại giao với không gian làm việc chính.',
+        tags: ['Đá Granite hoa cương', 'Chiều cao: 4.2m', 'Đường kính: 0.8m']
+      },
+      {
+        id: 'beacon1',
+        svgId: 'beacon-overlay-1',
+        name: 'Trạm Beacon 1: Cung Điện Phía Đông (BEACONTAG-1)',
+        category: 'TRẠM VI ĐỊNH VỊ BLE • CUNG ĐÔNG',
+        icon: '📡',
+        x: 745,
+        y: 258,
+        desc: 'Trạm vi định vị BLE Beacon BEACONTAG-1 tại cung điện phía Đông (745, 258). Giám sát khu vực đại biểu.',
+        tags: ['BEACONTAG-1', 'Major 1', 'Minor 977']
+      },
+      {
+        id: 'beacon2',
+        svgId: 'beacon-overlay-2',
+        name: 'Trạm Beacon 2: Cổng Bắc & Hành Lang Vòm (BEACONTAG-2)',
+        category: 'TRẠM VI ĐỊNH VỊ BLE • CỔNG BẮC',
+        icon: '📡',
+        x: 550,
+        y: 25,
+        desc: 'Trạm vi định vị BLE Beacon BEACONTAG-2 gắn tại vòm cửa phía Bắc (550, 25). Giám sát lối vào.',
+        tags: ['BEACONTAG-2', 'Major 1', 'Minor 977']
+      },
+      {
+        id: 'beacon3',
+        svgId: 'beacon-overlay-3',
+        name: 'Trạm Beacon 3: Tiền Sảnh Trung Tâm (BEACONTAG-3)',
+        category: 'TRẠM VI ĐỊNH VỊ BLE • TIỀN SẢNH',
+        icon: '📡',
+        x: 310,
+        y: 340,
+        desc: 'Trạm vi định vị BLE Beacon BEACONTAG-3 tại trung tâm tiền sảnh đón tiếp (310, 340).',
+        tags: ['BEACONTAG-3', 'Major 1', 'Minor 977']
+      }
+    ];
+
+    const MGR_INDOOR_HUB_COORDINATES = {
+      'HL-18': { x: 650, y: 90, battery: 95, area: 'Khu vực Bàn Làm Việc Tổng Thống' },
+      'HL-37': { x: 680, y: 240, battery: 85, area: 'Khu vực Cung Đông (gần Bàn Họp Đá Cổ)' },
+      'HL-44': { x: 270, y: 310, battery: 78, area: 'Khu vực Tiền sảnh Tây Nam (gần Cột Trụ Nam)' },
+      'HL-45': { x: 530, y: 110, battery: 96, area: 'Khu vực Cổng Bắc & Hành lang vòm' },
+      'HL-48': { x: 450, y: 380, battery: 64, area: 'Khu vực Tiền sảnh đón tiếp phía Nam' }
+    };
+
+    let mgrFiveHubs = [];
+
+    function gpsToSvgRoom(lat, lng) {
+      const latMin = 20.99980;
+      const latMax = 21.00030;
+      const lngMin = 105.84210;
+      const lngMax = 105.84280;
+
+      const normX = (lng - lngMin) / (lngMax - lngMin);
+      const x = Math.round(Math.max(40, Math.min(760, 50 + normX * 700)));
+
+      const normY = (lat - latMin) / (latMax - latMin);
+      const y = Math.round(Math.max(40, Math.min(460, 450 - normY * 400)));
+
+      return { x, y };
+    }
+
+    async function renderMgrIndoorHubs() {
+      try {
+        const res = await fetch('/api/devices');
+        const json = await res.json();
+        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+          mgrFiveHubs = json.data.map(h => {
+            const shortNum = (h.hubId.match(/\d+/) || ['01'])[0].padStart(2, '0');
+            let hX = h.x;
+            let hY = h.y;
+            if (hX === undefined || hY === undefined) {
+              const svgC = gpsToSvgRoom(h.lat, h.lng);
+              hX = svgC.x;
+              hY = svgC.y;
+            }
+            return {
+              id: h.hubId,
+              hubId: h.hubId,
+              shortNum,
+              x: hX,
+              y: hY,
+              lat: h.lat,
+              lng: h.lng,
+              area: h.location || 'Khu vực Nhà Tổng Thống',
+              battery: h.battery !== undefined ? h.battery : 100,
+              status: h.status || 'Sẵn sàng'
+            };
+          });
+        }
+      } catch (e) {
+        console.warn('Lỗi tải 5 Hub từ MongoDB vào Quản lý:', e);
+      }
+
+      const layer = document.getElementById('mgr-hubs-layer');
+      if (!layer) return;
+
+      mgrFiveHubs.forEach(h => {
+        MGR_INDOOR_HUB_COORDINATES[h.hubId] = {
+          x: h.x,
+          y: h.y,
+          lat: h.lat,
+          lng: h.lng,
+          battery: h.battery,
+          area: h.area
+        };
+      });
+
+      layer.innerHTML = mgrFiveHubs.map(h => {
+        const isLow = h.battery < 20;
+        const pinColor = isLow ? '#dc2626' : '#15803d';
+        const badgeStroke = isLow ? '#ef4444' : '#22c55e';
+        const textFill = isLow ? '#fca5a5' : '#86efac';
+
+        return `
+          <g class="mgr-hub-pin" id="mgr-hub-pin-${h.hubId}" onclick="selectMgrHub('${h.hubId}')" transform="translate(${h.x}, ${h.y})" style="cursor: pointer; transition: transform 0.5s cubic-bezier(0.2, 0.9, 0.3, 1);">
+            <circle cx="0" cy="0" r="14" fill="none" stroke="${pinColor}" stroke-width="1.5" opacity="0.4"/>
+            <circle cx="0" cy="0" r="9" fill="${pinColor}" stroke="#ffffff" stroke-width="2"/>
+            <text x="0" y="3" font-size="7" font-weight="bold" fill="#ffffff" text-anchor="middle" id="mgr-hub-text-${h.hubId}">${h.shortNum}</text>
+            <rect x="-24" y="-22" width="48" height="14" rx="4" fill="rgba(15, 23, 42, 0.92)" stroke="${badgeStroke}" stroke-width="0.8"/>
+            <text x="0" y="-12" font-size="6.8" font-weight="bold" fill="${textFill}" text-anchor="middle" id="mgr-hub-badge-${h.hubId}">${h.hubId} ${h.battery}%</text>
+          </g>
+        `;
+      }).join('');
+    }
+
+    function rerollMgrHubs() {
+      renderMgrIndoorHubs();
+      showToast(`🎲 Đã nạp lại danh sách Hub từ database: ${mgrFiveHubs.map(h => h.id).join(', ')}`);
+    }
+
+    function selectMgrItem(item, smoothPan = true) {
+      if (!item) return;
+
+      if (smoothPan) {
+        const container = document.getElementById('mgr-svg-container');
+        const cW = container ? container.clientWidth : 900;
+        const cH = container ? container.clientHeight : 640;
+        mgrScale = 1.45;
+        const visibleCenterY = (cH - 100) / 2;
+        mgrPanX = cW / 2 - item.x * mgrScale;
+        mgrPanY = visibleCenterY - item.y * mgrScale;
+        updateMgrIndoorTransform(true);
+      }
+
+      // Highlight
+      document.querySelectorAll('#natural-artisan-svg-mgr .highlight-active').forEach(el => el.classList.remove('highlight-active'));
+      const svgEl = document.getElementById(item.svgId);
+      if (svgEl) svgEl.classList.add('highlight-active');
+
+      // Update Card
+      const cardIcon = document.getElementById('mgr-card-icon');
+      const cardBadge = document.getElementById('mgr-card-badge');
+      const cardTitle = document.getElementById('mgr-card-title');
+      const cardDesc = document.getElementById('manager-map-bottom-desc');
+
+      if (cardIcon) cardIcon.innerText = item.icon;
+      if (cardBadge) cardBadge.innerText = item.category;
+      if (cardTitle) cardTitle.innerText = item.name;
+      if (cardDesc) cardDesc.innerText = item.desc;
+
+      showToast(`Đang xem: ${item.name}`);
+    }
+
+    window.onBeaconClick = function(idx) {
+      const beaconIds = ['beacon1', 'beacon2', 'beacon3'];
+      if (beaconIds[idx]) {
+        focusMgrItem(beaconIds[idx]);
+      }
+    };
+
+    function normalizeHubId(id) {
+      if (!id) return 'HL-18';
+      let s = String(id).trim().toUpperCase();
+      if (s.startsWith('HUB-')) s = s.replace('HUB-', '');
+      else if (s.startsWith('HUB')) s = s.replace('HUB', '');
+      const hlMatch = s.match(/^HL[\s\-]*(\d+)$/i);
+      if (hlMatch) {
+        return 'HL-' + String(parseInt(hlMatch[1], 10)).padStart(2, '0');
+      }
+      const numMatch = s.match(/\d+/);
+      if (numMatch) {
+        return 'HL-' + String(parseInt(numMatch[0], 10)).padStart(2, '0');
+      }
+      return s;
+    }
+
+    function selectMgrHub(hubId) {
+      const cleanId = (typeof normalizeHubId === 'function') ? normalizeHubId(hubId) : (hubId || 'HL-18');
+      const foundInFive = (typeof mgrFiveHubs !== 'undefined' && Array.isArray(mgrFiveHubs)) ? mgrFiveHubs.find(h => h.id === cleanId || h.hubId === cleanId) : null;
+      const hubInfo = foundInFive || MGR_INDOOR_HUB_COORDINATES[cleanId] || { x: 380, y: 260, battery: 100, area: 'Khu vực Nhà Tổng Thống' };
+      
+      const container = document.getElementById('mgr-svg-container');
+      const cW = container ? container.clientWidth : 900;
+      const cH = container ? container.clientHeight : 640;
+      mgrScale = 1.45;
+      const visibleCenterY = (cH - 100) / 2;
+      mgrPanX = cW / 2 - hubInfo.x * mgrScale;
+      mgrPanY = visibleCenterY - hubInfo.y * mgrScale;
+      updateMgrIndoorTransform(true);
+
+      const cardIcon = document.getElementById('mgr-card-icon');
+      const cardBadge = document.getElementById('mgr-card-badge');
+      const cardTitle = document.getElementById('mgr-card-title');
+      const cardDesc = document.getElementById('manager-map-bottom-desc');
+
+      if (cardIcon) cardIcon.innerText = '🎧';
+      if (cardBadge) {
+        cardBadge.innerText = `THIẾT BỊ GIÁM SÁT • ${cleanId}`;
+        cardBadge.style.color = '#15803d';
+      }
+      if (cardTitle) cardTitle.innerText = `Thiết Bị Vi Định Vị ${cleanId} (Pin: ${hubInfo.battery}%)`;
+      if (cardDesc) {
+        cardDesc.innerHTML = `Vị trí thực địa: <strong>${hubInfo.area}</strong>. Thiết bị đang kết nối trực tuyến với hệ thống vi định vị BLE của Nhà Tổng Thống.`;
+      }
+    }
+
+    function focusMgrItem(id) {
+      const item = MGR_INTERACTIVE_ITEMS.find(it => it.id === id);
+      if (item) selectMgrItem(item, true);
+    }
+
+    function setupMgrInteractiveItems() {
+      MGR_INTERACTIVE_ITEMS.forEach(item => {
+        const svgEl = document.getElementById(item.svgId);
+        if (svgEl) {
+          svgEl.style.cursor = 'pointer';
+          svgEl.addEventListener('click', (e) => {
+            e.stopPropagation();
+            selectMgrItem(item, true);
+          });
+          svgEl.addEventListener('mousedown', (e) => e.stopPropagation());
+        }
+      });
+    }
+
+    function setupMgrPanZoom() {
+      const container = document.getElementById('mgr-svg-container');
+      if (!container) return;
+
+      container.addEventListener('mousedown', e => {
+        if (e.target.closest('button, select, a, .map-overlay-bottom-card, .map-overlay-header')) return;
+        isDraggingMgr = true;
+        startMgrDragX = e.clientX - mgrPanX;
+        startMgrDragY = e.clientY - mgrPanY;
+        container.style.cursor = 'grabbing';
+      });
+
+      window.addEventListener('mousemove', e => {
+        if (!isDraggingMgr) return;
+        mgrPanX = e.clientX - startMgrDragX;
+        mgrPanY = e.clientY - startMgrDragY;
+        updateMgrIndoorTransform();
+      });
+
+      window.addEventListener('mouseup', () => {
+        isDraggingMgr = false;
+        container.style.cursor = 'grab';
+      });
+
+      container.addEventListener('wheel', e => {
+        e.preventDefault();
+        const factor = e.deltaY < 0 ? 1.15 : 0.85;
+        const rect = container.getBoundingClientRect();
+        const mX = e.clientX - rect.left;
+        const mY = e.clientY - rect.top;
+        const newScale = Math.min(Math.max(0.4, mgrScale * factor), 4);
+        mgrPanX = mX - (mX - mgrPanX) * (newScale / mgrScale);
+        mgrPanY = mY - (mY - mgrPanY) * (newScale / mgrScale);
+        mgrScale = newScale;
+        updateMgrIndoorTransform();
+      }, { passive: false });
+
+      // Keyboard Pan Navigation (Arrow Keys & WASD)
+      window.addEventListener('keydown', e => {
+        const activeTab = document.querySelector('.nav-item.active');
+        if (activeTab && !activeTab.getAttribute('onclick').includes('map')) return;
+        const step = 50;
+        const code = e.code;
+        const key = (e.key || '').toLowerCase();
+        let handled = false;
+        if (code === 'ArrowUp' || code === 'KeyW' || key === 'w' || key === 'ư') {
+          mgrPanY += step; handled = true;
+        } else if (code === 'ArrowDown' || code === 'KeyS' || key === 's') {
+          mgrPanY -= step; handled = true;
+        } else if (code === 'ArrowLeft' || code === 'KeyA' || key === 'a') {
+          mgrPanX += step; handled = true;
+        } else if (code === 'ArrowRight' || code === 'KeyD' || key === 'd' || key === 'đ') {
+          mgrPanX -= step; handled = true;
+        }
+        if (handled) {
+          e.preventDefault();
+          updateMgrIndoorTransform();
+        }
+      });
+    }
+
+    async function initManagerMap() {
+      setupMgrPanZoom();
+      setupMgrInteractiveItems();
+      renderMgrIndoorHubs();
+      fitMgrIndoorMap();
+      window.addEventListener('resize', fitMgrIndoorMap);
+    }
+function toggleHubMarkers() {
+      showHubs = !showHubs;
+      const btn = document.getElementById('btn-layer-hubs');
+      if (showHubs) {
+        if (hubsLayerGroup && !managerMap.hasLayer(hubsLayerGroup)) managerMap.addLayer(hubsLayerGroup);
+        if (btn) btn.classList.add('active');
+        showToast('Đang hiển thị vị trí các Hub');
+      } else {
+        if (hubsLayerGroup && managerMap.hasLayer(hubsLayerGroup)) managerMap.removeLayer(hubsLayerGroup);
+        if (btn) btn.classList.remove('active');
+        showToast('Đã ẩn vị trí các Hub');
+      }
+    }
+
+    function togglePoiMarkers() {
+      showPois = !showPois;
+      const btn = document.getElementById('btn-layer-pois');
+      if (showPois) {
+        if (poisLayerGroup && !managerMap.hasLayer(poisLayerGroup)) managerMap.addLayer(poisLayerGroup);
+        if (btn) btn.classList.add('active');
+        showToast('Đang hiển thị điểm di tích POIs');
+      } else {
+        if (poisLayerGroup && managerMap.hasLayer(poisLayerGroup)) managerMap.removeLayer(poisLayerGroup);
+        if (btn) btn.classList.remove('active');
+        showToast('Đã ẩn điểm di tích POIs');
+      }
+    }
+
+    function toggleArtifactMarkers() {
+      showArtifacts = !showArtifacts;
+      const btn = document.getElementById('btn-layer-artifacts');
+      if (showArtifacts) {
+        if (artifactsLayerGroup && !managerMap.hasLayer(artifactsLayerGroup)) managerMap.addLayer(artifactsLayerGroup);
+        if (btn) btn.classList.add('active');
+        showToast('Đang hiển thị vị trí hiện vật');
+      } else {
+        if (artifactsLayerGroup && managerMap.hasLayer(artifactsLayerGroup)) managerMap.removeLayer(artifactsLayerGroup);
+        if (btn) btn.classList.remove('active');
+        showToast('Đã ẩn vị trí hiện vật');
+      }
+    }
+
+    let showBlueprint = true;
+    function toggleBlueprintOverlay() {
+      showBlueprint = !showBlueprint;
+      const btn = document.getElementById('btn-layer-blueprint');
+      const els = document.querySelectorAll('.zone-blueprint-overlay');
+      els.forEach(el => {
+        el.style.display = showBlueprint ? '' : 'none';
+      });
+      if (showBlueprint) {
+        if (btn) btn.classList.add('active');
+        showToast('Đang hiển thị mặt bằng Blueprint Nhà Tổng Thống');
+      } else {
+        if (btn) btn.classList.remove('active');
+        showToast('Đã ẩn mặt bằng Blueprint Nhà Tổng Thống');
+      }
+    }
+
+    function focusNhaTongThongManager() {
+      if (managerMap) {
+        managerMap.flyTo([21.00010, 105.84245], 20, { duration: 1.2 });
+        L.popup()
+          .setLatLng([21.00010, 105.84245])
+          .setContent(`
+            <div style="padding: 6px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+              <div style="font-size: 10.5px; text-transform: uppercase; font-weight: 800; color: #d97706; letter-spacing: 0.5px; margin-bottom: 2px;">
+                MẶT BẰNG BLUEPRINT KIẾN TRÚC
+              </div>
+              <div style="font-weight: 700; font-size: 14px; color: #1e293b; margin-bottom: 4px;">🏛️ Nhà Tổng Thống (3 Trạm Beacon)</div>
+              <div style="font-size: 12px; color: #475569; line-height: 1.45; margin-bottom: 6px;">
+                Tọa độ thực địa: [20.99992, 105.84215] - [21.00028, 105.84275].
+              </div>
+              <div style="font-size: 11.5px; color: #0284c7; font-weight: 700;">
+                📡 3 Trạm BLE Beacon: BEACONTAG-1, BEACONTAG-2, BEACONTAG-3
+              </div>
+            </div>
+          `)
+          .openOn(managerMap);
+      }
+    }
+
+    let managerHubMarkers = {};
+
+    function updateOrCreateHubMarker(rawHubId, lat, lng, battery, group = 'Đoàn 1', user = '', ble = null) {
+      if (!managerMap || !hubsLayerGroup) return;
+      const hubId = rawHubId;
+      const isLow = (battery <= 20);
+
+      const hubHtml = `
+        <div class="member-pin-wrapper" title="${hubId}: ${user || group}">
+          <div class="member-pin-badge">${hubId} (${battery}%)</div>
+          <svg class="member-pin-svg" width="28" height="36" viewBox="0 0 28 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="14" cy="34" rx="7" ry="2" fill="rgba(0,0,0,0.4)"/>
+            <path d="M14 0C6.27 0 0 6.27 0 14C0 23 12.3 34.8 13.4 35.9C13.7 36.2 14.3 36.2 14.6 35.9C15.7 34.8 28 23 28 14C28 6.27 21.73 0 14 0Z" fill="${isLow ? '#dc2626' : '#0284c7'}" stroke="#ffffff" stroke-width="1.8"/>
+            <circle cx="14" cy="14" r="8" fill="${isLow ? '#991b1b' : '#0369a1'}"/>
+            <text x="14" y="17.5" font-size="9" font-weight="800" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto" text-anchor="middle" fill="#ffffff">${hubId.replace('HL-','').replace('NEU','')}</text>
+          </svg>
+        </div>
+      `;
+
+      const hubIcon = L.divIcon({
+        className: 'custom-hub-marker',
+        html: hubHtml,
+        iconSize: [28, 36],
+        iconAnchor: [14, 36],
+        popupAnchor: [0, -34]
+      });
+
+      const popupHtml = `
+        <div style="font-family: sans-serif; font-size: 13px; padding: 4px; line-height: 1.4;">
+          <div style="font-weight: 800; color: ${isLow ? '#dc2626' : '#0284c7'}; font-size: 14px; margin-bottom: 2px;">
+            🎧 Máy ${hubId} ${isLow ? '⚠️ CẢNH BÁO PIN YẾU' : ''}
+          </div>
+          <div style="font-size: 12px; color: #1c1917; font-weight: 600;">${user || 'Thiết bị trực tuyến'}</div>
+          <div style="font-size: 11.5px; color: #57534e; margin-top: 3px;">
+            Gán: <strong>${group}</strong> | Tọa độ: <strong>${Number(lat).toFixed(5)}, ${Number(lng).toFixed(5)}</strong>
+          </div>
+          <div style="font-size: 11.5px; color: ${isLow ? '#dc2626' : '#15803d'}; font-weight: 700; margin-top: 2px;">
+            Pin: ${battery}% ${isLow ? '(Cần thu hồi / sạc khẩn)' : '(Hoạt động tốt)'}
+          </div>
+        </div>
+      `;
+
+      if (managerHubMarkers[hubId]) {
+        managerHubMarkers[hubId].setLatLng([lat, lng]);
+        managerHubMarkers[hubId].setIcon(hubIcon);
+        managerHubMarkers[hubId].setPopupContent(popupHtml);
+      } else {
+        const marker = L.marker([lat, lng], { icon: hubIcon });
+        marker.bindPopup(popupHtml);
+        hubsLayerGroup.addLayer(marker);
+        managerHubMarkers[hubId] = marker;
+      }
+    }
+
+    // ========================================================
+    // KẾT NỐI WEBSOCKET BAN QUẢN LÝ (REALTIME 2 CHIỀU VỚI TEST & USER)
+    // ========================================================
+    let adminWs = null;
+    let adminWsReconnectTimer = null;
+
+    function connectAdminWebSocket() {
+      if (adminWs && adminWs.readyState === WebSocket.OPEN) return;
+
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsUrl = `${protocol}//${window.location.host}`;
+      adminWs = new WebSocket(wsUrl);
+
+      adminWs.onopen = () => {
+        console.log('[Manager WS] Đã kết nối WebSocket Ban Quản Lý (Realtime)!');
+        adminWs.send(JSON.stringify({
+          type: 'REGISTER_ADMIN'
+        }));
+      };
+
+      adminWs.onmessage = (event) => {
+        try {
+          const msg = JSON.parse(event.data);
+
+          if (msg.type === 'INIT_ADMIN_STATE') {
+            console.log('[Manager WS] Nhận dữ liệu khởi tạo BQL:', msg);
+            if (msg.hubs && Array.isArray(msg.hubs)) {
+              msg.hubs.forEach(h => {
+                const dev = HUBS_DATA.find(d => d.id === h.hubId || (d.id === 'HL-01' && h.hubId === 'NEU001') || (d.id === 'HL-02' && h.hubId === 'NEU002'));
+                if (dev) {
+                  if (h.battery !== undefined) dev.battery = Number(h.battery);
+                  if (h.lat) dev.lat = Number(h.lat);
+                  if (h.lng) dev.lng = Number(h.lng);
+                  if (h.yaw) dev.yaw = Number(h.yaw);
+                  if (h.ble) dev.ble = h.ble;
+                }
+              });
+              renderDeviceTable();
+            }
+          }
+
+          if (msg.type === 'HUB_LOCATION_UPDATE') {
+            const incomingHub = msg.hub || msg;
+            const hubId = incomingHub.hubId || msg.hubId;
+            const cleanHubId = (typeof normalizeHubId === 'function') ? normalizeHubId(hubId) : hubId;
+            const lat = Number(incomingHub.lat);
+            const lng = Number(incomingHub.lng);
+            const battery = Number(incomingHub.battery !== undefined ? incomingHub.battery : 100);
+
+            let targetX = incomingHub.x || msg.x;
+            let targetY = incomingHub.y || msg.y;
+
+            if (targetX === undefined || targetY === undefined) {
+              if (typeof gpsToSvgRoom === 'function' && !isNaN(lat) && !isNaN(lng)) {
+                const c = gpsToSvgRoom(lat, lng);
+                targetX = c.x;
+                targetY = c.y;
+              }
+            }
+
+            // Di chuyển pin Hub trên bản đồ SVG mặt bằng Nhà Tổng Thống
+            if (targetX !== undefined && targetY !== undefined) {
+              let pinEl = document.getElementById(`mgr-hub-pin-${cleanHubId}`);
+              if (!pinEl && mgrFiveHubs && mgrFiveHubs.length > 0) {
+                // Thử tìm theo danh sách
+                const found = mgrFiveHubs.find(h => h.hubId === cleanHubId || h.id === cleanHubId);
+                if (found) pinEl = document.getElementById(`mgr-hub-pin-${found.hubId}`);
+              }
+              if (pinEl) {
+                pinEl.style.transition = 'transform 0.5s cubic-bezier(0.2, 0.9, 0.3, 1)';
+                pinEl.setAttribute('transform', `translate(${targetX}, ${targetY})`);
+                const badgeEl = document.getElementById(`mgr-hub-badge-${cleanHubId}`);
+                if (badgeEl) badgeEl.textContent = `${cleanHubId} ${battery}%`;
+              }
+
+              if (MGR_INDOOR_HUB_COORDINATES[cleanHubId]) {
+                MGR_INDOOR_HUB_COORDINATES[cleanHubId].x = targetX;
+                MGR_INDOOR_HUB_COORDINATES[cleanHubId].y = targetY;
+                MGR_INDOOR_HUB_COORDINATES[cleanHubId].battery = battery;
+              }
+
+              if (mgrFiveHubs && Array.isArray(mgrFiveHubs)) {
+                const foundHub = mgrFiveHubs.find(h => (h.hubId || h.id) === cleanHubId);
+                if (foundHub) {
+                  foundHub.x = targetX;
+                  foundHub.y = targetY;
+                  foundHub.battery = battery;
+                  if (lat) foundHub.lat = lat;
+                  if (lng) foundHub.lng = lng;
+                }
+              }
+
+              // Đã tắt thông báo di chuyển để tránh hiện liên tục khi người dùng đi lại
+            }
+
+            // Cập nhật trong HUBS_DATA
+            const dev = HUBS_DATA.find(d => d.id === cleanHubId || d.hubId === cleanHubId);
+            if (dev) {
+              dev.battery = battery;
+              dev.lat = lat;
+              dev.lng = lng;
+              if (targetX) dev.x = targetX;
+              if (targetY) dev.y = targetY;
+              if (incomingHub.ble) dev.ble = incomingHub.ble;
+              renderDeviceTable();
+            }
+
+            if (managerMap) {
+              updateOrCreateHubMarker(cleanHubId, lat, lng, battery, dev ? dev.group : 'Đoàn 1', dev ? dev.user : 'Thiết bị di chuyển', dev ? dev.ble : null);
+            }
+          }
+
+          if (msg.type === 'ADMIN_BLE_EVENT') {
+            const dev = HUBS_DATA.find(d => d.id === msg.hubId || (d.id === 'HL-01' && msg.hubId === 'NEU001') || (d.id === 'HL-02' && msg.hubId === 'NEU002'));
+            if (dev && msg.ble) {
+              dev.ble = msg.ble;
+              if (msg.ble.beaconName) {
+                dev.location = msg.ble.beaconName;
+              }
+              renderDeviceTable();
+            }
+          }
+
+          if (msg.type === 'GROUP_CREATED' || msg.type === 'GROUP_ENDED') {
+            loadServerData();
+          }
+
+          if (msg.type === 'RENTAL_UPDATED') {
+            showToast(`💳 [THUÊ MÁY MỚI] Khách ${msg.renterName} vừa thuê máy ${msg.hubId} (+${(msg.rentalFee || 50000).toLocaleString('vi-VN')} đ)!`);
+            loadServerData();
+          }
+
+          if (msg.type === 'AI_DIALOGUE_UPDATE') {
+            if (msg.userQuestion) {
+              showToast(`🎧 [Hỏi đáp AI] Hub ${msg.hubId}: "${msg.userQuestion}"`);
+            }
+          }
+
+          if (msg.type === 'ADMIN_POI_GAZE_EVENT') {
+            showToast(`👀 [Thuyết minh] Hub ${msg.hubId} đang xem hiện vật #${msg.poiNumber}`);
+          }
+        } catch (e) {
+          console.warn('[Manager WS] Lỗi xử lý tin nhắn:', e);
+        }
+      };
+
+      adminWs.onclose = () => {
+        clearTimeout(adminWsReconnectTimer);
+        adminWsReconnectTimer = setTimeout(connectAdminWebSocket, 3000);
+      };
+
+      adminWs.onerror = (err) => {
+        console.warn('[Manager WS] Lỗi WebSocket:', err);
+      };
+    }
+
+    // Khởi chạy khi tải trang
+    window.addEventListener('DOMContentLoaded', () => {
+      initChart();
+      renderDeviceTable();
+      loadServerData();
+      initManagerMap();
+      connectAdminWebSocket();
+    });
+  </script>
+</body>
+</html>

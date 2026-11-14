@@ -161,7 +161,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (displaySiteName) {
         displaySiteName.textContent = siteData.siteName ? ` | ${siteData.siteName}` : '';
       }
-      document.title = `2Guide - ${siteData.siteName || 'Bản Đồ Tham Quan'}`;
+      document.title = '2Guide - Bản Đồ Tham Quan Thông Minh';
 
       if (siteData.center) {
         map.setView([siteData.center.lat, siteData.center.lng], siteData.zoom || 18);

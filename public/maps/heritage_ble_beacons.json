@@ -1,0 +1,90 @@
+{
+  "drawingId": "tab-1794647833950",
+  "canvasWidth": 800,
+  "canvasHeight": 500,
+  "unit": "pixel",
+  "exportedAt": "2026-11-14T10:35:53.896Z",
+  "beacons": [
+    {
+      "objectId": "elem-1794647998825",
+      "objectName": "Hình tròn",
+      "objectType": "circle",
+      "position": {
+        "x": 745,
+        "y": 258,
+        "box": {
+          "x": 730,
+          "y": 248,
+          "width": 30,
+          "height": 20
+        }
+      },
+      "beacon": {
+        "enabled": true,
+        "beaconId": "BEACONTAG-1",
+        "uuid": "E2C56DB5-DFFB-48D2-B060-D0F5A71096E0",
+        "major": 1,
+        "minor": 977,
+        "actionType": "audio-guide",
+        "actionTitle": "Thuyết minh Hình tròn",
+        "payloadUrl": "https://ditich.vn/tour?id=elem-1794647998825",
+        "rssiThreshold": -65,
+        "notes": "Gắn tại Hình tròn"
+      }
+    },
+    {
+      "objectId": "elem-1794652492383-0",
+      "objectName": "Hình tròn (Bản sao)",
+      "objectType": "circle",
+      "position": {
+        "x": 550,
+        "y": 25,
+        "box": {
+          "x": 535,
+          "y": 15,
+          "width": 30,
+          "height": 20
+        }
+      },
+      "beacon": {
+        "enabled": true,
+        "beaconId": "BEACONTAG-2",
+        "uuid": "E2C56DB5-DFFB-48D2-B060-D0F5A71096E0",
+        "major": 1,
+        "minor": 977,
+        "actionType": "audio-guide",
+        "actionTitle": "Thuyết minh Hình tròn",
+        "payloadUrl": "https://ditich.vn/tour?id=elem-1794647998825",
+        "rssiThreshold": -65,
+        "notes": "Gắn tại Hình tròn"
+      }
+    },
+    {
+      "objectId": "elem-1794652502322-0",
+      "objectName": "Hình tròn (Bản sao) (Bản sao)",
+      "objectType": "circle",
+      "position": {
+        "x": 310,
+        "y": 340,
+        "box": {
+          "x": 295,
+          "y": 330,
+          "width": 30,
+          "height": 20
+        }
+      },
+      "beacon": {
+        "enabled": true,
+        "beaconId": "BEACONTAG-3",
+        "uuid": "E2C56DB5-DFFB-48D2-B060-D0F5A71096E0",
+        "major": 1,
+        "minor": 977,
+        "actionType": "audio-guide",
+        "actionTitle": "Thuyết minh Hình tròn",
+        "payloadUrl": "https://ditich.vn/tour?id=elem-1794647998825",
+        "rssiThreshold": -65,
+        "notes": "Gắn tại Hình tròn"
+      }
+    }
+  ]
+}

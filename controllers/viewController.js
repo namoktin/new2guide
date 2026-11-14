@@ -13,9 +13,28 @@ const {
 const publicDir = path.join(__dirname, '..', 'public');
 
 class ViewController {
-  // 1. Cổng khách tham quan: Công khai
+  // 1. Cổng khách tham quan: Công khai (Luôn gửi no-cache để cập nhật UI/UX tức thời)
   renderUser(req, res) {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
     res.sendFile(path.join(publicDir, 'user.html'));
+  }
+
+  // 1b. Giao diện Nhà tù Hỏa Lò theo Canva prototype (Bản đồ & Câu chuyện)
+  renderHoaLo(req, res) {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    res.sendFile(path.join(publicDir, 'hoa-lo.html'));
+  }
+
+  // 1c. Bản Demo Quản lý thiết bị thuyết minh Nhà tù Hỏa Lò (Canva Manager Style)
+  renderManagerDemo(req, res) {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    res.sendFile(path.join(publicDir, 'manager-demo.html'));
   }
 
   // 2. Cổng giả lập tín hiệu GPS & Pin (MÃ BÍ MẬT): Ngăn cache để luôn hiện màn hình khóa khi F5
@@ -28,14 +47,12 @@ class ViewController {
   }
 
 
-  // 3. Cổng Ban Quản Lý (MÃ BÍ MẬT): Ngăn cache và xóa cookie để luôn hiện màn hình khóa
+  // 3. Cổng Ban Quản Lý: Truy cập trực tiếp giao diện Canva Manager mới (KHÔNG CẦN MẬT KHẨU)
   renderAdmin(req, res) {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
-    res.setHeader('Surrogate-Control', 'no-store');
-    res.setHeader('Set-Cookie', 'admin_session_key=; Path=/; Max-Age=0');
-    return res.sendFile(path.join(publicDir, 'index.html'));
+    return res.sendFile(path.join(publicDir, 'manager-demo.html'));
   }
 
   // 4. Studio Biên Tập (MÃ BÍ MẬT): Ngăn cache và xóa cookie để luôn hiện màn hình khóa

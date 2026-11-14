@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎧 2Guide — Bộ Sưu Tập Phong Cách Giao Diện Du Khách (user.html)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #060913;
+            --surface: #0e1626;
+            --border: rgba(255, 255, 255, 0.1);
+            --accent: #0284c7;
+            --accent-cyan: #06b6d4;
+            --accent-green: #10b981;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body {
+            background: var(--bg);
+            color: #f8fafc;
+            min-height: 100vh;
+            padding: 40px 20px 80px;
+        }
+        .container { max-width: 1300px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 36px; }
+        .badge-hero {
+            display: inline-flex; align-items: center; gap: 8px; background: rgba(6, 182, 212, 0.15);
+            border: 1px solid rgba(6, 182, 212, 0.35); color: #38bdf8; padding: 6px 16px; border-radius: 30px;
+            font-size: 12.5px; font-weight: 700; margin-bottom: 16px;
+        }
+        h1 {
+            font-size: 32px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 12px;
+            background: linear-gradient(90deg, #ffffff, #38bdf8, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        p.subtitle { font-size: 15px; color: #94a3b8; max-width: 820px; margin: 0 auto 24px; line-height: 1.6; }
+        .stats-strip { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-bottom: 30px; }
+        .stat-pill {
+            background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border); padding: 8px 18px;
+            border-radius: 20px; font-size: 13px; display: flex; align-items: center; gap: 8px;
+        }
+        .stat-pill strong { color: var(--accent-cyan); font-family: 'JetBrains Mono', monospace; }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+        .style-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 22px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+        }
+        .style-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent-cyan);
+            box-shadow: 0 12px 30px rgba(6, 182, 212, 0.2);
+        }
+        .style-num {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 800;
+            font-size: 13px;
+            color: var(--accent-cyan);
+            background: rgba(6, 182, 212, 0.12);
+            padding: 3px 8px;
+            border-radius: 6px;
+        }
+        .style-badge-tag {
+            font-size: 11px;
+            font-weight: 700;
+            color: #38bdf8;
+            background: rgba(56, 189, 248, 0.1);
+            padding: 3px 10px;
+            border-radius: 12px;
+        }
+        .btn-open-preview:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 16px rgba(2, 132, 199, 0.6) !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="badge-hero">2GUIDE • SMART TOURIST & AI VOICE GUIDE</div>
+            <h1>BỘ SƯU TẬP PHONG CÁCH GIAO DIỆN DU KHÁCH (USER.HTML)</h1>
+            <p class="subtitle">
+                Được tạo tự động từ file gốc <code>C:\Users\Nam\Desktop\antigravity\2guide\public\user.html</code> kết hợp tri thức thiết kế của <strong>ui-ux-pro-max-skill</strong>. Tích hợp đầy đủ Bản đồ di tích Văn Miếu, La bàn định hướng nón tầm nhìn, Thẻ thuyết minh Audio 3D và Khung chat Trợ lý AI. Có thể mở xem trực tiếp Offline 100%!
+            </p>
+            <div class="stats-strip">
+                <div class="stat-pill">🎧 <span>12 Phong cách du khách tuyển chọn</span></div>
+                <div class="stat-pill">⚡ <span>Bật file .html xem được ngay Offline</span></div>
+                <div class="stat-pill">💬 <span>Nút xem thử khung Chat AI & Thẻ thuyết minh</span></div>
+            </div>
+        </header>
+
+        <div class="grid">
+            
+    <div class="style-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <span class="style-num">#01</span>
+            <span class="style-badge-tag">⭐ Đề Xuất #1 Toàn Diện</span>
+        </div>
+        <h3 style="font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 6px;">Modern Glassmorphism & Cyber Amber</h3>
+        <p style="font-size: 12px; color: #94a3b8; line-height: 1.5; margin-bottom: 12px; min-height: 54px;">Kính mờ obsidian cao cấp kết hợp ánh kim hổ phách (#f59e0b) và cyan (#06b6d4). Sang trọng, hiện đại, tối ưu cho cả du khách trẻ lẫn quốc tế.</p>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+            <span style="font-size: 11px; color: #64748b; font-weight: 600;">Modern Glass</span>
+            <div style="display: flex; gap: 5px;"><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #070b14; border: 1px solid rgba(255,255,255,0.2);"></span><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #06b6d4; border: 1px solid rgba(255,255,255,0.2);"></span><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #f59e0b; border: 1px solid rgba(255,255,255,0.2);"></span><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #10b981; border: 1px solid rgba(255,255,255,0.2);"></span></div>
+        </div>
+        <div style="display: flex; gap: 8px;">
+            <a href="01-modern-glassmorphism.html" class="btn-open-preview" target="_blank" style="
+                flex: 1; text-align: center; text-decoration: none; background: linear-gradient(135deg, #0284c7, #06b6d4);
+                color: #fff; padding: 9px 12px; border-radius: 8px; font-size: 12.5px; font-weight: 700; display: inline-flex;
+                align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+            ">
+                👁️ Mở Giao Diện Du Khách
+            </a>
+        </div>
+    </div>
+    
+    <div class="style-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <span class="style-num">#02</span>
+            <span class="style-badge-tag">🏛️ Hoàng Thành & Cố Đô</span>
+        </div>
+        <h3 style="font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 6px;">Imperial Heritage Gold & Crimson</h3>
+        <p style="font-size: 12px; color: #94a3b8; line-height: 1.5; margin-bottom: 12px; min-height: 54px;">Sắc đỏ son hoàng gia (#dc2626) kết hợp vàng kim ngũ trảo (#f59e0b) trên nền đen sơn mài. Tôn vinh nét linh thiêng và bề thế của di tích lịch sử quốc gia.</p>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+            <span style="font-size: 11px; color: #64748b; font-weight: 600;">Imperial Heritage</span>
+            <div style="display: flex; gap: 5px;"><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #0a0808; border: 1px solid rgba(255,255,255,0.2);"></span><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #dc2626; border: 1px solid rgba(255,255,255,0.2);"></span><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #f59e0b; border: 1px solid rgba(255,255,255,0.2);"></span><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #fbbf24; border: 1px solid rgba(255,255,255,0.2);"></span></div>
+        </div>
+        <div style="display: flex; gap: 8px;">
+            <a href="02-heritage-luxury-gold.html" class="btn-open-preview" target="_blank" style="
+                flex: 1; text-align: center; text-decoration: none; background: linear-gradient(135deg, #0284c7, #06b6d4);
+                color: #fff; padding: 9px 12px; border-radius: 8px; font-size: 12.5px; font-weight: 700; display: inline-flex;
+                align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+            ">
+                👁️ Mở Giao Diện Du Khách
+            </a>
+        </div>
+    </div>
+    
+    <div class="style-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <span class="style-num">#03</span>
+            <span class="style-badge-tag">👓 Giả Lập Kính Thông Minh AR</span>
+        </div>
+        <h3 style="font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 6px;">HUD / Sci-Fi Cyber Gaze (AR Smart Glass)</h3>
+        <p style="font-size: 12px; color: #94a3b8; line-height: 1.5; margin-bottom: 12px; min-height: 54px;">Mô phỏng kính thông minh AR Gaze: Viền neon cyan mảnh 1px, nón tầm nhìn dạ quang, font kỹ thuật monospace, vát góc polygon công nghệ cao.</p>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+            <span style="font-size: 11px; color: #64748b; font-weight: 600;">Cyberpunk / AR HUD</span>
+            <div style="display: flex; gap: 5px;"><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #020611; border: 1px solid rgba(255,255,255,0.2);"></span><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #00ffff; border: 1px solid rgba(255,255,255,0.2);"></span><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #0088ff; border: 1px solid rgba(255,255,255,0.2);"></span><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #00ff66; border: 1px solid rgba(255,255,255,0.2);"></span></div>
+        </div>
+        <div style="display: flex; gap: 8px;">
+            <a href="03-hud-scifi-gaze.html" class="btn-open-preview" target="_blank" style="
+                flex: 1; text-align: center; text-decoration: none; background: linear-gradient(135deg, #0284c7, #06b6d4);
+                color: #fff; padding: 9px 12px; border-radius: 8px; font-size: 12.5px; font-weight: 700; display: inline-flex;
+                align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+            ">
+                👁️ Mở Giao Diện Du Khách
+            </a>
+        </div>
+    </div>
+    
+    <div class="style-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <span class="style-num">#04</span>
+            <span class="style-badge-tag">🍎 Trải Nghiệm Chuẩn Apple HIG</span>
+        </div>
+        <h3 style="font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 6px;">Apple Native iOS 18 Design</h3>
+        <p style="font-size: 12px; color: #94a3b8; line-height: 1.5; margin-bottom: 12px; min-height: 54px;">Frosted glass siêu mờ đục (28px blur), bo góc 24px mềm mại, typography sắc sảo, nút bấm mượt mà như ứng dụng gốc Apple Maps & Apple Music.</p>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+            <span style="font-size: 11px; color: #64748b; font-weight: 600;">Native Mobile OS</span>
+            <div style="display: flex; gap: 5px;"><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #14171f; border: 1px solid rgba(255,255,255,0.2);"></span><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #007aff; border: 1px solid rgba(255,255,255,0.2);"></span><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #34c759; border: 1px solid rgba(255,255,255,0.2);"></span><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #ff9500; border: 1px solid rgba(255,255,255,0.2);"></span></div>
+        </div>
+        <div style="display: flex; gap: 8px;">
+            <a href="04-apple-native-ios.html" class="btn-open-preview" target="_blank" style="
+                flex: 1; text-align: center; text-decoration: none; background: linear-gradient(135deg, #0284c7, #06b6d4);
+                color: #fff; padding: 9px 12px; border-radius: 8px; font-size: 12.5px; font-weight: 700; display: inline-flex;
+                align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+            ">
+                👁️ Mở Giao Diện Du Khách
+            </a>
+        </div>
+    </div>
+    
+    <div class="style-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <span class="style-num">#05</span>
+            <span class="style-badge-tag">🌿 Đá Cổ, Rêu Phong & Vườn Xanh</span>
+        </div>
+        <h3 style="font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 6px;">Organic Biophilic & Ancient Stone</h3>
+        <p style="font-size: 12px; color: #94a3b8; line-height: 1.5; margin-bottom: 12px; min-height: 54px;">Màu xanh rêu cổ thụ (#15803d), nâu trầm gỗ lim cổ và xám đá bia. Rất hòa hợp với không gian vườn cây, hồ nước và cảnh quan di tích ngoài trời.</p>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+            <span style="font-size: 11px; color: #64748b; font-weight: 600;">Eco / Organic</span>
+            <div style="display: flex; gap: 5px;"><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #0b1610; border: 1px solid rgba(255,255,255,0.2);"></span><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #15803d; border: 1px solid rgba(255,255,255,0.2);"></span><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #22c55e; border: 1px solid rgba(255,255,255,0.2);"></span><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #d97706; border: 1px solid rgba(255,255,255,0.2);"></span></div>
+        </div>
+        <div style="display: flex; gap: 8px;">
+            <a href="05-organic-biophilic.html" class="btn-open-preview" target="_blank" style="
+                flex: 1; text-align: center; text-decoration: none; background: linear-gradient(135deg, #0284c7, #06b6d4);
+                color: #fff; padding: 9px 12px; border-radius: 8px; font-size: 12.5px; font-weight: 700; display: inline-flex;
+                align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+            ">
+                👁️ Mở Giao Diện Du Khách
+            </a>
+        </div>
+    </div>
+    
+    <div class="style-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <span class="style-num">#06</span>
+            <span class="style-badge-tag">🌙 Chuyên Cho Tour Đêm / Không Chói Mắt</span>
+        </div>
+        <h3 style="font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 6px;">Dark Mode OLED Night Tour</h3>
+        <p style="font-size: 12px; color: #94a3b8; line-height: 1.5; margin-bottom: 12px; min-height: 54px;">Nền đen OLED thuần khiết #000000, tương phản cực cao với chữ trắng tinh khiết. Thiết kế chuyên biệt cho tour du lịch đêm Văn Miếu / Hoàng Thành.</p>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+            <span style="font-size: 11px; color: #64748b; font-weight: 600;">Minimal Dark</span>
+            <div style="display: flex; gap: 5px;"><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #000000; border: 1px solid rgba(255,255,255,0.2);"></span><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #ffffff; border: 1px solid rgba(255,255,255,0.2);"></span><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #262626; border: 1px solid rgba(255,255,255,0.2);"></span><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #06b6d4; border: 1px solid rgba(255,255,255,0.2);"></span></div>
+        </div>
+        <div style="display: flex; gap: 8px;">
+            <a href="06-dark-mode-oled-night.html" class="btn-open-preview" target="_blank" style="
+                flex: 1; text-align: center; text-decoration: none; background: linear-gradient(135deg, #0284c7, #06b6d4);
+                color: #fff; padding: 9px 12px; border-radius: 8px; font-size: 12.5px; font-weight: 700; display: inline-flex;
+                align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+            ">
+                👁️ Mở Giao Diện Du Khách
+            </a>
+        </div>
+    </div>
+    
+    <div class="style-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <span class="style-num">#07</span>
+            <span class="style-badge-tag">🍱 Trẻ Trung / Phong Cách Gen Z</span>
+        </div>
+        <h3 style="font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 6px;">Bento Box Modern Visitor</h3>
+        <p style="font-size: 12px; color: #94a3b8; line-height: 1.5; margin-bottom: 12px; min-height: 54px;">Phân chia module độc lập bo góc 20px, trực quan từng thẻ thông tin hiện vật, tóm tắt sử liệu và widget nghe nhạc. Rất gọn gàng và hiện đại.</p>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+            <span style="font-size: 11px; color: #64748b; font-weight: 600;">Modular Bento</span>
+            <div style="display: flex; gap: 5px;"><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #090d16; border: 1px solid rgba(255,255,255,0.2);"></span><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #6366f1; border: 1px solid rgba(255,255,255,0.2);"></span><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #38bdf8; border: 1px solid rgba(255,255,255,0.2);"></span><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #10b981; border: 1px solid rgba(255,255,255,0.2);"></span></div>
+        </div>
+        <div style="display: flex; gap: 8px;">
+            <a href="07-bento-modern-visitor.html" class="btn-open-preview" target="_blank" style="
+                flex: 1; text-align: center; text-decoration: none; background: linear-gradient(135deg, #0284c7, #06b6d4);
+                color: #fff; padding: 9px 12px; border-radius: 8px; font-size: 12.5px; font-weight: 700; display: inline-flex;
+                align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+            ">
+                👁️ Mở Giao Diện Du Khách
+            </a>
+        </div>
+    </div>
+    
+    <div class="style-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <span class="style-num">#08</span>
+            <span class="style-badge-tag">⚡ Pop Art Đương Đại / Nổi Bật</span>
+        </div>
+        <h3 style="font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 6px;">Neubrutalism Pop Heritage</h3>
+        <p style="font-size: 12px; color: #94a3b8; line-height: 1.5; margin-bottom: 12px; min-height: 54px;">Viền đen dày 2.5px, bóng đổ phẳng 45 độ, màu vàng chanh (#ffe600) và hồng rực rỡ. Rất bắt mắt, độc lạ, thích hợp thu hút giới trẻ check-in du lịch.</p>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+            <span style="font-size: 11px; color: #64748b; font-weight: 600;">Brutalist / Pop</span>
+            <div style="display: flex; gap: 5px;"><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #fdfbf7; border: 1px solid rgba(255,255,255,0.2);"></span><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #000000; border: 1px solid rgba(255,255,255,0.2);"></span><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #ffe600; border: 1px solid rgba(255,255,255,0.2);"></span><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #ff0055; border: 1px solid rgba(255,255,255,0.2);"></span></div>
+        </div>
+        <div style="display: flex; gap: 8px;">
+            <a href="08-neubrutalism-pop.html" class="btn-open-preview" target="_blank" style="
+                flex: 1; text-align: center; text-decoration: none; background: linear-gradient(135deg, #0284c7, #06b6d4);
+                color: #fff; padding: 9px 12px; border-radius: 8px; font-size: 12.5px; font-weight: 700; display: inline-flex;
+                align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+            ">
+                👁️ Mở Giao Diện Du Khách
+            </a>
+        </div>
+    </div>
+    
+    <div class="style-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <span class="style-num">#09</span>
+            <span class="style-badge-tag">📜 Bản Đồ Cổ / Trang Sách Sử Điển</span>
+        </div>
+        <h3 style="font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 6px;">E-Ink / Ancient Parchment (Giấy Dó & Mực Tàu)</h3>
+        <p style="font-size: 12px; color: #94a3b8; line-height: 1.5; margin-bottom: 12px; min-height: 54px;">Tone màu ngả vàng giấy dó (#f6f3eb), chữ màu mực tàu đen tuyền, font chữ có chân cổ điển. Cho du khách cảm giác như đang cầm một tấm bảo đồ cổ đi thám hiểm.</p>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+            <span style="font-size: 11px; color: #64748b; font-weight: 600;">Vintage Parchment</span>
+            <div style="display: flex; gap: 5px;"><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #f6f3eb; border: 1px solid rgba(255,255,255,0.2);"></span><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #21201d; border: 1px solid rgba(255,255,255,0.2);"></span><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #8c2d19; border: 1px solid rgba(255,255,255,0.2);"></span><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #3d3935; border: 1px solid rgba(255,255,255,0.2);"></span></div>
+        </div>
+        <div style="display: flex; gap: 8px;">
+            <a href="09-eink-paper-parchment.html" class="btn-open-preview" target="_blank" style="
+                flex: 1; text-align: center; text-decoration: none; background: linear-gradient(135deg, #0284c7, #06b6d4);
+                color: #fff; padding: 9px 12px; border-radius: 8px; font-size: 12.5px; font-weight: 700; display: inline-flex;
+                align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+            ">
+                👁️ Mở Giao Diện Du Khách
+            </a>
+        </div>
+    </div>
+    
+    <div class="style-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <span class="style-num">#10</span>
+            <span class="style-badge-tag">🌌 Cực Quang Huyền Ảo / Light Show</span>
+        </div>
+        <h3 style="font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 6px;">Liquid Glass Aurora Glow</h3>
+        <p style="font-size: 12px; color: #94a3b8; line-height: 1.5; margin-bottom: 12px; min-height: 54px;">Thủy tinh lỏng phản chiếu dải màu cực quang lam - tím - ngọc chuyển động mịn màng. Cực kỳ lôi cuốn cho các bảo tàng nghệ thuật và triển lãm ánh sáng.</p>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+            <span style="font-size: 11px; color: #64748b; font-weight: 600;">Fluid Glass</span>
+            <div style="display: flex; gap: 5px;"><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #0b1329; border: 1px solid rgba(255,255,255,0.2);"></span><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #38bdf8; border: 1px solid rgba(255,255,255,0.2);"></span><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #818cf8; border: 1px solid rgba(255,255,255,0.2);"></span><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #34d399; border: 1px solid rgba(255,255,255,0.2);"></span></div>
+        </div>
+        <div style="display: flex; gap: 8px;">
+            <a href="10-liquid-glass-aurora.html" class="btn-open-preview" target="_blank" style="
+                flex: 1; text-align: center; text-decoration: none; background: linear-gradient(135deg, #0284c7, #06b6d4);
+                color: #fff; padding: 9px 12px; border-radius: 8px; font-size: 12.5px; font-weight: 700; display: inline-flex;
+                align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+            ">
+                👁️ Mở Giao Diện Du Khách
+            </a>
+        </div>
+    </div>
+    
+    <div class="style-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <span class="style-num">#11</span>
+            <span class="style-badge-tag">🎛️ Nổi Khối 3D Như Máy Nghe Cầm Tay</span>
+        </div>
+        <h3 style="font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 6px;">Neumorphism Soft Audio Console</h3>
+        <p style="font-size: 12px; color: #94a3b8; line-height: 1.5; margin-bottom: 12px; min-height: 54px;">Thiết kế nổi khối xúc giác 3D mềm mại, các phím Play/Pause, âm lượng và la bàn như những nút bấm vật lý trên thiết bị Audioguide cầm tay chuyên dụng.</p>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+            <span style="font-size: 11px; color: #64748b; font-weight: 600;">Soft 3D / Tactile</span>
+            <div style="display: flex; gap: 5px;"><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #151924; border: 1px solid rgba(255,255,255,0.2);"></span><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #3b82f6; border: 1px solid rgba(255,255,255,0.2);"></span><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #10b981; border: 1px solid rgba(255,255,255,0.2);"></span><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #94a3b8; border: 1px solid rgba(255,255,255,0.2);"></span></div>
+        </div>
+        <div style="display: flex; gap: 8px;">
+            <a href="11-neumorphism-soft-console.html" class="btn-open-preview" target="_blank" style="
+                flex: 1; text-align: center; text-decoration: none; background: linear-gradient(135deg, #0284c7, #06b6d4);
+                color: #fff; padding: 9px 12px; border-radius: 8px; font-size: 12.5px; font-weight: 700; display: inline-flex;
+                align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+            ">
+                👁️ Mở Giao Diện Du Khách
+            </a>
+        </div>
+    </div>
+    
+    <div class="style-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <span class="style-num">#12</span>
+            <span class="style-badge-tag">🕹️ Thập Niên 80s / Neon Hồng Sen</span>
+        </div>
+        <h3 style="font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 6px;">Retro-Futurism Synthwave 80s</h3>
+        <p style="font-size: 12px; color: #94a3b8; line-height: 1.5; margin-bottom: 12px; min-height: 54px;">Tone màu neon hồng sen (#ff007f) và tím than huyền bí, mang phong cách trò chơi phiêu lưu retro giải mã mật thư di tích lịch sử.</p>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+            <span style="font-size: 11px; color: #64748b; font-weight: 600;">Retro 80s</span>
+            <div style="display: flex; gap: 5px;"><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #150826; border: 1px solid rgba(255,255,255,0.2);"></span><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #ff007f; border: 1px solid rgba(255,255,255,0.2);"></span><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #00f0ff; border: 1px solid rgba(255,255,255,0.2);"></span><span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: #a855f7; border: 1px solid rgba(255,255,255,0.2);"></span></div>
+        </div>
+        <div style="display: flex; gap: 8px;">
+            <a href="12-retro-synthwave.html" class="btn-open-preview" target="_blank" style="
+                flex: 1; text-align: center; text-decoration: none; background: linear-gradient(135deg, #0284c7, #06b6d4);
+                color: #fff; padding: 9px 12px; border-radius: 8px; font-size: 12.5px; font-weight: 700; display: inline-flex;
+                align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+            ">
+                👁️ Mở Giao Diện Du Khách
+            </a>
+        </div>
+    </div>
+    
+        </div>
+    </div>
+</body>
+</html>

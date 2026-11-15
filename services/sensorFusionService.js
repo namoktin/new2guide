@@ -118,10 +118,14 @@ class SensorFusionService {
     }
 
     if (moveDistPixels > 0) {
-      // Góc Yaw: 0 độ là hướng Bắc (đi lên, y giảm), 90 độ là Đông (x tăng), 180 độ là Nam (y tăng), 270 độ là Tây (x giảm)
-      const rad = (state.yaw * Math.PI) / 180.0;
-      const dx = moveDistPixels * Math.sin(rad);
-      const dy = -moveDistPixels * Math.cos(rad);
+      // Góc Yaw: state.yaw là góc la bàn địa lý WGS84 (0° = Bắc, 90° = Đông, 180° = Nam, 270° = Tây)
+      // Mặt bằng kiến trúc Nhà Tổng Thống nằm nghiêng góc 75.0° so với hướng Bắc.
+      // Do đó, góc phương vị thực tế trong hệ tọa độ phòng SVG (Yaw_svg) là:
+      // Yaw_svg = (state.yaw + 75.0 + 360) % 360
+      const yawSvg = (state.yaw + 75.0 + 360.0) % 360.0;
+      const radSvg = (yawSvg * Math.PI) / 180.0;
+      const dx = moveDistPixels * Math.sin(radSvg);
+      const dy = -moveDistPixels * Math.cos(radSvg);
 
       state.x += dx;
       state.y += dy;

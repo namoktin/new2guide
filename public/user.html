@@ -229,7 +229,6 @@
       box-shadow: 0 16px 45px rgba(0, 0, 0, 0.15);
       border: 1px solid rgba(0, 0, 0, 0.05);
       z-index: 1100;
-      animation: slideUp 0.35s ease;
       pointer-events: auto;
     }
 
@@ -1158,8 +1157,8 @@
     }
 
     @keyframes slideUp {
-      from { opacity: 0; transform: translateY(30px); }
-      to { opacity: 1; transform: translateY(0); }
+      from { opacity: 0; transform: translate(-50%, 25px); }
+      to { opacity: 1; transform: translate(-50%, 0); }
     }
 
     @keyframes pulsePin {
@@ -1338,6 +1337,7 @@
       top: 0;
       transform-origin: 0 0;
       will-change: transform;
+      transition: none;
     }
     #svg-host {
       width: 800px;
@@ -1488,7 +1488,41 @@
       
       <!-- BẢN ĐỒ VECTOR PHÒNG TỔNG THỐNG (KHÔNG DÙNG LEAFLET) -->
       <div id="svg-container">
-        <div id="map-wrapper">
+        <div id="map-wrapper" style="transform-origin: 0 0; transition: none;">
+          <script>
+            (function() {
+              try {
+                var w = window.innerWidth || 800;
+                var h = window.innerHeight || 500;
+                var s = w < 600 ? 1.15 : 1.25;
+                var tx = 380, ty = 260;
+                var lastPos = localStorage.getItem('2guide_last_user_pos');
+                if (lastPos) {
+                  try {
+                    var parsed = JSON.parse(lastPos);
+                    if (parsed && typeof parsed.x === 'number' && typeof parsed.y === 'number') {
+                      tx = parsed.x;
+                      ty = parsed.y;
+                    }
+                  } catch(e) {}
+                }
+                var p = new URLSearchParams(window.location.search);
+                var hid = p.get('hubId') || p.get('hub') || localStorage.getItem('2guide_current_hub_id') || 'HL-01';
+                if (!lastPos) {
+                  if (hid === 'HL-02') { tx = 380; ty = 170; }
+                  else if (hid === 'HL-03') { tx = 680; ty = 240; }
+                }
+                var px = w / 2 - tx * s;
+                var py = h / 2 - ty * s;
+                var wrap = document.getElementById('map-wrapper');
+                if (wrap) {
+                  wrap.style.transformOrigin = '0 0';
+                  wrap.style.transition = 'none';
+                  wrap.style.transform = 'translate(' + px + 'px, ' + py + 'px) scale(' + s + ')';
+                }
+              } catch(e) {}
+            })();
+          </script>
           <div id="svg-host">
             <svg xmlns="http://www.w3.org/2000/svg" id="natural-artisan-svg" viewBox="0 0 800 500" width="800" height="500" style="background: #f5f2eb !important;" class="w-full h-full select-none"><defs><pattern id="pattern-terracotta-tile" width="36" height="22" patternUnits="userSpaceOnUse"><rect width="36" height="22" fill="#c2410c"/><path d="M0,11 Q9,2 18,11 Q27,2 36,11" stroke="#7c2d12" stroke-width="1.8" fill="#ea580c" fill-opacity="0.45"/><path d="M-9,22 Q0,13 9,22 Q18,13 27,22 Q36,13 45,22" stroke="#431407" stroke-width="2" fill="#9a3412" fill-opacity="0.6"/><line x1="18" y1="0" x2="18" y2="10" stroke="#fed7aa" stroke-width="0.8" opacity="0.4"/><line x1="9" y1="11" x2="9" y2="21" stroke="#fed7aa" stroke-width="0.8" opacity="0.4"/><line x1="27" y1="11" x2="27" y2="21" stroke="#fed7aa" stroke-width="0.8" opacity="0.4"/></pattern><pattern id="pattern-ancient-brick" width="44" height="24" patternUnits="userSpaceOnUse"><rect width="44" height="24" fill="#a16207"/><rect x="0" y="0" width="44" height="24" fill="#78350f"/><rect x="1" y="1" width="20" height="10" rx="1" fill="#b45309" stroke="#92400e" stroke-width="0.6"/><rect x="23" y="1" width="20" height="10" rx="1" fill="#c2410c" stroke="#9a3412" stroke-width="0.6"/><rect x="-10" y="13" width="20" height="10" rx="1" fill="#c2410c" stroke="#9a3412" stroke-width="0.6"/><rect x="12" y="13" width="20" height="10" rx="1" fill="#b45309" stroke="#78350f" stroke-width="0.6"/><rect x="34" y="13" width="20" height="10" rx="1" fill="#9a3412" stroke="#78350f" stroke-width="0.6"/><circle cx="8" cy="6" r="1" fill="#451a03" opacity="0.6"/><circle cx="30" cy="5" r="1.2" fill="#365314" opacity="0.7"/><circle cx="20" cy="18" r="1.2" fill="#451a03" opacity="0.6"/><circle cx="40" cy="17" r="1" fill="#65a30d" opacity="0.6"/></pattern><pattern id="pattern-ancient-stone" width="60" height="40" patternUnits="userSpaceOnUse"><rect width="60" height="40" fill="#78716c"/><rect x="1" y="1" width="32" height="18" fill="#a8a29e" stroke="#57534e" stroke-width="1.2"/><rect x="34" y="1" width="25" height="18" fill="#8c857b" stroke="#57534e" stroke-width="1.2"/><rect x="1" y="20" width="22" height="19" fill="#8c857b" stroke="#57534e" stroke-width="1.2"/><rect x="24" y="20" width="35" height="19" fill="#a8a29e" stroke="#57534e" stroke-width="1.2"/><circle cx="15" cy="10" r="1.5" fill="#44403c" opacity="0.5"/><circle cx="45" cy="8" r="1.2" fill="#292524" opacity="0.6"/><circle cx="10" cy="30" r="1.5" fill="#292524" opacity="0.6"/><circle cx="40" cy="28" r="1.8" fill="#44403c" opacity="0.5"/></pattern><pattern id="pattern-moss-stone" width="64" height="64" patternUnits="userSpaceOnUse"><rect width="64" height="64" fill="#44403c"/><line x1="0" y1="32" x2="64" y2="32" stroke="#292524" stroke-width="2"/><line x1="32" y1="0" x2="32" y2="32" stroke="#292524" stroke-width="2"/><line x1="48" y1="32" x2="48" y2="64" stroke="#292524" stroke-width="2"/><line x1="16" y1="32" x2="16" y2="64" stroke="#292524" stroke-width="2"/><ellipse cx="20" cy="32" rx="14" ry="6" fill="#3f6212" opacity="0.9"/><ellipse cx="22" cy="31" rx="8" ry="3" fill="#65a30d" opacity="0.85"/><ellipse cx="48" cy="48" rx="12" ry="7" fill="#365314" opacity="0.9"/><ellipse cx="49" cy="46" rx="6" ry="4" fill="#84cc16" opacity="0.8"/><circle cx="10" cy="14" r="5" fill="#4d7c0f" opacity="0.75"/><circle cx="54" cy="18" r="7" fill="#3f6212" opacity="0.8"/></pattern><pattern id="pattern-wood-grain" width="160" height="120" patternUnits="userSpaceOnUse"><rect width="160" height="120" fill="#78350f"/><path d="M0,15 Q40,10 80,18 T160,12 M0,35 Q50,42 100,32 T160,38 M0,60 Q30,55 90,65 T160,58 M0,85 Q60,92 110,80 T160,88 M0,105 Q45,100 85,110 T160,104" stroke="#451a03" stroke-width="3.2" fill="none" opacity="0.7"/><path d="M0,5 Q55,2 95,8 T160,4 M0,25 Q35,30 85,22 T160,26 M0,48 Q70,40 120,50 T160,46 M0,72 Q25,78 75,68 T160,74 M0,96 Q65,102 125,92 T160,98 M0,115 Q30,118 90,112 T160,116" stroke="#92400e" stroke-width="1.6" fill="none" opacity="0.85"/><ellipse cx="70" cy="50" rx="9" ry="6" fill="#3b1502" opacity="0.9"/><ellipse cx="70" cy="50" rx="17" ry="12" stroke="#521f06" stroke-width="2" fill="none" opacity="0.7"/></pattern><pattern id="pattern-bamboo-weave" width="40" height="40" patternUnits="userSpaceOnUse"><rect width="40" height="40" fill="#ca8a04"/><rect x="0" y="1" width="18" height="17" rx="1" fill="#b45309" stroke="#78350f" stroke-width="0.8"/><line x1="2" y1="6" x2="16" y2="6" stroke="#fde047" stroke-width="0.8" opacity="0.5"/><line x1="2" y1="12" x2="16" y2="12" stroke="#78350f" stroke-width="0.8" opacity="0.5"/><rect x="20" y="21" width="18" height="17" rx="1" fill="#b45309" stroke="#78350f" stroke-width="0.8"/><line x1="22" y1="26" x2="36" y2="26" stroke="#fde047" stroke-width="0.8" opacity="0.5"/><line x1="22" y1="32" x2="36" y2="32" stroke="#78350f" stroke-width="0.8" opacity="0.5"/><rect x="21" y="1" width="17" height="18" rx="1" fill="#d97706" stroke="#78350f" stroke-width="0.8"/><line x1="26" y1="3" x2="26" y2="17" stroke="#fef08a" stroke-width="0.8" opacity="0.5"/><line x1="32" y1="3" x2="32" y2="17" stroke="#78350f" stroke-width="0.8" opacity="0.5"/><rect x="1" y="21" width="17" height="18" rx="1" fill="#d97706" stroke="#78350f" stroke-width="0.8"/><line x1="6" y1="23" x2="6" y2="37" stroke="#fef08a" stroke-width="0.8" opacity="0.5"/><line x1="12" y1="23" x2="12" y2="37" stroke="#78350f" stroke-width="0.8" opacity="0.5"/></pattern><pattern id="pattern-thatch-straw" width="60" height="30" patternUnits="userSpaceOnUse"><rect width="60" height="30" fill="#d97706"/><path d="&#10;            M0,5 L8,25 M5,4 L14,26 M12,3 L19,25 M18,5 L26,27 &#10;            M24,4 L32,25 M30,3 L38,26 M36,5 L44,27 M42,4 L50,25 &#10;            M48,3 L56,26 M54,5 L62,27&#10;          " stroke="#92400e" stroke-width="1.8" stroke-linecap="round" opacity="0.85"/><path d="&#10;            M3,6 L10,24 M15,5 L22,25 M28,4 L35,26 M40,6 L48,25 M52,4 L58,26&#10;          " stroke="#fde68a" stroke-width="1.2" stroke-linecap="round" opacity="0.75"/><line x1="0" y1="12" x2="60" y2="12" stroke="#78350f" stroke-width="1" stroke-dasharray="3 3" opacity="0.5"/></pattern><pattern id="pattern-marble-vein" width="120" height="120" patternUnits="userSpaceOnUse"><rect width="120" height="120" fill="#f8fafc"/><path d="M-10,25 C30,10 65,70 130,40 L130,70 C80,100 35,50 -10,80 Z" fill="#e2e8f0" opacity="0.8"/><path d="M0,20 Q30,45 60,30 T100,60 T120,50" stroke="#64748b" stroke-width="1.8" fill="none" opacity="0.7"/><path d="M5,18 Q33,48 63,32 T102,63 T122,52" stroke="#334155" stroke-width="1" fill="none" opacity="0.8"/><path d="M60,32 Q80,15 115,22 M55,33 Q70,55 85,90 T115,115" stroke="#475569" stroke-width="0.9" fill="none" opacity="0.6"/></pattern><pattern id="pattern-water-ripples" width="90" height="90" patternUnits="userSpaceOnUse"><rect width="90" height="90" fill="#0284c7"/><circle cx="45" cy="45" r="10" stroke="#bae6fd" stroke-width="2.5" fill="none" opacity="0.85"/><circle cx="45" cy="45" r="22" stroke="#7dd3fc" stroke-width="2" fill="none" opacity="0.7"/><circle cx="45" cy="45" r="34" stroke="#38bdf8" stroke-width="1.5" fill="none" opacity="0.55"/><circle cx="45" cy="45" r="44" stroke="#0ea5e9" stroke-width="1" fill="none" opacity="0.4"/><circle cx="0" cy="0" r="16" stroke="#7dd3fc" stroke-width="1.5" fill="none" opacity="0.6"/><circle cx="90" cy="0" r="16" stroke="#7dd3fc" stroke-width="1.5" fill="none" opacity="0.6"/><circle cx="0" cy="90" r="16" stroke="#7dd3fc" stroke-width="1.5" fill="none" opacity="0.6"/><circle cx="90" cy="90" r="16" stroke="#7dd3fc" stroke-width="1.5" fill="none" opacity="0.6"/></pattern></defs><g id="elem-1794647838985" class="cursor-move group"><g opacity="1"><rect x="-5" y="-5" width="805" height="20" fill="#78716c" stroke="#44403c" stroke-width="2"/><line x1="-5" y1="-5" x2="800" y2="15" stroke="#44403c" stroke-width="0.8" opacity="0.35"/><line x1="800" y1="-5" x2="-5" y2="15" stroke="#44403c" stroke-width="0.8" opacity="0.35"/></g></g><g id="elem-1794647846874-0" class="cursor-move group"><g opacity="1"><rect x="-5" y="5" width="25" height="505" fill="#78716c" stroke="#44403c" stroke-width="2"/><line x1="-5" y1="5" x2="20" y2="510" stroke="#44403c" stroke-width="0.8" opacity="0.35"/><line x1="20" y1="5" x2="-5" y2="510" stroke="#44403c" stroke-width="0.8" opacity="0.35"/></g></g><g id="elem-1794647906409-0" class="cursor-move group"><g opacity="1"><rect x="790" y="-5" width="25" height="505" fill="#78716c" stroke="#44403c" stroke-width="2"/><line x1="790" y1="-5" x2="815" y2="500" stroke="#44403c" stroke-width="0.8" opacity="0.35"/><line x1="815" y1="-5" x2="790" y2="500" stroke="#44403c" stroke-width="0.8" opacity="0.35"/></g></g><g id="elem-1794647913394-0" class="cursor-move group"><g opacity="1"><rect x="-5" y="490" width="805" height="20" fill="#78716c" stroke="#44403c" stroke-width="2"/><line x1="-5" y1="490" x2="800" y2="510" stroke="#44403c" stroke-width="0.8" opacity="0.35"/><line x1="800" y1="490" x2="-5" y2="510" stroke="#44403c" stroke-width="0.8" opacity="0.35"/></g></g><g id="elem-1794647921492" class="cursor-move group"><g opacity="1"><rect x="240" y="220" width="20" height="20" fill="#e2e8f0" stroke="#451a03" stroke-width="1.6"/><circle cx="250" cy="230" r="8" fill="#78350f" stroke="#451a03" stroke-width="2"/><circle cx="250" cy="230" r="1.5" fill="#451a03"/></g></g><g id="elem-1794647978990-0" class="cursor-move group"><g opacity="1"><rect x="240" y="105" width="20" height="20" fill="#e2e8f0" stroke="#451a03" stroke-width="1.6"/><circle cx="250" cy="115" r="8" fill="#78350f" stroke="#451a03" stroke-width="2"/><circle cx="250" cy="115" r="1.5" fill="#451a03"/></g></g><g id="elem-1794647947024" class="cursor-pointer group" style="cursor: pointer;"><g opacity="1"><rect x="20" y="64.25" width="18.9" height="31.499999999999996" rx="1" fill="url(#pattern-wood-grain)" stroke="#451a03" stroke-width="1.5"/><rect x="156.1" y="64.25" width="18.9" height="31.499999999999996" rx="1" fill="url(#pattern-wood-grain)" stroke="#451a03" stroke-width="1.5"/><rect x="51.5" y="39" width="92" height="82" rx="2" fill="url(#pattern-wood-grain)" stroke="#451a03" stroke-width="2"/><circle cx="97.5" cy="80" r="3" fill="#78350f"/></g></g><g id="elem-1794647957226" class="cursor-pointer group" style="cursor: pointer;"><g opacity="1"><ellipse cx="715" cy="427.5" rx="65" ry="52.5" fill="url(#pattern-ancient-stone)" stroke="#451a03" stroke-width="2"/><rect x="646" y="424.5" width="5" height="6" rx="1" fill="#451a03"/><rect x="779" y="424.5" width="5" height="6" rx="1" fill="#451a03"/><ellipse cx="715" cy="427.5" rx="39" ry="31.5" fill="#78350f" opacity="0.6"/><circle cx="715" cy="427.5" r="2" fill="#ef4444"/></g></g>
 
@@ -1497,8 +1531,8 @@
     <circle cx="0" cy="0" r="12" fill="none" stroke="#22c55e" stroke-width="2.5" class="user-pulse-wave"/>
     <circle cx="0" cy="0" r="10" fill="#16a34a" stroke="#ffffff" stroke-width="2.2" filter="drop-shadow(0 2px 6px rgba(0,0,0,0.5))"/>
     <circle cx="0" cy="0" r="4" fill="#ffffff"/>
-    <!-- Mũi tên định hướng góc nhìn la bàn MPU6050 -->
-    <path id="user-heading-pointer" d="M -5 -11 L 0 -19 L 5 -11 Z" fill="#22c55e" stroke="#ffffff" stroke-width="1.2" transform="rotate(0)" style="transition: transform 0.2s ease;"/>
+    <!-- Mũi tên định hướng góc nhìn la bàn MPU6050 (hiệu chuẩn góc xoay 75° Nhà Tổng Thống) -->
+    <path id="user-heading-pointer" d="M -5 -11 L 0 -19 L 5 -11 Z" fill="#22c55e" stroke="#ffffff" stroke-width="1.2" transform="rotate(75)" style="transition: transform 0.2s ease;"/>
     <rect x="-34" y="-23" width="68" height="15" rx="4" fill="rgba(15, 23, 42, 0.92)" stroke="#22c55e" stroke-width="0.8"/>
     <text x="0" y="-13" font-size="8" font-weight="bold" fill="#86efac" text-anchor="middle">Vị trí của bạn</text>
   </g>
@@ -1576,145 +1610,99 @@
           <label class="search-title-label">Tìm câu chuyện hoặc địa điểm</label>
           <div class="search-input-box">
             <i class="fa-solid fa-magnifying-glass search-icon"></i>
-            <input type="text" id="input-search-stories" class="search-input-field" placeholder="Ví dụ: cây bàng, cửa cống, xà lim, máy chém..." oninput="filterStories(this.value)" />
+            <input type="text" id="input-search-stories" class="search-input-field" placeholder="Ví dụ: bàn làm việc, bàn họp đá cổ, cột trụ bắc..." oninput="filterStories(this.value)" />
           </div>
         </div>
 
-        <!-- Danh sách thẻ câu chuyện lịch sử (Responsive Grid trên Web PC, 1 cột trên Mobile) -->
+        <!-- Danh sách thẻ hiện vật lịch sử Nhà Tổng Thống -->
         <div class="story-cards-list" id="story-cards-container">
 
-          <!-- THẺ 1: CỔNG CHÍNH MAISON CENTRALE (ĐÚNG NHƯ ẢNH 3) -->
-          <div class="story-card" data-keywords="cổng chính maison centrale nhà tù hỏa lò hà nội pháp 1896">
+          <!-- THẺ 1: BÀN LÀM VIỆC TỔNG THỐNG -->
+          <div class="story-card" data-keywords="bàn làm việc tổng thống gỗ gõ đỏ thập niên 1960 sắc lệnh">
             <div class="story-card-img-wrap">
-              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Hoa_Lo_prison_gate_Hanoi.jpg/800px-Hoa_Lo_prison_gate_Hanoi.jpg" alt="Cổng chính Maison Centrale" class="story-card-img" onerror="this.src='https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=800&q=80'" />
-              <span class="card-badge-priority">P0 • TỌA ĐỘ TRỌNG YẾU</span>
+              <img src="https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?auto=format&fit=crop&w=800&q=80" alt="Bàn Làm Việc Tổng Thống" class="story-card-img" />
+              <span class="card-badge-priority">P0 • HIỆN VẬT LỊCH SỬ</span>
             </div>
             <div class="story-card-body">
-              <div class="card-category-tag">Cổng chính Di tích • Xây dựng 1896</div>
-              <h2 class="card-headline">Cổng chính Maison Centrale & Dòng chữ khắc đá</h2>
+              <div class="card-category-tag">Gian Làm Việc • Gỗ Gõ Đỏ Nguyên Khối</div>
+              <h2 class="card-headline">Bàn Làm Việc Tổng Thống</h2>
               <p class="card-description">
-                Được thực dân Pháp hoàn thành xây dựng năm 1896 trên đất làng Phụ Khánh (vốn là làng làm đồ gốm và lò nung nổi tiếng của Thăng Long). Cánh cổng gỗ lim bọc sắt kiên cố với dòng chữ tiếng Pháp "Maison Centrale" (Nhà tù Trung ương) từng là nỗi ám ảnh tột cùng của bao thế hệ chiến sĩ yêu nước.
+                Bàn làm việc chạm khắc vân gỗ gõ đỏ nguyên khối theo phong cách cổ điển thập niên 1960. Nơi ký kết các sắc lệnh bang giao và chỉ đạo các cuộc họp tối mật của Tổng Thống.
               </p>
               <div class="card-footer-actions">
-                <button class="btn-card-action" onclick="playAudioGuide('Cổng chính Maison Centrale')">
+                <button class="btn-card-action" onclick="playAudioGuide('Bàn Làm Việc Tổng Thống')">
                   <i class="fa-solid fa-circle-play"></i> Nghe thuyết minh
                 </button>
-                <button class="btn-card-action secondary" onclick="viewOnMap(21.0253, 105.8465, 'Cổng chính Maison Centrale')">
+                <button class="btn-card-action secondary" onclick="viewOnMap(20.997664, 105.844668, 'Bàn Làm Việc Tổng Thống')">
                   <i class="fa-solid fa-location-dot"></i> Xem trên bản đồ
                 </button>
               </div>
             </div>
           </div>
 
-          <!-- THẺ 2: CÂY BÀNG HỎA LÒ -->
-          <div class="story-card" data-keywords="cây bàng thuốc chữa bệnh sân tù lá bàng nhân chứng">
+          <!-- THẺ 2: BÀN HỌP HỘI NGHỊ BẦU DỤC (MẶT ĐÁ CỔ) -->
+          <div class="story-card" data-keywords="bàn họp hội nghị bầu dục mặt đá cổ cẩm thạch 12 ghế ngoại giao">
             <div class="story-card-img-wrap">
-              <img src="https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?auto=format&fit=crop&w=800&q=80" alt="Cây bàng Hỏa Lò" class="story-card-img" />
-              <span class="card-badge-priority">P0 • HIỆN VẬT SỐNG</span>
+              <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80" alt="Bàn Họp Hội Nghị Bầu Dục Mặt Đá Cổ" class="story-card-img" />
+              <span class="card-badge-priority">P0 • NỘI THẤT NGOẠI GIAO</span>
             </div>
             <div class="story-card-body">
-              <div class="card-category-tag">Khuôn viên Sân trại • Biểu tượng sinh tồn</div>
-              <h2 class="card-headline">Cây bàng Hỏa Lò - Vị thuốc cứu rỗi người tù</h2>
+              <div class="card-category-tag">Phòng Hội Nghị Ngoại Giao • Đá Cẩm Thạch Vân Rêu</div>
+              <h2 class="card-headline">Bàn Họp Hội Nghị Bầu Dục (Mặt Đá Cổ)</h2>
               <p class="card-description">
-                Những cây bàng cổ thụ trong sân tù do các chiến sĩ bứng từ các khe nứt mang về chăm sóc. Lá bàng non chữa kiết lỵ, tiêu chảy; búp bàng hơ lửa đắp vào vết đòn tra tấn dã man; vỏ bàng làm nước súc miệng chống viêm chân răng. Cây bàng là nhân chứng chở che cho hàng ngàn người tù cộng sản.
+                Bàn hội nghị hình bầu dục mặt đá cẩm thạch cổ vân rêu kết hợp khung gỗ gụ. Nơi tổ chức các phiên họp nội các cấp cao và đón tiếp các phái đoàn ngoại giao quốc tế với quy cách 12 ghế.
               </p>
               <div class="card-footer-actions">
-                <button class="btn-card-action" onclick="playAudioGuide('Cây bàng Hỏa Lò')">
+                <button class="btn-card-action" onclick="playAudioGuide('Bàn Họp Hội Nghị Bầu Dục (Mặt Đá Cổ)')">
                   <i class="fa-solid fa-circle-play"></i> Nghe thuyết minh
                 </button>
-                <button class="btn-card-action secondary" onclick="viewOnMap(21.0255, 105.8463, 'Cây bàng lịch sử Hỏa Lò')">
+                <button class="btn-card-action secondary" onclick="viewOnMap(20.997768, 105.844794, 'Bàn Họp Hội Nghị Bầu Dục Mặt Đá Cổ')">
                   <i class="fa-solid fa-location-dot"></i> Xem trên bản đồ
                 </button>
               </div>
             </div>
           </div>
 
-          <!-- THẺ 3: CỬA CỐNG NGẦM VƯỢT NGỤC -->
-          <div class="story-card" data-keywords="cửa cống ngầm vượt ngục 1945 1951 giải thoát bí mật">
+          <!-- THẺ 3: CỘT TRỤ CHỊU LỰC TRUNG TÂM (BẮC) -->
+          <div class="story-card" data-keywords="cột trụ chịu lực trung tâm bắc đá granite hoa cương kết cấu">
             <div class="story-card-img-wrap">
-              <img src="https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=800&q=80" alt="Cửa cống ngầm vượt ngục" class="story-card-img" />
-              <span class="card-badge-priority">P0 • HUYỀN THOẠI VƯỢT NGỤC</span>
+              <img src="https://images.unsplash.com/photo-1541123437800-1bb1317badc2?auto=format&fit=crop&w=800&q=80" alt="Cột Trụ Chịu Lực Trung Tâm (Bắc)" class="story-card-img" />
+              <span class="card-badge-priority">P1 • KẾT CẤU CHỊU LỰC</span>
             </div>
             <div class="story-card-body">
-              <div class="card-category-tag">Cống ngầm thoát hiểm • Đêm 12/3/1945</div>
-              <h2 class="card-headline">Cửa cống ngầm & Cuộc vượt ngục chấn động</h2>
+              <div class="card-category-tag">Gian Phòng Chính • Đá Granite Hoa Cương</div>
+              <h2 class="card-headline">Cột Trụ Chịu Lực Trung Tâm (Bắc)</h2>
               <p class="card-description">
-                Đêm ngày 12/3/1945, lợi dụng quân Nhật đảo chính Pháp làm xáo trộn việc canh phòng, hơn 100 tù chính trị đã bí mật cưa song sắt cống ngầm, bò qua bùn lầy nồng nặc dưới lòng cống ngầm chật hẹp để thoát ra phố Quán Sứ và Chợ Hôm, trở về với cách mạng trước thềm Tổng khởi nghĩa.
+                Cột trụ chịu lực kiến trúc kiên cố bằng đá granite nguyên khối, kết hợp kết cấu bê tông dự ứng lực chống rung chấn và bom đạn của dinh thự. Chiều cao 4.2m, đường kính 0.8m.
               </p>
               <div class="card-footer-actions">
-                <button class="btn-card-action" onclick="playAudioGuide('Cửa cống ngầm vượt ngục')">
+                <button class="btn-card-action" onclick="playAudioGuide('Cột Trụ Chịu Lực Trung Tâm (Bắc)')">
                   <i class="fa-solid fa-circle-play"></i> Nghe thuyết minh
                 </button>
-                <button class="btn-card-action secondary" onclick="viewOnMap(21.0251, 105.8468, 'Vị trí cống ngầm vượt ngục 1945')">
+                <button class="btn-card-action secondary" onclick="viewOnMap(20.997686, 105.844716, 'Cột Trụ Chịu Lực Trung Tâm (Bắc)')">
                   <i class="fa-solid fa-location-dot"></i> Xem trên bản đồ
                 </button>
               </div>
             </div>
           </div>
 
-          <!-- THẺ 4: XÀ LIM CACHOT -->
-          <div class="story-card" data-keywords="xà lim cachot ngục tối cùm chân biệt giam địa ngục">
+          <!-- THẺ 4: CỘT TRỤ CHỊU LỰC TIỀN SẢNH (NAM) -->
+          <div class="story-card" data-keywords="cột trụ chịu lực tiền sảnh nam đá granite đối xứng sảnh đón tiếp">
             <div class="story-card-img-wrap">
-              <img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80" alt="Xà lim Cachot" class="story-card-img" />
-              <span class="card-badge-priority">P1 • ĐỊA NGỤC TRẦN GIAN</span>
+              <img src="https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=800&q=80" alt="Cột Trụ Chịu Lực Tiền Sảnh (Nam)" class="story-card-img" />
+              <span class="card-badge-priority">P1 • KIẾN TRÚC ĐỐI XỨNG</span>
             </div>
             <div class="story-card-body">
-              <div class="card-category-tag">Khu biệt giam tối tăm • Cachot</div>
-              <h2 class="card-headline">Xà lim Cachot - Nơi thử thách ý chí sắt đá</h2>
+              <div class="card-category-tag">Tiền Sảnh Đón Tiếp • Đá Granite Hoa Cương</div>
+              <h2 class="card-headline">Cột Trụ Chịu Lực Tiền Sảnh (Nam)</h2>
               <p class="card-description">
-                Cachot là góc tối tàn khốc nhất Hỏa Lò: phòng giam rộng chỉ hơn 1 mét vuông, tối om không lọt một kẽ sáng, thiếu dưỡng khí nghẹt thở. Tù nhân bị cùm chân cả ngày đêm trên bục xi măng nghiêng dốc, ăn uống bài tiết tại chỗ trong bóng đêm đặc quánh.
+                Cột trụ đối xứng trục đông - tây, nối liền kết cấu đại sảnh tiếp đón khách ngoại giao với không gian làm việc chính của Nhà Tổng Thống.
               </p>
               <div class="card-footer-actions">
-                <button class="btn-card-action" onclick="playAudioGuide('Xà lim Cachot')">
+                <button class="btn-card-action" onclick="playAudioGuide('Cột Trụ Chịu Lực Tiền Sảnh (Nam)')">
                   <i class="fa-solid fa-circle-play"></i> Nghe thuyết minh
                 </button>
-                <button class="btn-card-action secondary" onclick="viewOnMap(21.0254, 105.8466, 'Khu xà lim Cachot')">
-                  <i class="fa-solid fa-location-dot"></i> Xem trên bản đồ
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- THẺ 5: MÁY CHÉM (GUILLOTINE) -->
-          <div class="story-card" data-keywords="máy chém guillotine tử hình tội ác nguyễn thái học">
-            <div class="story-card-img-wrap">
-              <img src="https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=800&q=80" alt="Máy chém khổng lồ" class="story-card-img" />
-              <span class="card-badge-priority">P0 • HIỆN VẬT ĐẶC BIỆT</span>
-            </div>
-            <div class="story-card-body">
-              <div class="card-category-tag">Khu vực tử hình • Lưỡi dao sắc lạnh</div>
-              <h2 class="card-headline">Cỗ Máy Chém khổng lồ - Chứng tích tội ác</h2>
-              <p class="card-description">
-                Cỗ máy chém cao gần 4 mét với lưỡi dao hình thang nặng hơn 50kg, từng được thực dân Pháp điều chuyển khắp các tỉnh miền Bắc để hành quyết các nhà yêu nước như Nguyễn Thái Học, Phó Đức Chính sau cuộc khởi nghĩa Yên Bái năm 1930.
-              </p>
-              <div class="card-footer-actions">
-                <button class="btn-card-action" onclick="playAudioGuide('Cỗ Máy Chém lịch sử')">
-                  <i class="fa-solid fa-circle-play"></i> Nghe thuyết minh
-                </button>
-                <button class="btn-card-action secondary" onclick="viewOnMap(21.0252, 105.8464, 'Hiện vật Máy Chém')">
-                  <i class="fa-solid fa-location-dot"></i> Xem trên bản đồ
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- THẺ 6: TRẠI GIAM NỮ TÙ CHÍNH TRỊ -->
-          <div class="story-card" data-keywords="trại nữ tù chính trị phụ nữ kiên trung nguyễn thị minh khai">
-            <div class="story-card-img-wrap">
-              <img src="https://images.unsplash.com/photo-1533158307587-828f0a76ef46?auto=format&fit=crop&w=800&q=80" alt="Khu trại giam Nữ tù chính trị" class="story-card-img" />
-              <span class="card-badge-priority">P1 • TỌA ĐỘ LỊCH SỬ</span>
-            </div>
-            <div class="story-card-body">
-              <div class="card-category-tag">Khu giam phụ nữ • Bất khuất kiên cường</div>
-              <h2 class="card-headline">Khu trại giam Nữ - Tinh thần bất khuất của người phụ nữ Việt</h2>
-              <p class="card-description">
-                Nơi giam giữ những nữ chiến sĩ cộng sản kiên trung. Dù phải chịu đựng chế độ giam cầm hà khắc, đòn roi dã man và sự chia cắt mẫu tử tàn nhẫn, các mẹ, các chị vẫn kiên quyết giữ vững khí tiết cách mạng, biến nhà tù thành trường học cách mạng.
-              </p>
-              <div class="card-footer-actions">
-                <button class="btn-card-action" onclick="playAudioGuide('Trại giam Nữ tù chính trị')">
-                  <i class="fa-solid fa-circle-play"></i> Nghe thuyết minh
-                </button>
-                <button class="btn-card-action secondary" onclick="viewOnMap(21.0256, 105.8467, 'Khu trại giam Nữ')">
+                <button class="btn-card-action secondary" onclick="viewOnMap(20.997693, 105.844686, 'Cột Trụ Chịu Lực Tiền Sảnh (Nam)')">
                   <i class="fa-solid fa-location-dot"></i> Xem trên bản đồ
                 </button>
               </div>
@@ -1758,14 +1746,14 @@
         <div class="ai-msg-row ai">
           <div class="ai-msg-avatar"><i class="fa-solid fa-monument"></i></div>
           <div class="ai-msg-bubble">
-            <p>Xin chào! Tôi là Trợ lý AI của <strong>Di tích Lịch sử Nhà tù Hỏa Lò</strong>. Tôi đã sẵn sàng hỗ trợ bạn tìm hiểu nguồn gốc di tích, các cuộc vượt ngục hay những hiện vật lịch sử đặc biệt.</p>
+            <p>Xin chào! Tôi là Trợ lý AI của <strong>Khu Di Tích Nhà Tổng Thống</strong>. Tôi đã sẵn sàng hỗ trợ bạn tìm hiểu về 4 hiện vật lịch sử và hệ thống vi định vị dẫn đường BLE Beacon.</p>
             <p style="font-size: 13px; color: var(--text-muted); margin-top: 6px;">Bạn có thể chọn nhanh các chủ đề nổi bật dưới đây:</p>
             <div class="ai-quick-suggestions">
-              <span class="ai-suggestion-chip" onclick="askAiQuestion('Tại sao lại gọi là Nhà tù Hỏa Lò?')">Tại sao gọi là Hỏa Lò?</span>
-              <span class="ai-suggestion-chip" onclick="askAiQuestion('Cuộc vượt ngục cống ngầm đêm 12/3/1945 diễn ra như thế nào?')">Vượt ngục cống ngầm 1945</span>
-              <span class="ai-suggestion-chip" onclick="askAiQuestion('Ý nghĩa của những cây bàng trong sân tù?')">Cây bàng trong tù</span>
-              <span class="ai-suggestion-chip" onclick="askAiQuestion('Xà lim Cachot khắc nghiệt ra sao?')">Xà lim Cachot</span>
-              <span class="ai-suggestion-chip" onclick="askAiQuestion('Cỗ máy chém khổng lồ từng xử chém ai?')">Cỗ máy chém</span>
+              <span class="ai-suggestion-chip" onclick="askAiQuestion('Bàn Làm Việc Tổng Thống được chế tác thế nào?')">Bàn Làm Việc Tổng Thống</span>
+              <span class="ai-suggestion-chip" onclick="askAiQuestion('Ý nghĩa của Bàn Họp Hội Nghị Bầu Dục Mặt Đá Cổ?')">Bàn Họp Bầu Dục Mặt Đá</span>
+              <span class="ai-suggestion-chip" onclick="askAiQuestion('Kết cấu của Cột Trụ Chịu Lực Trung Tâm Bắc?')">Cột Trụ Chịu Lực Bắc</span>
+              <span class="ai-suggestion-chip" onclick="askAiQuestion('Cột Trụ Tiền Sảnh Nam có vai trò gì?')">Cột Trụ Tiền Sảnh Nam</span>
+              <span class="ai-suggestion-chip" onclick="askAiQuestion('Hệ thống 3 trạm Beacon dẫn đường hoạt động ra sao?')">3 Trạm Beacon Dẫn Đường</span>
             </div>
           </div>
         </div>
@@ -1774,7 +1762,7 @@
       <!-- Vùng nhập câu hỏi ở đáy hộp thoại -->
       <div class="ai-chat-input-area">
         <div class="ai-input-wrapper">
-          <input type="text" id="ai-user-query" class="ai-chat-input" placeholder="Nhập câu hỏi về Hỏa Lò... (Enter để gửi)" onkeydown="if(event.key==='Enter'){event.preventDefault();sendAiQuery();}" autocomplete="off" />
+          <input type="text" id="ai-user-query" class="ai-chat-input" placeholder="Nhập câu hỏi về Nhà Tổng Thống... (Enter để gửi)" onkeydown="if(event.key==='Enter'){event.preventDefault();sendAiQuery();}" autocomplete="off" />
           <button id="btn-send-ai" class="btn-send-ai" onclick="sendAiQuery()" title="Gửi câu hỏi">
             <i class="fa-solid fa-paper-plane"></i>
           </button>
@@ -1834,6 +1822,15 @@
     }
 
     let userSvgPos = { x: 380, y: 260 };
+    try {
+      const savedPos = localStorage.getItem('2guide_last_user_pos');
+      if (savedPos) {
+        const p = JSON.parse(savedPos);
+        if (p && typeof p.x === 'number' && typeof p.y === 'number') {
+          userSvgPos = { x: p.x, y: p.y };
+        }
+      }
+    } catch(e) {}
 
     // Tọa độ thực địa của các máy Hub trong phòng Nhà Tổng Thống (Khớp 100% với Ban Quản Lý)
     const INDOOR_HUB_COORDINATES = {
@@ -2052,6 +2049,7 @@
     function updateUserPositionByHub(smoothPan = true) {
       const coord = getHubIndoorCoordinates(myHubId);
       userSvgPos = { x: coord.x, y: coord.y };
+      try { localStorage.setItem('2guide_last_user_pos', JSON.stringify(userSvgPos)); } catch(e) {}
       
       const userMarker = document.getElementById('user-location-marker');
       if (userMarker) {
@@ -2504,7 +2502,10 @@
               if (msg.yaw !== undefined && !isNaN(msg.yaw)) {
                 myHubData.yaw = Number(msg.yaw);
                 const pointer = document.getElementById('user-heading-pointer');
-                if (pointer) pointer.setAttribute('transform', `rotate(${myHubData.yaw || 0})`);
+                if (pointer) {
+                  const svgYaw = ((myHubData.yaw || 0) + 75.0 + 360.0) % 360.0;
+                  pointer.setAttribute('transform', `rotate(${svgYaw})`);
+                }
               }
               if (msg.battery !== undefined && !isNaN(msg.battery)) myHubData.battery = Number(msg.battery);
 
@@ -2517,8 +2518,9 @@
               // Nhận diện bước đi PDR (từ isStep hoặc gia tốc tổng hợp |a| > 1.32g)
               const isStepTrigger = !!msg.isStep || (incomingAccel && !!incomingAccel.isStep);
               if (isStepTrigger) {
-                // Luôn luôn tịnh tiến vị trí bước chân theo góc yaw hiện tại!
-                const rad = ((myHubData.yaw || 0) * Math.PI) / 180.0;
+                // Luôn luôn tịnh tiến vị trí bước chân theo góc yaw phòng chuẩn xác (khớp góc xoay 75° Nhà Tổng Thống)
+                const svgYaw = ((myHubData.yaw || 0) + 75.0 + 360.0) % 360.0;
+                const rad = (svgYaw * Math.PI) / 180.0;
                 targetX = Math.max(40, Math.min(760, (userSvgPos.x || 380) + 14 * Math.sin(rad)));
                 targetY = Math.max(30, Math.min(470, (userSvgPos.y || 260) - 14 * Math.cos(rad)));
                 userSvgPos = { x: targetX, y: targetY };
@@ -2689,9 +2691,11 @@
       }
     ];
 
-    let indoorScale = 1;
-    let indoorPanX = 0;
-    let indoorPanY = 0;
+    const initW = (typeof window !== 'undefined' && window.innerWidth) ? window.innerWidth : 800;
+    const initH = (typeof window !== 'undefined' && window.innerHeight) ? window.innerHeight : 500;
+    let indoorScale = initW < 600 ? 1.15 : 1.25;
+    let indoorPanX = initW / 2 - 380 * indoorScale;
+    let indoorPanY = initH / 2 - 260 * indoorScale;
     let isDraggingIndoor = false;
     let hasMovedIndoor = false;
     let startDragX = 0;
@@ -2815,15 +2819,15 @@
       updateIndoorTransform(true);
     }
 
-    function panToIndoorTarget(targetX, targetY, targetScale = 1.25) {
+    function panToIndoorTarget(targetX, targetY, targetScale = 1.25, smooth = true) {
       cancelAnimationFrame(indoorMomentumRaf);
       const container = document.getElementById('svg-container');
-      const cW = container ? container.clientWidth : window.innerWidth;
-      const cH = container ? container.clientHeight : window.innerHeight;
+      const cW = (container && container.clientWidth) ? container.clientWidth : window.innerWidth;
+      const cH = (container && container.clientHeight) ? container.clientHeight : window.innerHeight;
       indoorScale = Math.min(targetScale, 1.35);
       indoorPanX = cW / 2 - targetX * indoorScale;
       indoorPanY = cH / 2 - targetY * indoorScale;
-      updateIndoorTransform(true);
+      updateIndoorTransform(smooth);
     }
 
     function setupIndoorPanZoom() {
@@ -3025,14 +3029,20 @@
       if ('speechSynthesis' in window) window.speechSynthesis.cancel();
       setupIndoorPanZoom();
       initIndoorInteractions();
-      await renderUserHubElements({ forcePositionReset: true });
-      updateUserPositionByHub(false);
-      // Căn giữa ngay trước mặt vị trí của người dùng khi mới vào trang
+
+      // Căn giữa vị trí NGAY LẬP TỨC (smooth = false), không đợi fetch xong để tuyệt đối không trượt từ góc
       const cW = window.innerWidth;
       const initialScale = cW < 600 ? 1.15 : 1.25;
-      panToIndoorTarget(userSvgPos.x, userSvgPos.y, initialScale);
+      panToIndoorTarget(userSvgPos.x, userSvgPos.y, initialScale, false);
+
+      await renderUserHubElements({ forcePositionReset: true });
+      updateUserPositionByHub(false);
+
+      // Căn chỉnh lại chuẩn xác theo vị trí Hub thực tế mà vẫn tắt transition
+      panToIndoorTarget(userSvgPos.x, userSvgPos.y, initialScale, false);
+
       window.addEventListener('resize', () => {
-        panToIndoorTarget(userSvgPos.x, userSvgPos.y, initialScale);
+        panToIndoorTarget(userSvgPos.x, userSvgPos.y, initialScale, false);
       });
 
       connectRealtimeWebSocket();
@@ -3589,14 +3599,14 @@
         <div class="ai-msg-row ai">
           <div class="ai-msg-avatar"><i class="fa-solid fa-monument"></i></div>
           <div class="ai-msg-bubble">
-            <p>Xin chào! Tôi là Trợ lý AI của <strong>Di tích Lịch sử Nhà tù Hỏa Lò</strong>. Tôi đã sẵn sàng hỗ trợ bạn tìm hiểu nguồn gốc di tích, các cuộc vượt ngục hay những hiện vật lịch sử đặc biệt.</p>
+            <p>Xin chào! Tôi là Trợ lý AI của <strong>Khu Di Tích Nhà Tổng Thống</strong>. Tôi đã sẵn sàng hỗ trợ bạn tìm hiểu về 4 hiện vật lịch sử và hệ thống vi định vị dẫn đường BLE Beacon.</p>
             <p style="font-size: 13px; color: var(--text-muted); margin-top: 6px;">Bạn có thể chọn nhanh các chủ đề nổi bật dưới đây:</p>
             <div class="ai-quick-suggestions">
-              <span class="ai-suggestion-chip" onclick="askAiQuestion('Tại sao lại gọi là Nhà tù Hỏa Lò?')">Tại sao gọi là Hỏa Lò?</span>
-              <span class="ai-suggestion-chip" onclick="askAiQuestion('Cuộc vượt ngục cống ngầm đêm 12/3/1945 diễn ra như thế nào?')">Vượt ngục cống ngầm 1945</span>
-              <span class="ai-suggestion-chip" onclick="askAiQuestion('Ý nghĩa của những cây bàng trong sân tù?')">Cây bàng trong tù</span>
-              <span class="ai-suggestion-chip" onclick="askAiQuestion('Xà lim Cachot khắc nghiệt ra sao?')">Xà lim Cachot</span>
-              <span class="ai-suggestion-chip" onclick="askAiQuestion('Cỗ máy chém khổng lồ từng xử chém ai?')">Cỗ máy chém</span>
+              <span class="ai-suggestion-chip" onclick="askAiQuestion('Bàn Làm Việc Tổng Thống được chế tác thế nào?')">Bàn Làm Việc Tổng Thống</span>
+              <span class="ai-suggestion-chip" onclick="askAiQuestion('Ý nghĩa của Bàn Họp Hội Nghị Bầu Dục Mặt Đá Cổ?')">Bàn Họp Bầu Dục Mặt Đá</span>
+              <span class="ai-suggestion-chip" onclick="askAiQuestion('Kết cấu của Cột Trụ Chịu Lực Trung Tâm Bắc?')">Cột Trụ Chịu Lực Bắc</span>
+              <span class="ai-suggestion-chip" onclick="askAiQuestion('Cột Trụ Tiền Sảnh Nam có vai trò gì?')">Cột Trụ Tiền Sảnh Nam</span>
+              <span class="ai-suggestion-chip" onclick="askAiQuestion('Hệ thống 3 trạm Beacon dẫn đường hoạt động ra sao?')">3 Trạm Beacon Dẫn Đường</span>
             </div>
           </div>
         </div>
@@ -3605,22 +3615,22 @@
 
     function generateFallbackKnowledge(query) {
       const q = query.toLowerCase();
-      if (q.includes('tại sao') || q.includes('hỏa lò') || q.includes('tên gọi')) {
-        return 'Nhà tù Hỏa Lò được thực dân Pháp xây dựng năm 1896 trên đất làng Phụ Khánh. Vốn dĩ làng này chuyên nghề làm ấm đất, niêu đất và các loại hỏa lò nung gốm nên dân gian quen gọi là phố Hỏa Lò, từ đó nhà tù cũng mang tên Nhà tù Hỏa Lò (tên tiếng Pháp là Maison Centrale - Nhà tù Trung ương).';
+      if (q.includes('bàn làm việc') || q.includes('gỗ gõ đỏ')) {
+        return 'Bàn làm việc Tổng Thống được chế tác bằng gỗ gõ đỏ nguyên khối quý hiếm thập niên 1960. Nơi đây từng diễn ra nhiều cuộc họp tối mật và ký kết các sắc lệnh bang giao lịch sử quan trọng.';
       }
-      if (q.includes('vượt ngục') || q.includes('cống ngầm')) {
-        return 'Cuộc vượt ngục chấn động đêm ngày 12/3/1945: Lợi dụng lúc Nhật đảo chính Pháp canh phòng lỏng lẻo, hơn 100 chiến sĩ tù chính trị đã cưa then song sắt cống ngầm, chui qua đường cống ngập bùn lầy nồng nặc và thoát ra đường Quán Sứ, kịp thời trở về lãnh đạo Tổng khởi nghĩa Cách mạng Tháng Tám.';
+      if (q.includes('bàn họp') || q.includes('mặt đá') || q.includes('bầu dục') || q.includes('cẩm thạch')) {
+        return 'Bàn họp hội nghị bầu dục mặt đá cẩm thạch cổ vân rêu quý hiếm, quy cách 12 ghế đại biểu ngoại giao. Mặt đá nguyên khối được gia công tỉ mỉ chống đạn và cách âm, phục vụ các phiên họp nội các cấp cao.';
       }
-      if (q.includes('cây bàng')) {
-        return 'Những cây bàng cổ thụ trong sân tù Hỏa Lò là biểu tượng của tinh thần sinh tồn kỳ diệu. Lá bàng non chữa tiêu chảy, búp bàng hơ lửa đắp vết thương do đòn roi tra tấn, vỏ bàng đun nước ngậm chữa đau răng. Cây bàng là vị thuốc cứu mạng hàng ngàn chiến sĩ.';
+      if (q.includes('cột trụ bắc') || q.includes('trung tâm')) {
+        return 'Cột trụ chịu lực trung tâm phía Bắc bằng đá Granite hoa cương nguyên khối kiên cố (cao 4.2m, đường kính 0.8m), kết hợp kết cấu bê tông dự ứng lực chống rung chấn và bom đạn của dinh thự.';
       }
-      if (q.includes('cachot') || q.includes('xà lim')) {
-        return 'Xà lim Cachot là khu biệt giam tàn bạo nhất: diện tích chật hẹp, tối om không lọt một tia sáng, tù nhân bị cùm chân cả ngày lẫn đêm trên bục xi măng nghiêng dốc, thiếu dưỡng khí nghẹt thở.';
+      if (q.includes('cột trụ nam') || q.includes('tiền sảnh')) {
+        return 'Cột trụ chịu lực tiền sảnh phía Nam đối xứng trục đông - tây, nối liền đại sảnh tiếp đón khách ngoại giao với không gian làm việc chính.';
       }
-      if (q.includes('máy chém') || q.includes('guillotine')) {
-        return 'Máy chém tại Hỏa Lò là hiện vật chứng tích chiến tranh cao gần 4m, lưỡi dao nặng 50kg, từng được Pháp dùng để hành quyết các nghĩa sĩ yêu nước như Nguyễn Thái Học, Phó Đức Chính sau khởi nghĩa Yên Bái 1930.';
+      if (q.includes('beacon') || q.includes('trạm') || q.includes('định vị')) {
+        return 'Nhà Tổng Thống được trang bị 3 trạm vi định vị BLE Beacon: Trạm 1 BEACONTAG-1 tại Cung điện phía Đông, Trạm 2 BEACONTAG-2 tại Cổng Bắc & Hành lang vòm, và Trạm 3 BEACONTAG-3 tại Tiền sảnh trung tâm. Hệ thống tự động nhận diện và kích hoạt thuyết minh khi du khách đến gần.';
       }
-      return 'Di tích Lịch sử Nhà tù Hỏa Lò (Số 1 phố Hỏa Lò, Hoàn Kiếm, Hà Nội) là chứng tích lịch sử minh chứng cho tinh thần đấu tranh bất khuất, kiên trung của các chiến sĩ cách mạng Việt Nam. Bạn có thể hỏi cụ thể về: Cổng chính Maison Centrale, Cây bàng lịch sử, Cửa cống ngầm 1945, Xà lim Cachot hay Cỗ Máy Chém.';
+      return 'Khu Di Tích Nhà Tổng Thống bảo tồn 4 hiện vật lịch sử cốt lõi: Bàn Làm Việc Tổng Thống, Bàn Họp Hội Nghị Bầu Dục Mặt Đá Cổ, Cột Trụ Chịu Lực Trung Tâm (Bắc), Cột Trụ Chịu Lực Tiền Sảnh (Nam), cùng hệ thống 3 trạm BLE Beacon vi định vị. Bạn có thể hỏi chi tiết về bất kỳ hiện vật nào trên!';
     }
 
     function escapeHtml(str) {
@@ -3648,24 +3658,32 @@
       if (!myHubData.yaw) myHubData.yaw = 0;
 
       if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
-        const rad = (myHubData.yaw * Math.PI) / 180.0;
+        const svgYaw = (myHubData.yaw + 75.0 + 360.0) % 360.0;
+        const rad = (svgYaw * Math.PI) / 180.0;
         userSvgPos.x = Math.max(40, Math.min(760, userSvgPos.x + stepPx * Math.sin(rad)));
         userSvgPos.y = Math.max(30, Math.min(470, userSvgPos.y - stepPx * Math.cos(rad)));
         moved = true;
       } else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
-        const rad = (myHubData.yaw * Math.PI) / 180.0;
+        const svgYaw = (myHubData.yaw + 75.0 + 360.0) % 360.0;
+        const rad = (svgYaw * Math.PI) / 180.0;
         userSvgPos.x = Math.max(40, Math.min(760, userSvgPos.x - stepPx * Math.sin(rad)));
         userSvgPos.y = Math.max(30, Math.min(470, userSvgPos.y + stepPx * Math.cos(rad)));
         moved = true;
       } else if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
         myHubData.yaw = (myHubData.yaw - 15 + 360) % 360;
         const pointer = document.getElementById('user-heading-pointer');
-        if (pointer) pointer.setAttribute('transform', `rotate(${myHubData.yaw})`);
+        if (pointer) {
+          const svgYaw = (myHubData.yaw + 75.0 + 360.0) % 360.0;
+          pointer.setAttribute('transform', `rotate(${svgYaw})`);
+        }
         moved = true;
       } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
         myHubData.yaw = (myHubData.yaw + 15) % 360;
         const pointer = document.getElementById('user-heading-pointer');
-        if (pointer) pointer.setAttribute('transform', `rotate(${myHubData.yaw})`);
+        if (pointer) {
+          const svgYaw = (myHubData.yaw + 75.0 + 360.0) % 360.0;
+          pointer.setAttribute('transform', `rotate(${svgYaw})`);
+        }
         moved = true;
       }
 

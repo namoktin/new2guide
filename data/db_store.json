@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-15T05:40:36.424Z",
+  "updatedAt": "2026-11-15T06:27:02.123Z",
   "hubs": {
     "HL-18": {
       "_id": "6af89d633333802e0a6fb711",
@@ -12,22 +12,22 @@
       "group": "-",
       "user": "-",
       "location": "Khu vực Trung tâm gian phòng Tổng Thống",
-      "lat": 20.997702,
-      "lng": 105.844721,
+      "lat": 20.997767,
+      "lng": 105.844788,
       "alt": 15,
-      "yaw": 309,
+      "yaw": 90,
       "pitch": 0,
       "roll": 0,
       "startShiftBattery": 100,
       "endShiftBattery": null,
-      "lastSeen": 1794721236071,
+      "lastSeen": 1794724021675,
       "currentGroupId": null,
       "isOnline": true,
       "createdAt": "2026-11-14T17:41:55.425Z",
       "updatedAt": "2026-11-14T17:50:31.734Z",
       "__v": 0,
-      "x": 330.6764649935134,
-      "y": 232.41379526195556,
+      "x": 704.9834369380965,
+      "y": 405.88404270572033,
       "rawGps": "$GNRMC,084532.00,A,210.0000,N,10550.5482,E,0.22,45.0,250926,,,A*7F\n$GNGGA,084532.00,210.0000,N,10550.5482,E,1,14,0.8,15.2,M,0.0,M,,*5C",
       "accel": {
         "ax": 0,
@@ -37,8 +37,8 @@
         "isMoving": false,
         "isStep": false
       },
-      "stepCount": 401,
-      "lastStepTime": 1794721235409,
+      "stepCount": 476,
+      "lastStepTime": 1794724021112,
       "ble": {
         "method": "FUSED_BLE_MPU_TRILATERATION_3_POINTS",
         "accuracy": 0.37,

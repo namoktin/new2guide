@@ -118,7 +118,7 @@ async function initEditorDashboard(secretKey) {
   }
 
   // Khởi tạo Bản đồ Leaflet
-  const map = MapCommon.initMap('editor-map', [20.99965, 105.84280], 18);
+  const map = MapCommon.initMap('editor-map', [20.997715, 105.844730], 20);
 
   let siteData = null;
   let pois = [];
@@ -965,8 +965,8 @@ async function initEditorDashboard(secretKey) {
         siteName: siteData?.siteName || 'Trường Đại Học Kinh Tế Quốc Dân (NEU)',
         englishName: siteData?.englishName || 'National Economics University Campus',
         locationName: siteData?.locationName || '207 Đường Giải Phóng, Hà Nội',
-        center: siteData?.center || { lat: 20.99965, lng: 105.84280 },
-        zoom: siteData?.zoom || 18,
+        center: siteData?.center || { lat: 20.997715, lng: 105.844730 },
+        zoom: siteData?.zoom || 20,
         zones: zones,
         pois: pois,
         artifacts: artifacts,
@@ -1004,8 +1004,8 @@ async function initEditorDashboard(secretKey) {
         siteName: siteData?.siteName || 'Trường Đại Học Kinh Tế Quốc Dân (NEU)',
         englishName: siteData?.englishName || 'National Economics University Campus',
         locationName: siteData?.locationName || '207 Đường Giải Phóng, Hà Nội',
-        center: siteData?.center || { lat: 20.99965, lng: 105.84280 },
-        zoom: siteData?.zoom || 18,
+        center: siteData?.center || { lat: 20.997715, lng: 105.844730 },
+        zoom: siteData?.zoom || 20,
         zones,
         pois,
         artifacts,

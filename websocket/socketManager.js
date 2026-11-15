@@ -144,16 +144,78 @@ class SocketManager {
             const yaw = Number(data.yaw) || 0;
             const pitch = Number(data.pitch) || 0;
             const roll = Number(data.roll) || 0;
+            const ax = data.ax !== undefined ? Number(data.ax) : undefined;
+            const ay = data.ay !== undefined ? Number(data.ay) : undefined;
+            const az = data.az !== undefined ? Number(data.az) : undefined;
+            const isStep = !!data.isStep;
 
-            // Cảm biến IMU MPU6050 chỉ cập nhật góc xoay yaw/pitch/roll, TUYỆT ĐỐI không ghi đè tọa độ GPS lat/lng
-            const updatedHub = this.hubModel.updateTelemetry(targetHubId, {
+            // Cập nhật trạng thái hướng nhìn và gia tốc MPU vào Bộ lọc Dung hợp cảm biến
+            let fusionPredicted = null;
+            try {
+              const sensorFusionService = require('../services/sensorFusionService');
+              fusionPredicted = sensorFusionService.predictWithMpu(targetHubId, { yaw, pitch, roll, ax, ay, az, isStep });
+            } catch (e) {}
+
+            const updateParams = {
               yaw,
               pitch,
-              roll
-            });
+              roll,
+              ax,
+              ay,
+              az,
+              isStep
+            };
+
+            if (fusionPredicted) {
+              updateParams.x = fusionPredicted.x;
+              updateParams.y = fusionPredicted.y;
+              updateParams.lat = fusionPredicted.lat;
+              updateParams.lng = fusionPredicted.lng;
+            } else if (data.lat !== undefined && data.lng !== undefined) {
+              updateParams.lat = Number(data.lat);
+              updateParams.lng = Number(data.lng);
+            }
+
+            // Cảm biến IMU MPU6050 cập nhật góc xoay yaw/pitch/roll và gia tốc 3 trục
+            const updatedHub = this.hubModel.updateTelemetry(targetHubId, updateParams);
 
             this.broadcastTelemetry(updatedHub);
             gazeService.checkAndTriggerAutoGaze(updatedHub, this);
+          }
+
+          // Xử lý gói tin Dung hợp cảm biến BLE + MPU (Sensor Fusion PDR)
+          if (data.type === 'BLE_MPU_FUSION' || data.type === 'SENSOR_FUSION_UPDATE' || (data.type === 'BLE_BEACON_UPDATE' && Array.isArray(data.beacons))) {
+            const targetHubId = normalizeHubId(data.hubId || ws.myHubId || ws.hubId || 'HL-18');
+            const sensorFusionService = require('../services/sensorFusionService');
+            const fusionRes = sensorFusionService.fuse(targetHubId, {
+              mpu: data.mpu || { yaw: data.yaw, pitch: data.pitch, roll: data.roll, isStep: data.isStep || data.step },
+              beacons: data.beacons
+            });
+
+            if (fusionRes.success) {
+              const updatedHub = this.hubModel.updateTelemetry(targetHubId, {
+                lat: fusionRes.lat,
+                lng: fusionRes.lng,
+                x: fusionRes.x,
+                y: fusionRes.y,
+                yaw: fusionRes.yaw,
+                pitch: fusionRes.pitch,
+                roll: fusionRes.roll,
+                ble: {
+                  method: fusionRes.method,
+                  accuracy: fusionRes.accuracy,
+                  totalSteps: fusionRes.totalSteps,
+                  fused: true
+                }
+              });
+              this.broadcastTelemetry(updatedHub);
+              this.broadcastToAdmins({
+                type: 'ADMIN_FUSION_EVENT',
+                hubId: targetHubId,
+                fusion: fusionRes,
+                timestamp: Date.now()
+              });
+            }
           }
 
           if (data.type === 'BLE_BEACON_DETECTED' || data.type === 'BLE_BEACON_UPDATE') {
@@ -225,7 +287,10 @@ class SocketManager {
       y: updatedHub.y,
       yaw: updatedHub.yaw,
       battery: updatedHub.battery,
-      ble: updatedHub.ble
+      ble: updatedHub.ble,
+      accel: updatedHub.accel,
+      stepCount: updatedHub.stepCount,
+      isStep: updatedHub.accel ? updatedHub.accel.isStep : false
     });
 
     this.wss.clients.forEach(client => {

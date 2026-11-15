@@ -2766,8 +2766,8 @@
               group: group,
               user: user,
               location: mDev.location || 'Nhà Tổng Thống',
-              lat: mDev.lat || 21.00010,
-              lng: mDev.lng || 105.84245,
+              lat: mDev.lat || 20.997715,
+              lng: mDev.lng || 105.844730,
               yaw: mDev.yaw || 0
             };
           });
@@ -3101,8 +3101,8 @@
     // ============================================================
     let managerMap = null;
     let managerSiteData = null;
-    let managerSiteCenter = [20.99965, 105.84280];
-    let managerSiteZoom = 18;
+    let managerSiteCenter = [20.997715, 105.844730];
+    let managerSiteZoom = 20;
     let zoneLayerGroup = null;
     let poisLayerGroup = null;
     let artifactsLayerGroup = null;
@@ -3215,6 +3215,8 @@
         icon: '📡',
         x: 745,
         y: 258,
+        lat: 20.997785,
+        lng: 105.844752,
         desc: 'Trạm vi định vị BLE Beacon BEACONTAG-1 tại cung điện phía Đông (745, 258). Giám sát khu vực đại biểu.',
         tags: ['BEACONTAG-1', 'Major 1', 'Minor 977']
       },
@@ -3226,6 +3228,8 @@
         icon: '📡',
         x: 550,
         y: 25,
+        lat: 20.997760,
+        lng: 105.844680,
         desc: 'Trạm vi định vị BLE Beacon BEACONTAG-2 gắn tại vòm cửa phía Bắc (550, 25). Giám sát lối vào.',
         tags: ['BEACONTAG-2', 'Major 1', 'Minor 977']
       },
@@ -3237,13 +3241,15 @@
         icon: '📡',
         x: 310,
         y: 340,
+        lat: 20.997690,
+        lng: 105.844748,
         desc: 'Trạm vi định vị BLE Beacon BEACONTAG-3 tại trung tâm tiền sảnh đón tiếp (310, 340).',
         tags: ['BEACONTAG-3', 'Major 1', 'Minor 977']
       }
     ];
 
     const MGR_INDOOR_HUB_COORDINATES = {
-      'HL-18': { x: 650, y: 90, battery: 95, area: 'Khu vực Bàn Làm Việc Tổng Thống' },
+      'HL-18': { x: 380, y: 260, battery: 95, area: 'Khu vực Trung tâm gian phòng Tổng Thống' },
       'HL-37': { x: 680, y: 240, battery: 85, area: 'Khu vực Cung Đông (gần Bàn Họp Đá Cổ)' },
       'HL-44': { x: 270, y: 310, battery: 78, area: 'Khu vực Tiền sảnh Tây Nam (gần Cột Trụ Nam)' },
       'HL-45': { x: 530, y: 110, battery: 96, area: 'Khu vực Cổng Bắc & Hành lang vòm' },
@@ -3253,17 +3259,23 @@
     let mgrFiveHubs = [];
 
     function gpsToSvgRoom(lat, lng) {
-      const latMin = 20.99980;
-      const latMax = 21.00030;
-      const lngMin = 105.84210;
-      const lngMax = 105.84280;
-
-      const normX = (lng - lngMin) / (lngMax - lngMin);
-      const x = Math.round(Math.max(40, Math.min(760, 50 + normX * 700)));
-
-      const normY = (lat - latMin) / (latMax - latMin);
-      const y = Math.round(Math.max(40, Math.min(460, 450 - normY * 400)));
-
+      if (window.MapCommon && MapCommon.BleTrilateration && typeof MapCommon.BleTrilateration.gpsToSvg === 'function') {
+        return MapCommon.BleTrilateration.gpsToSvg(lat, lng);
+      }
+      const centerLat = 20.997715;
+      const centerLng = 105.844730;
+      const widthMeters = 18.9;
+      const heightMeters = 13.9;
+      const rotationAngle = 75.0;
+      const mLat = 111320;
+      const mLng = 111320 * Math.cos(centerLat * Math.PI / 180);
+      const rad = -rotationAngle * Math.PI / 180;
+      const dxRot = (Number(lng) - centerLng) * mLng;
+      const dyRot = (Number(lat) - centerLat) * mLat;
+      const dx = dxRot * Math.cos(rad) - dyRot * Math.sin(rad);
+      const dy = dxRot * Math.sin(rad) + dyRot * Math.cos(rad);
+      const x = Math.round(Math.max(10, Math.min(790, (dx / widthMeters + 0.5) * 800)));
+      const y = Math.round(Math.max(10, Math.min(490, (0.5 - dy / heightMeters) * 500)));
       return { x, y };
     }
 
@@ -3418,7 +3430,9 @@
       }
       if (cardTitle) cardTitle.innerText = `Thiết Bị Vi Định Vị ${cleanId} (Pin: ${hubInfo.battery}%)`;
       if (cardDesc) {
-        cardDesc.innerHTML = `Vị trí thực địa: <strong>${hubInfo.area}</strong>. Thiết bị đang kết nối trực tuyến với hệ thống vi định vị BLE của Nhà Tổng Thống.`;
+        const a = hubInfo.accel || { ax: 0, ay: 0, az: 1.0, isMoving: false };
+        const movingText = a.isMoving ? '<span style="color:#15803d; font-weight:700;">🚶 Đang di chuyển</span>' : '<span style="color:#78716c;">🧍 Đang đứng yên</span>';
+        cardDesc.innerHTML = `Vị trí thực địa: <strong>${hubInfo.area || 'Nhà Tổng Thống'}</strong>. MPU 3 Trục: <strong>Ax: ${a.ax}g, Ay: ${a.ay}g, Az: ${a.az}g</strong> (${movingText}). Thiết bị đang kết nối trực tuyến với hệ thống BLE & MPU.`;
       }
     }
 
@@ -3570,9 +3584,9 @@ function toggleHubMarkers() {
 
     function focusNhaTongThongManager() {
       if (managerMap) {
-        managerMap.flyTo([21.00010, 105.84245], 20, { duration: 1.2 });
+        managerMap.flyTo([20.997715, 105.844730], 20, { duration: 1.2 });
         L.popup()
-          .setLatLng([21.00010, 105.84245])
+          .setLatLng([20.997715, 105.844730])
           .setContent(`
             <div style="padding: 6px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
               <div style="font-size: 10.5px; text-transform: uppercase; font-weight: 800; color: #d97706; letter-spacing: 0.5px; margin-bottom: 2px;">
@@ -3580,7 +3594,7 @@ function toggleHubMarkers() {
               </div>
               <div style="font-weight: 700; font-size: 14px; color: #1e293b; margin-bottom: 4px;">🏛️ Nhà Tổng Thống (3 Trạm Beacon)</div>
               <div style="font-size: 12px; color: #475569; line-height: 1.45; margin-bottom: 6px;">
-                Tọa độ thực địa: [20.99992, 105.84215] - [21.00028, 105.84275].
+                Tọa độ Google Maps: 20.997715, 105.844730 • Góc xoay 75°
               </div>
               <div style="font-size: 11.5px; color: #0284c7; font-weight: 700;">
                 📡 3 Trạm BLE Beacon: BEACONTAG-1, BEACONTAG-2, BEACONTAG-3
@@ -3697,11 +3711,31 @@ function toggleHubMarkers() {
             let targetX = incomingHub.x || msg.x;
             let targetY = incomingHub.y || msg.y;
 
-            if (targetX === undefined || targetY === undefined) {
-              if (typeof gpsToSvgRoom === 'function' && !isNaN(lat) && !isNaN(lng)) {
-                const c = gpsToSvgRoom(lat, lng);
-                targetX = c.x;
-                targetY = c.y;
+            // Nhận diện bước đi PDR (từ isStep hoặc gia tốc tổng hợp |a| > 1.32g)
+            const incomingAccel = incomingHub.accel || msg.accel;
+            const isStepEvent = !!msg.isStep || (incomingAccel && !!incomingAccel.isStep);
+
+            if (isStepEvent) {
+              const curInfo = (mgrFiveHubs && Array.isArray(mgrFiveHubs)) ? mgrFiveHubs.find(h => (h.hubId || h.id) === cleanHubId) : null;
+              const baseCoords = curInfo || MGR_INDOOR_HUB_COORDINATES[cleanHubId] || { x: 380, y: 260 };
+              const curX = (curInfo && curInfo.x) ? curInfo.x : (baseCoords.x || 380);
+              const curY = (curInfo && curInfo.y) ? curInfo.y : (baseCoords.y || 260);
+              const yawDeg = (incomingHub.yaw !== undefined) ? incomingHub.yaw : (baseCoords.yaw || 0);
+              const rad = (yawDeg * Math.PI) / 180.0;
+              targetX = Math.max(40, Math.min(760, curX + 14 * Math.sin(rad)));
+              targetY = Math.max(30, Math.min(470, curY - 14 * Math.cos(rad)));
+            } else {
+              // Khi đứng yên (isStepEvent = false): giữ nguyên tọa độ hiện tại của Hub
+              const curInfo = (mgrFiveHubs && Array.isArray(mgrFiveHubs)) ? mgrFiveHubs.find(h => (h.hubId || h.id) === cleanHubId) : null;
+              if (curInfo && curInfo.x !== undefined && curInfo.y !== undefined) {
+                targetX = curInfo.x;
+                targetY = curInfo.y;
+              } else if (targetX === undefined || targetY === undefined) {
+                if (typeof gpsToSvgRoom === 'function' && !isNaN(lat) && !isNaN(lng)) {
+                  const c = gpsToSvgRoom(lat, lng);
+                  targetX = c.x;
+                  targetY = c.y;
+                }
               }
             }
 
@@ -3724,6 +3758,7 @@ function toggleHubMarkers() {
                 MGR_INDOOR_HUB_COORDINATES[cleanHubId].x = targetX;
                 MGR_INDOOR_HUB_COORDINATES[cleanHubId].y = targetY;
                 MGR_INDOOR_HUB_COORDINATES[cleanHubId].battery = battery;
+                if (incomingAccel) MGR_INDOOR_HUB_COORDINATES[cleanHubId].accel = incomingAccel;
               }
 
               if (mgrFiveHubs && Array.isArray(mgrFiveHubs)) {
@@ -3734,6 +3769,17 @@ function toggleHubMarkers() {
                   foundHub.battery = battery;
                   if (lat) foundHub.lat = lat;
                   if (lng) foundHub.lng = lng;
+                  if (incomingAccel) foundHub.accel = incomingAccel;
+                }
+              }
+
+              // Cập nhật card mô tả dưới bản đồ nếu đang chọn thiết bị này
+              const activeBadge = document.getElementById('mgr-card-badge');
+              if (activeBadge && activeBadge.innerText.includes(cleanHubId) && incomingAccel) {
+                const cardDesc = document.getElementById('manager-map-bottom-desc');
+                if (cardDesc) {
+                  const movingText = incomingAccel.isMoving ? '<span style="color:#15803d; font-weight:700;">🚶 Đang di chuyển</span>' : '<span style="color:#78716c;">🧍 Đang đứng yên</span>';
+                  cardDesc.innerHTML = `Vị trí thực địa: <strong>Nhà Tổng Thống</strong>. MPU 3 Trục: <strong>Ax: ${incomingAccel.ax}g, Ay: ${incomingAccel.ay}g, Az: ${incomingAccel.az}g</strong> (${movingText}). Thiết bị đang kết nối trực tuyến với hệ thống BLE & MPU.`;
                 }
               }
 
@@ -3749,6 +3795,7 @@ function toggleHubMarkers() {
               if (targetX) dev.x = targetX;
               if (targetY) dev.y = targetY;
               if (incomingHub.ble) dev.ble = incomingHub.ble;
+              if (incomingAccel) dev.accel = incomingAccel;
               renderDeviceTable();
             }
 
@@ -3808,6 +3855,9 @@ function toggleHubMarkers() {
       loadServerData();
       initManagerMap();
       connectAdminWebSocket();
+      if (window.location.hash === '#map' || new URLSearchParams(window.location.search).get('tab') === 'map') {
+        switchNavTab('map', document.querySelector('.nav-item[onclick*="map"]'));
+      }
     });
   </script>
 </body>

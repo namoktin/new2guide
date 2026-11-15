@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // Khởi tạo bản đồ Leaflet
-  const map = MapCommon.initMap('user-map', [20.99965, 105.84280], 18);
+  const map = MapCommon.initMap('user-map', [20.997715, 105.844730], 20);
   if (map.zoomControl) {
     map.zoomControl.setPosition('bottomleft');
   }
@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   let currentGroupData = null;
   let groupMembers = [];
-  let myHubData = { hubId: myHubId, lat: 20.99965, lng: 105.84280, yaw: 0, battery: 100 };
+  let myHubData = { hubId: myHubId, lat: 20.997715, lng: 105.844730, yaw: 0, battery: 100 };
   let currentYaw = 0;
 
   let siteData = null;

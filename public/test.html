@@ -663,7 +663,14 @@
         <span style="border-left: 1px solid var(--border-color); height: 20px; margin: 0 4px;"></span>
         
         <span class="input-label">Mã Hub ID:</span>
-        <input type="text" id="cfg-hub-id" class="input-field" style="width: 90px; text-transform: uppercase;" value="NEU001" />
+        <input type="text" id="cfg-hub-id" class="input-field" style="width: 85px; text-transform: uppercase;" value="HL-18" />
+        <div style="display: flex; gap: 4px; align-items: center; margin-right: 6px;">
+          <button type="button" class="btn btn-secondary btn-sm" style="padding: 2px 7px; font-size: 0.72rem;" onclick="setTestHubId('HL-18')">HL-18</button>
+          <button type="button" class="btn btn-secondary btn-sm" style="padding: 2px 7px; font-size: 0.72rem;" onclick="setTestHubId('HL-37')">HL-37</button>
+          <button type="button" class="btn btn-secondary btn-sm" style="padding: 2px 7px; font-size: 0.72rem;" onclick="setTestHubId('HL-44')">HL-44</button>
+          <button type="button" class="btn btn-secondary btn-sm" style="padding: 2px 7px; font-size: 0.72rem;" onclick="setTestHubId('HL-48')">HL-48</button>
+          <button type="button" class="btn btn-secondary btn-sm" style="padding: 2px 7px; font-size: 0.72rem;" onclick="setTestHubId('NEU001')">NEU001</button>
+        </div>
         <span class="input-label">Pin %:</span>
         <input type="number" id="cfg-battery" class="input-field" style="width: 65px;" value="95" min="1" max="100" />
       </div>
@@ -710,11 +717,11 @@
         <div class="form-row">
           <div class="form-group">
             <label>Vĩ Độ (Latitude)</label>
-            <input type="number" id="gps-lat" class="input-field" step="0.000001" value="20.99965" />
+            <input type="number" id="gps-lat" class="input-field" step="0.000001" value="20.997715" />
           </div>
           <div class="form-group">
             <label>Kinh Độ (Longitude)</label>
-            <input type="number" id="gps-lng" class="input-field" step="0.000001" value="105.84280" />
+            <input type="number" id="gps-lng" class="input-field" step="0.000001" value="105.844730" />
           </div>
           <div class="form-group" style="max-width: 80px;">
             <label>Vệ Tinh</label>
@@ -723,12 +730,12 @@
         </div>
 
         <div>
-          <label class="input-label" style="display: block; margin-bottom: 6px;">Tọa độ mẫu nhanh trong khuôn viên:</label>
+          <label class="input-label" style="display: block; margin-bottom: 6px;">Tọa độ mẫu chuẩn Nhà Tổng Thống (Google Maps 75°):</label>
           <div class="presets-row">
-            <button class="btn btn-secondary btn-sm" onclick="setGps(20.99965, 105.84280, 'Tòa Nhà Thế Kỷ A2')">Tòa Nhà A2</button>
-            <button class="btn btn-secondary btn-sm" onclick="setGps(20.99920, 105.84230, 'Thư Viện Phạm Văn Đồng')">Thư Viện</button>
-            <button class="btn btn-secondary btn-sm" onclick="setGps(21.00010, 105.84310, 'Cổng Chính')">Cổng Chính</button>
-            <button class="btn btn-secondary btn-sm" onclick="setGps(20.99880, 105.84340, 'Khu Thể Thao')">Khu Thể Thao</button>
+            <button class="btn btn-secondary btn-sm" onclick="setGps(20.997785, 105.844752, 'Trạm 1: Cung Đông')">Trạm 1: Cung Đông</button>
+            <button class="btn btn-secondary btn-sm" onclick="setGps(20.997760, 105.844680, 'Trạm 2: Cổng Bắc')">Trạm 2: Cổng Bắc</button>
+            <button class="btn btn-secondary btn-sm" onclick="setGps(20.997690, 105.844748, 'Trạm 3: Tiền Sảnh')">Trạm 3: Tiền Sảnh</button>
+            <button class="btn btn-secondary btn-sm" onclick="setGps(20.997715, 105.844730, 'Tâm Nhà Tổng Thống')">Tâm Nhà Tổng Thống</button>
             <button class="btn btn-secondary btn-sm" onclick="getRealGeolocation()">Lấy GPS Thật Từ Máy</button>
           </div>
         </div>
@@ -797,6 +804,55 @@ $GNGGA,084532.00,2059.9790,N,10550.5680,E,1,14,0.8,15.2,M,0.0,M,,*5C
           <div class="form-group">
             <label>Roll (Nghiêng vai: -90° đến +90°)</label>
             <input type="number" id="imu-roll" class="input-field" value="0" />
+          </div>
+        </div>
+
+        <!-- ==============================================
+             GIA TỐC KẾ 3 TRỤC (ACCELEROMETER) & MÔ PHỎNG PDR
+             ============================================== -->
+        <div style="margin-top: 10px; padding: 12px; background: rgba(15, 23, 42, 0.7); border: 1px solid #243354; border-radius: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div style="font-weight: 700; color: #f59e0b; display: flex; align-items: center; gap: 6px; font-size: 0.8rem;">
+              <span>📊 Gia Tốc Kế 3 Trục (MPU6050 Accelerometer):</span>
+            </div>
+            <span id="imu-accel-total" style="color: #38bdf8; font-weight: 700; font-size: 0.75rem;">|a| = 1.00g (Đứng yên)</span>
+          </div>
+
+          <div class="form-row" style="margin-bottom: 8px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="font-size: 0.72rem; display: flex; justify-content: space-between;">
+                <span>Ax (Trục ngang):</span>
+                <span id="imu-ax-val" style="color: #38bdf8; font-weight: 700;">0.00g</span>
+              </label>
+              <input type="range" id="imu-ax" min="-2" max="2" step="0.02" value="0" style="width: 100%; accent-color: #38bdf8;" />
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="font-size: 0.72rem; display: flex; justify-content: space-between;">
+                <span>Ay (Trục dọc):</span>
+                <span id="imu-ay-val" style="color: #38bdf8; font-weight: 700;">0.00g</span>
+              </label>
+              <input type="range" id="imu-ay" min="-2" max="2" step="0.02" value="0" style="width: 100%; accent-color: #38bdf8;" />
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="font-size: 0.72rem; display: flex; justify-content: space-between;">
+                <span>Az (Trọng lực):</span>
+                <span id="imu-az-val" style="color: #38bdf8; font-weight: 700;">1.00g</span>
+              </label>
+              <input type="range" id="imu-az" min="-2" max="2" step="0.02" value="1.0" style="width: 100%; accent-color: #38bdf8;" />
+            </div>
+          </div>
+
+          <!-- NÚT MÔ PHỎNG TIỆN LỢI -->
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button id="btn-accel-static" type="button" class="btn btn-secondary btn-sm" style="flex: 1; min-width: 100px; font-size: 0.73rem;">
+              🧍 Đứng yên (1G)
+            </button>
+            <button id="btn-accel-step" type="button" class="btn btn-success btn-sm" style="flex: 1; min-width: 110px; font-size: 0.73rem; background: #059669; border-color: #10b981;">
+              👟 Bước 1 bước
+            </button>
+            <button id="btn-accel-auto-walk" type="button" class="btn btn-primary btn-sm" style="flex: 1; min-width: 120px; font-size: 0.73rem;">
+              🚶 Tự động đi bộ
+            </button>
           </div>
         </div>
         <!-- GAZE & FOV RADAR HUD -->
@@ -1454,8 +1510,8 @@ $GNGGA,084532.00,2059.9790,N,10550.5680,E,1,14,0.8,15.2,M,0.0,M,,*5C
     const btnGpsSendTelemetry = document.getElementById('btn-gps-send-telemetry');
 
     function updateNmeaPreview() {
-      const lat = parseFloat(gpsLat.value) || 20.99965;
-      const lng = parseFloat(gpsLng.value) || 105.84280;
+      const lat = parseFloat(gpsLat.value) || 20.997715;
+      const lng = parseFloat(gpsLng.value) || 105.844730;
       const sats = parseInt(gpsSats.value) || 12;
       const latDeg = Math.floor(lat);
       const latMin = ((lat - latDeg) * 60).toFixed(4);
@@ -1470,6 +1526,7 @@ $GNGGA,084532.00,${latDeg}${latMin},N,${lngDeg}${lngMin},E,1,${sats},0.8,15.2,M,
     }
 
     window.setGps = (lat, lng, name) => {
+      window.hasTestMovedLocally = true;
       gpsLat.value = lat;
       gpsLng.value = lng;
       updateNmeaPreview();
@@ -1501,8 +1558,8 @@ $GNGGA,084532.00,${latDeg}${latMin},N,${lngDeg}${lngMin},E,1,${sats},0.8,15.2,M,
     btnGpsSendTelemetry.addEventListener('click', async () => {
       const hubId = (document.getElementById('cfg-hub-id').value || 'NEU001').trim();
       const battery = parseInt(document.getElementById('cfg-battery').value) || 100;
-      const lat = parseFloat(gpsLat.value) || 20.99965;
-      const lng = parseFloat(gpsLng.value) || 105.84280;
+      const lat = parseFloat(gpsLat.value) || 20.997715;
+      const lng = parseFloat(gpsLng.value) || 105.844730;
       const yaw = parseFloat(imuYawSlider.value) || 0;
       const secret = getEsp32Secret();
       const shouldSend = chkSendSecret.checked;
@@ -1578,12 +1635,170 @@ $GNGGA,084532.00,${latDeg}${latMin},N,${lngDeg}${lngMin},E,1,${sats},0.8,15.2,M,
 
     let imuStreamThrottleTimer = null;
     let pendingImuYaw = null;
+    let autoWalkInterval = null;
 
-    function sendImuStreamPacket(yaw) {
-      const hubId = (document.getElementById('cfg-hub-id')?.value || 'NEU001').trim();
+    const imuAxSlider = document.getElementById('imu-ax');
+    const imuAySlider = document.getElementById('imu-ay');
+    const imuAzSlider = document.getElementById('imu-az');
+    const imuAxVal = document.getElementById('imu-ax-val');
+    const imuAyVal = document.getElementById('imu-ay-val');
+    const imuAzVal = document.getElementById('imu-az-val');
+    const imuAccelTotal = document.getElementById('imu-accel-total');
+    const btnAccelStatic = document.getElementById('btn-accel-static');
+    const btnAccelStep = document.getElementById('btn-accel-step');
+    const btnAccelAutoWalk = document.getElementById('btn-accel-auto-walk');
+
+    function updateAccelDisplay(isStep = false) {
+      const ax = parseFloat(imuAxSlider ? imuAxSlider.value : 0) || 0;
+      const ay = parseFloat(imuAySlider ? imuAySlider.value : 0) || 0;
+      const az = parseFloat(imuAzSlider ? imuAzSlider.value : 1.0) || 1.0;
+      if (imuAxVal) imuAxVal.textContent = `${ax >= 0 ? '+' : ''}${ax.toFixed(2)}g`;
+      if (imuAyVal) imuAyVal.textContent = `${ay >= 0 ? '+' : ''}${ay.toFixed(2)}g`;
+      if (imuAzVal) imuAzVal.textContent = `${az >= 0 ? '+' : ''}${az.toFixed(2)}g`;
+
+      const mag = Math.hypot(ax, ay, az);
+      const isMoving = isStep || (Math.abs(mag - 1.0) > 0.15) || (Math.hypot(ax, ay) > 0.12);
+      if (imuAccelTotal) {
+        if (isStep) {
+          imuAccelTotal.innerHTML = `<span style="color:#22c55e;">👟 BƯỚC CHÂN (|a| = ${mag.toFixed(2)}g)</span>`;
+        } else if (isMoving) {
+          imuAccelTotal.innerHTML = `<span style="color:#eab308;">🚶 Di chuyển (|a| = ${mag.toFixed(2)}g)</span>`;
+        } else {
+          imuAccelTotal.innerHTML = `<span style="color:#38bdf8;">|a| = ${mag.toFixed(2)}g (Đứng yên 1G)</span>`;
+        }
+      }
+      return { ax, ay, az, mag, isMoving };
+    }
+
+    [imuAxSlider, imuAySlider, imuAzSlider].forEach(slider => {
+      if (slider) {
+        slider.addEventListener('input', () => {
+          updateAccelDisplay();
+          sendImuStreamPacket(parseFloat(imuYawSlider.value) || 0);
+        });
+      }
+    });
+
+    if (btnAccelStatic) {
+      btnAccelStatic.addEventListener('click', () => {
+        if (autoWalkInterval) stopAutoWalk();
+        if (imuAxSlider) imuAxSlider.value = 0;
+        if (imuAySlider) imuAySlider.value = 0;
+        if (imuAzSlider) imuAzSlider.value = 1.0;
+        updateAccelDisplay();
+        const curLat = parseFloat(gpsLat ? gpsLat.value : null);
+        const curLng = parseFloat(gpsLng ? gpsLng.value : null);
+        sendImuStreamPacket(parseFloat(imuYawSlider.value) || 0, false, curLat, curLng);
+        log('MPU6050', '🧍 Thiết lập trạng thái đứng yên tĩnh (1G: Ax=0, Ay=0, Az=1.0g)', 'log-tag-imu');
+      });
+    }
+
+    if (btnAccelStep) {
+      btnAccelStep.addEventListener('click', () => {
+        simulateSingleStep();
+      });
+    }
+
+    window.setTestHubId = function(newId) {
+      const el = document.getElementById('cfg-hub-id');
+      if (el) el.value = newId;
+      log('CẤU HÌNH', `Đã chuyển sang kiểm thử thiết bị ${newId}. Đang đồng bộ lại socket...`, 'log-tag-gps');
+      if (typeof connectEsp32DeviceWs === 'function') connectEsp32DeviceWs();
+    };
+
+    function simulateSingleStep() {
+      window.hasTestMovedLocally = true;
+      // 1. Tạo xung lực bước chân thực tế: trục Z nhô lên ~1.42g, trục dọc Y rung ~0.18g
+      if (imuAxSlider) imuAxSlider.value = 0.05;
+      if (imuAySlider) imuAySlider.value = 0.18;
+      if (imuAzSlider) imuAzSlider.value = 1.42;
+      updateAccelDisplay(true);
+
+      const yaw = parseFloat(imuYawSlider.value) || 0;
+      // Góc xoay phòng Nhà Tổng Thống là 75 độ
+      const worldAngle = ((yaw + 75.0) * Math.PI) / 180.0;
+
+      // 2. Tịnh tiến tọa độ GPS thực tế trên test.html (~0.5m mỗi bước theo góc thực tế)
+      const curLat = parseFloat(gpsLat ? gpsLat.value : 20.997715) || 20.997715;
+      const curLng = parseFloat(gpsLng ? gpsLng.value : 105.844730) || 105.844730;
+      const dLat = (0.5 * Math.cos(worldAngle)) / 111320;
+      const dLng = (0.5 * Math.sin(worldAngle)) / (111320 * Math.cos(curLat * Math.PI / 180));
+      const newLat = parseFloat((curLat + dLat).toFixed(6));
+      const newLng = parseFloat((curLng + dLng).toFixed(6));
+      if (gpsLat) gpsLat.value = newLat;
+      if (gpsLng) gpsLng.value = newLng;
+      if (typeof generateNmeaOutput === 'function') generateNmeaOutput(newLat, newLng);
+
+      // 3. Gửi gói tin Realtime WebSocket kèm GPS mới
+      sendImuStreamPacket(yaw, true, newLat, newLng);
+      log('MPU6050', `👟 [PDR STEP] Đã bước 1 bước theo hướng ${yaw}°! GPS mới: (${newLat}, ${newLng}) -> Đang cập nhật BQL & Khách...`, 'log-tag-imu');
+
+      setTimeout(() => {
+        if (!autoWalkInterval) {
+          if (imuAxSlider) imuAxSlider.value = 0;
+          if (imuAySlider) imuAySlider.value = 0;
+          if (imuAzSlider) imuAzSlider.value = 1.0;
+          updateAccelDisplay(false);
+          sendImuStreamPacket(yaw, false, newLat, newLng);
+        }
+      }, 300);
+    }
+
+    function stopAutoWalk() {
+      if (autoWalkInterval) {
+        clearInterval(autoWalkInterval);
+        autoWalkInterval = null;
+      }
+      if (btnAccelAutoWalk) {
+        btnAccelAutoWalk.textContent = '🚶 Tự động đi bộ';
+        btnAccelAutoWalk.classList.remove('btn-danger');
+        btnAccelAutoWalk.classList.add('btn-primary');
+      }
+      if (imuAxSlider) imuAxSlider.value = 0;
+      if (imuAySlider) imuAySlider.value = 0;
+      if (imuAzSlider) imuAzSlider.value = 1.0;
+      updateAccelDisplay(false);
+      sendImuStreamPacket(parseFloat(imuYawSlider.value) || 0, false);
+      log('MPU6050', '⏹ Đã dừng mô phỏng tự động đi bộ.', 'log-tag-imu');
+    }
+
+    function startAutoWalk() {
+      if (btnAccelAutoWalk) {
+        btnAccelAutoWalk.textContent = '⏹ Dừng đi bộ';
+        btnAccelAutoWalk.classList.remove('btn-primary');
+        btnAccelAutoWalk.classList.add('btn-danger');
+      }
+      log('MPU6050', '🚶 Bắt đầu chuỗi mô phỏng bước đi tự động (nhịp 700ms)...', 'log-tag-imu');
+      let stepPhase = 0;
+      simulateSingleStep();
+      autoWalkInterval = setInterval(() => {
+        stepPhase++;
+        const sway = (stepPhase % 2 === 0 ? 0.08 : -0.08);
+        if (imuAxSlider) imuAxSlider.value = sway;
+        simulateSingleStep();
+      }, 700);
+    }
+
+    if (btnAccelAutoWalk) {
+      btnAccelAutoWalk.addEventListener('click', () => {
+        if (autoWalkInterval) {
+          stopAutoWalk();
+        } else {
+          startAutoWalk();
+        }
+      });
+    }
+
+    function sendImuStreamPacket(yaw, isStepOverride = false, stepLat = null, stepLng = null) {
+      const hubId = (document.getElementById('cfg-hub-id')?.value || 'HL-18').trim();
       const secret = getEsp32Secret();
       const pitch = parseFloat(document.getElementById('imu-pitch')?.value) || 0;
       const roll = parseFloat(document.getElementById('imu-roll')?.value) || 0;
+      const ax = parseFloat(imuAxSlider ? imuAxSlider.value : 0) || 0;
+      const ay = parseFloat(imuAySlider ? imuAySlider.value : 0) || 0;
+      const az = parseFloat(imuAzSlider ? imuAzSlider.value : 1.0) || 1.0;
+      const lat = stepLat !== null ? stepLat : (parseFloat(gpsLat ? gpsLat.value : 20.997715) || 20.997715);
+      const lng = stepLng !== null ? stepLng : (parseFloat(gpsLng ? gpsLng.value : 105.844730) || 105.844730);
 
       const payload = {
         type: 'DEVICE_IMU_STREAM',
@@ -1591,11 +1806,40 @@ $GNGGA,084532.00,${latDeg}${latMin},N,${lngDeg}${lngMin},E,1,${sats},0.8,15.2,M,
         yaw: Math.round(yaw),
         pitch,
         roll,
+        ax,
+        ay,
+        az,
+        lat,
+        lng,
+        isStep: !!isStepOverride,
         secretKey: secret
       };
 
       if (esp32Ws && esp32Ws.readyState === WebSocket.OPEN) {
         esp32Ws.send(JSON.stringify(payload));
+      }
+
+      // Khi là bước chân, đồng thời gửi REST API để đồng bộ dữ liệu vào backend
+      if (isStepOverride) {
+        fetch(`${serverBaseUrl}/api/telemetry`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Device-Secret': secret
+          },
+          body: JSON.stringify({
+            hubId,
+            lat,
+            lng,
+            yaw: Math.round(yaw),
+            pitch,
+            roll,
+            ax,
+            ay,
+            az,
+            isStep: true
+          })
+        }).catch(() => {});
       }
     }
 
@@ -1694,11 +1938,15 @@ $GNGGA,084532.00,${latDeg}${latMin},N,${lngDeg}${lngMin},E,1,${sats},0.8,15.2,M,
       const secret = getEsp32Secret();
       const shouldSend = chkSendSecret.checked;
 
-      log('MPU6050', `Đang phát sóng Telemetry IMU (Yaw: ${yaw}°, Pitch: ${pitch}°, Roll: ${roll}°)...`, 'log-tag-imu');
+      const ax = parseFloat(imuAxSlider ? imuAxSlider.value : 0) || 0;
+      const ay = parseFloat(imuAySlider ? imuAySlider.value : 0) || 0;
+      const az = parseFloat(imuAzSlider ? imuAzSlider.value : 1.0) || 1.0;
 
-      // Gửi góc quay IMU qua WebSocket (MPU6050 chỉ truyền yaw/pitch/roll, TUYỆT ĐỐI không gửi lat/lng để tránh đè GPS)
+      log('MPU6050', `Đang phát sóng Telemetry IMU 6-DOF (Yaw: ${yaw}°, Pitch: ${pitch}°, Roll: ${roll}°, Ax: ${ax}g, Ay: ${ay}g, Az: ${az}g)...`, 'log-tag-imu');
+
+      // Gửi góc quay và gia tốc 3 trục IMU qua WebSocket
       sendImuStreamPacket(yaw);
-      log('MPU6050', `Đã cập nhật góc quay MPU6050: Yaw=${yaw}° (${getHeadingName(yaw)}), Pitch=${pitch}°, Roll=${roll}° realtime tới BQL và Khách!`, 'log-tag-imu');
+      log('MPU6050', `Đã cập nhật MPU6050: Yaw=${yaw}° (${getHeadingName(yaw)}), Ax=${ax}g, Ay=${ay}g, Az=${az}g realtime tới BQL và Khách!`, 'log-tag-imu');
 
       if (currentTargetGazePoi) {
         log('TEST GAZE', `[KÍCH HOẠT THUYẾT MINH HIỆN VẬT] Khách đang hướng vào Hiện vật #${currentTargetGazePoi.number} (${currentTargetGazePoi.name}) -> Gửi lệnh Gaze lên server...`, 'log-tag-gps');
@@ -1965,8 +2213,8 @@ $GNGGA,084532.00,${latDeg}${latMin},N,${lngDeg}${lngMin},E,1,${sats},0.8,15.2,M,
       }
 
       const hubId = (document.getElementById('cfg-hub-id').value || 'NEU001').trim();
-      const lat = parseFloat(gpsLat.value) || 20.99965;
-      const lng = parseFloat(gpsLng.value) || 105.84280;
+      const lat = parseFloat(gpsLat.value) || 20.997715;
+      const lng = parseFloat(gpsLng.value) || 105.844730;
       const yaw = parseFloat(imuYawSlider.value) || 0;
       const isDirectBinary = chkDirectBinaryMode.checked;
       const secret = getEsp32Secret();
@@ -2581,8 +2829,8 @@ $GNGGA,084532.00,${latDeg}${latMin},N,${lngDeg}${lngMin},E,1,${sats},0.8,15.2,M,
     window.syncSpatialFromGazeOrGps = () => {
       if (!isSyncWithImu) return;
       const userYaw = parseFloat(imuYawSlider.value) || 0;
-      const userLat = parseFloat(gpsLat.value) || 20.99965;
-      const userLng = parseFloat(gpsLng.value) || 105.84280;
+      const userLat = parseFloat(gpsLat.value) || 20.997715;
+      const userLng = parseFloat(gpsLng.value) || 105.844730;
 
       // 1. Ưu tiên mục tiêu là Hiện vật đang phát âm thanh thuyết minh
       let target = currentPlayingArtifact;
@@ -3008,12 +3256,12 @@ $GNGGA,084532.00,${latDeg}${latMin},N,${lngDeg}${lngMin},E,1,${sats},0.8,15.2,M,
         if (esp32WsStatus) esp32WsStatus.textContent = `ESP32 Socket: KẾT NỐI (Hub ${data.hubId})`;
         log('ESP32 WS', `[XÁC THỰC THÀNH CÔNG] Server phê duyệt thiết bị phần cứng Hub ${data.hubId}! Mã bảo mật hợp lệ.`, 'log-tag-gps');
         if (data.hub) {
-          if (data.hub.lat && data.hub.lng) {
+          if (!window.hasTestMovedLocally && data.hub.lat && data.hub.lng) {
             gpsLat.value = Number(data.hub.lat).toFixed(5);
             gpsLng.value = Number(data.hub.lng).toFixed(5);
             updateNmeaPreview();
           }
-          if (data.hub.yaw !== undefined) {
+          if (!window.hasTestMovedLocally && data.hub.yaw !== undefined) {
             imuYawSlider.value = Math.round(data.hub.yaw);
             imuYawVal.textContent = `${Math.round(data.hub.yaw)}°`;
             compassNeedle.style.transform = `rotate(${Math.round(data.hub.yaw)}deg)`;
@@ -3230,8 +3478,8 @@ $GNGGA,084532.00,${latDeg}${latMin},N,${lngDeg}${lngMin},E,1,${sats},0.8,15.2,M,
       const allTargets = (cachedSiteData.artifacts || []).map(a => ({ ...a, isArtifact: true }));
       if (!allTargets.length) return;
 
-      const userLat = parseFloat(gpsLat.value) || 20.99965;
-      const userLng = parseFloat(gpsLng.value) || 105.84280;
+      const userLat = parseFloat(gpsLat.value) || 20.997715;
+      const userLng = parseFloat(gpsLng.value) || 105.844730;
       const userYaw = parseFloat(imuYawSlider.value) || 0;
 
       // Tìm hiện vật nằm trong tầm nhìn chuẩn 5.0m và nón 45 độ (lệch <= 22.5 độ)

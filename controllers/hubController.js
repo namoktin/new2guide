@@ -63,10 +63,56 @@ class HubController {
 
   // POST /api/telemetry
   updateTelemetry(req, res) {
-    let { hubId, lat, lng, alt, yaw, pitch, roll, battery, isCharging, ble, rawGps, imu } = req.body;
+    let { hubId, lat, lng, alt, yaw, pitch, roll, battery, isCharging, ble, rawGps, imu, ax, ay, az, accel, isStep, x, y } = req.body;
+
+    // Hỗ trợ tự động suy luận tọa độ bằng Dung hợp BLE + MPU nếu chưa có GPS sẵn
+    if (hubId && (lat === undefined || lng === undefined) && (req.body.beacons || req.body.isStep)) {
+      const sensorFusionService = require('../services/sensorFusionService');
+      const fusionRes = sensorFusionService.fuse(hubId, {
+        yaw, pitch, roll,
+        ax, ay, az,
+        isStep: req.body.isStep || (imu && imu.isStep),
+        stepLength: req.body.stepLength,
+        beacons: req.body.beacons
+      });
+      if (fusionRes.success) {
+        lat = fusionRes.lat;
+        lng = fusionRes.lng;
+        x = fusionRes.x;
+        y = fusionRes.y;
+      }
+    }
 
     if (!hubId || lat === undefined || lng === undefined) {
       return res.status(400).json({ success: false, error: 'Thiếu hubId hoặc tọa độ lat, lng' });
+    }
+
+    // Tự động kích hoạt dung hợp cảm biến BLE + MPU khi có dữ liệu sóng Beacon
+    if ((req.body.beacons && Array.isArray(req.body.beacons)) || (ble && Array.isArray(ble.beacons))) {
+      try {
+        const sensorFusionService = require('../services/sensorFusionService');
+        const fusionRes = sensorFusionService.fuse(hubId, {
+          yaw, pitch, roll,
+          ax, ay, az,
+          isStep: req.body.isStep || (imu && imu.isStep),
+          stepLength: req.body.stepLength,
+          beacons: req.body.beacons || ble.beacons
+        });
+        if (fusionRes.success) {
+          lat = fusionRes.lat;
+          lng = fusionRes.lng;
+          x = fusionRes.x;
+          y = fusionRes.y;
+          ble = {
+            ...(ble || {}),
+            method: fusionRes.method,
+            accuracy: fusionRes.accuracy,
+            fused: true
+          };
+        }
+      } catch (e) {
+        console.warn('[Telemetry] Lỗi dung hợp cảm biến:', e);
+      }
     }
 
     const updatedHub = hubModel.updateTelemetry(hubId, {
@@ -80,7 +126,14 @@ class HubController {
       isCharging,
       ble,
       rawGps,
-      imu
+      imu,
+      ax: ax !== undefined ? ax : (accel ? accel.ax : undefined),
+      ay: ay !== undefined ? ay : (accel ? accel.ay : undefined),
+      az: az !== undefined ? az : (accel ? accel.az : undefined),
+      accel,
+      isStep: !!isStep || (accel && !!accel.isStep),
+      x,
+      y
     });
 
     // Nếu Hub này thuộc 1 đoàn khách đang hoạt động, ghi nhận vết di chuyển

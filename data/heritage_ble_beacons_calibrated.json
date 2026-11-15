@@ -1,0 +1,86 @@
+{
+  "siteName": "Nhà Tổng Thống (Đã Căn Chỉnh Vị Trí & Góc Xoay)",
+  "blueprintFile": "Nha_tong_thong_blueprint.svg",
+  "canvasDimensions": {
+    "width": 800,
+    "height": 500,
+    "unit": "pixel"
+  },
+  "google_maps_calibration": {
+    "center": {
+      "latitude": 20.997715,
+      "longitude": 105.84473
+    },
+    "rotation_angle_deg": 75,
+    "dimension_meters": {
+      "width": 18.9,
+      "height": 13.9
+    },
+    "polygon_boundary_wgs84": [
+      [
+        20.997649,
+        105.844642
+      ],
+      [
+        20.997813,
+        105.844689
+      ],
+      [
+        20.99778,
+        105.844818
+      ],
+      [
+        20.997616,
+        105.844771
+      ]
+    ]
+  },
+  "beacons": [
+    {
+      "beaconId": "BEACONTAG-1",
+      "name": "Trạm 1: Cung Điện Phía Đông",
+      "pixel_position": {
+        "x": 745,
+        "y": 258
+      },
+      "google_maps_gps": {
+        "latitude": 20.997785,
+        "longitude": 105.844752
+      },
+      "uuid": "E2C56DB5-DFFB-48D2-B060-D0F5A71096E0",
+      "major": 1,
+      "minor": 977
+    },
+    {
+      "beaconId": "BEACONTAG-2",
+      "name": "Trạm 2: Cổng Bắc & Vòm Cửa",
+      "pixel_position": {
+        "x": 550,
+        "y": 25
+      },
+      "google_maps_gps": {
+        "latitude": 20.99776,
+        "longitude": 105.84468
+      },
+      "uuid": "E2C56DB5-DFFB-48D2-B060-D0F5A71096E0",
+      "major": 1,
+      "minor": 977
+    },
+    {
+      "beaconId": "BEACONTAG-3",
+      "name": "Trạm 3: Tiền Sảnh Trung Tâm",
+      "pixel_position": {
+        "x": 310,
+        "y": 340
+      },
+      "google_maps_gps": {
+        "latitude": 20.99769,
+        "longitude": 105.844748
+      },
+      "uuid": "E2C56DB5-DFFB-48D2-B060-D0F5A71096E0",
+      "major": 1,
+      "minor": 977
+    }
+  ],
+  "calibratedAt": "2026-11-14T19:43:08.534Z"
+}

@@ -56,7 +56,8 @@ class FinanceController {
   // GET /api/devices
   async getAllDevices(req, res) {
     try {
-      const data = await dbService.getAllDevices();
+      const hubModel = require('../models/hubModel');
+      const data = await dbService.getAllDevices(hubModel.getMap());
       res.json({
         success: true,
         count: data.length,

@@ -3,17 +3,152 @@
  * Bản đồ Leaflet 2D, Lớp vệ tinh Google Maps, Phân khu di tích, Tuyến tham quan & Icon chỉ vị trí (Location Pointer Pin)
  */
 
+// Đăng ký Plugin Leaflet.ImageOverlay.Rotated nếu chưa có
+if (typeof L !== 'undefined' && !L.ImageOverlay.Rotated) {
+  L.ImageOverlay.Rotated = L.ImageOverlay.extend({
+    initialize: function (image, topleft, topright, bottomleft, options) {
+      if (typeof(image) === 'string') {
+        this._url = image;
+      } else {
+        this._rawImage = image;
+      }
+      this._topLeft = L.latLng(topleft);
+      this._topRight = L.latLng(topright);
+      this._bottomLeft = L.latLng(bottomleft);
+      L.setOptions(this, options);
+    },
+
+    onAdd: function (map) {
+      if (!this._image) {
+        this._initImage();
+        if (this.options.opacity < 1) {
+          this._updateOpacity();
+        }
+      }
+      if (this.options.interactive) {
+        L.DomUtil.addClass(this._rawImage, 'leaflet-interactive');
+        this.addInteractiveTarget(this._rawImage);
+      }
+      map.on('zoomend resetview move', this._reset, this);
+      this.getPane().appendChild(this._image);
+      this._reset();
+    },
+
+    onRemove: function(map) {
+      map.off('zoomend resetview move', this._reset, this);
+      L.ImageOverlay.prototype.onRemove.call(this, map);
+    },
+
+    _initImage: function () {
+      var img = this._rawImage;
+      if (this._url) {
+        img = L.DomUtil.create('img');
+        img.style.display = 'none';
+        if (this.options.crossOrigin) {
+          img.crossOrigin = '';
+        }
+        img.src = this._url;
+        this._rawImage = img;
+      }
+      L.DomUtil.addClass(img, 'leaflet-image-layer');
+
+      var div = this._image = L.DomUtil.create('div',
+        'leaflet-image-layer ' + (this._zoomAnimated ? 'leaflet-zoom-animated' : ''));
+
+      this._updateZIndex();
+      div.appendChild(img);
+
+      div.onselectstart = L.Util.falseFn;
+      div.onmousemove = L.Util.falseFn;
+
+      var self = this;
+      img.onload = function() {
+        self._reset();
+        img.style.display = 'block';
+        self.fire('load');
+      };
+
+      if (img.complete) {
+        setTimeout(function() {
+          self._reset();
+          img.style.display = 'block';
+        }, 50);
+      }
+
+      img.alt = this.options.alt || '';
+    },
+
+    _reset: function () {
+      var div = this._image;
+      if (!this._map || !div || !this._rawImage) {
+        return;
+      }
+
+      var pxTopLeft = this._map.latLngToLayerPoint(this._topLeft);
+      var pxTopRight = this._map.latLngToLayerPoint(this._topRight);
+      var pxBottomLeft = this._map.latLngToLayerPoint(this._bottomLeft);
+
+      var pxBottomRight = pxTopRight.subtract(pxTopLeft).add(pxBottomLeft);
+      var pxBounds = L.bounds([pxTopLeft, pxTopRight, pxBottomLeft, pxBottomRight]);
+      var size = pxBounds.getSize();
+      var pxTopLeftInDiv = pxTopLeft.subtract(pxBounds.min);
+
+      this._bounds = L.latLngBounds(
+        this._map.layerPointToLatLng(pxBounds.min),
+        this._map.layerPointToLatLng(pxBounds.max)
+      );
+
+      L.DomUtil.setPosition(div, pxBounds.min);
+
+      div.style.width = size.x + 'px';
+      div.style.height = size.y + 'px';
+
+      var imgW = this._rawImage.naturalWidth || this._rawImage.width || 800;
+      var imgH = this._rawImage.naturalHeight || this._rawImage.height || 500;
+      if (!imgW || !imgH) return;
+
+      var vectorX = pxTopRight.subtract(pxTopLeft);
+      var vectorY = pxBottomLeft.subtract(pxTopLeft);
+
+      this._rawImage.style.transformOrigin = '0 0';
+      this._rawImage.style.transform = "matrix(" +
+        (vectorX.x / imgW) + ', ' + (vectorX.y / imgW) + ', ' +
+        (vectorY.x / imgH) + ', ' + (vectorY.y / imgH) + ', ' +
+        pxTopLeftInDiv.x + ', ' + pxTopLeftInDiv.y + ')';
+    },
+
+    reposition: function(topleft, topright, bottomleft) {
+      this._topLeft = L.latLng(topleft);
+      this._topRight = L.latLng(topright);
+      this._bottomLeft = L.latLng(bottomleft);
+      this._reset();
+    },
+
+    setUrl: function (url) {
+      this._url = url;
+      if (this._rawImage) {
+        this._rawImage.src = url;
+      }
+      return this;
+    }
+  });
+
+  L.imageOverlay.rotated = function(imgSrc, topleft, topright, bottomleft, options) {
+    return new L.ImageOverlay.Rotated(imgSrc, topleft, topright, bottomleft, options);
+  };
+}
+
 const MapCommon = {
   // 1. KHỞI TẠO BẢN ĐỒ CƠ SỞ (GÓI GỌN KHU VỰC NHÀ TỔNG THỐNG)
-  initMap(containerId = 'map', center = [21.00010, 105.84245], zoom = 20) {
+  initMap(containerId = 'map', center = [20.997715, 105.844730], zoom = 20) {
     const map = L.map(containerId, {
       center: center,
       zoom: zoom,
-      minZoom: 18,
+      minZoom: 17,
       maxZoom: 22,
       maxBounds: [
-        [20.99940, 105.84160],
-        [21.00080, 105.84330]
+        [20.99600, 105.84300],
+        [20.99950, 105.84650]
       ],
       maxBoundsViscosity: 0.85,
       zoomControl: true
@@ -59,14 +194,24 @@ const MapCommon = {
     MapCommon.injectBeaconStyles();
 
     zones.forEach(zone => {
-      // Tự động overlay mặt bằng Blueprint SVG nếu phân khu có blueprintUrl & bounds
-      if (zone.blueprintUrl && zone.bounds) {
-        const blueprintOverlay = L.imageOverlay(zone.blueprintUrl, zone.bounds, {
-          opacity: 0.98,
-          interactive: true,
-          zIndex: 420,
-          className: 'zone-blueprint-overlay'
-        });
+      // Tự động overlay mặt bằng Blueprint SVG (hỗ trợ xoay góc theo góc thực địa nếu có corners)
+      if (zone.blueprintUrl && (zone.corners || zone.bounds)) {
+        let blueprintOverlay;
+        if (zone.corners && typeof L.imageOverlay.rotated === 'function') {
+          blueprintOverlay = L.imageOverlay.rotated(zone.blueprintUrl, zone.corners.nw, zone.corners.ne, zone.corners.sw, {
+            opacity: 0.98,
+            interactive: true,
+            zIndex: 420,
+            className: 'zone-blueprint-overlay'
+          });
+        } else {
+          blueprintOverlay = L.imageOverlay(zone.blueprintUrl, zone.bounds, {
+            opacity: 0.98,
+            interactive: true,
+            zIndex: 420,
+            className: 'zone-blueprint-overlay'
+          });
+        }
 
         blueprintOverlay.bindTooltip(`🏛️ ${zone.shortName || zone.name} (Blueprint)`, {
           permanent: false,
@@ -829,4 +974,195 @@ const MapCommon = {
     utterance.pitch = 1.0;
     window.speechSynthesis.speak(utterance);
   }
+,
+
+  // ============================================================
+  // 9. ĐỊNH VỊ BLE ĐA ĐIỂM & DUNG HỢP CẢM BIẾN MPU (SENSOR FUSION)
+  // ============================================================
+  BleTrilateration: {
+    center: {
+      lat: 20.997715,
+      lng: 105.844730
+    },
+    rotationAngle: 75.0,
+    widthMeters: 18.9,
+    heightMeters: 13.9,
+    canvasWidth: 800,
+    canvasHeight: 500,
+    mLat: 111320,
+    mLng: 111320 * Math.cos(20.997715 * Math.PI / 180),
+    PIXELS_PER_METER: 800 / 18.9,
+
+    rotatePoint(dx, dy, deg) {
+      const rad = deg * Math.PI / 180;
+      return {
+        dxRot: dx * Math.cos(rad) - dy * Math.sin(rad),
+        dyRot: dx * Math.sin(rad) + dy * Math.cos(rad)
+      };
+    },
+
+    rssiToDistance(rssi, txPower = -59, n = 2.2) {
+      const r = Number(rssi);
+      if (isNaN(r) || r === 0) return 999;
+      if (r >= txPower) return 0.2;
+      const exponent = (txPower - r) / (10.0 * n);
+      return Math.max(0.1, Math.min(100.0, Math.pow(10.0, exponent)));
+    },
+
+    gpsToSvg(lat, lng) {
+      const dxRot = (Number(lng) - this.center.lng) * this.mLng;
+      const dyRot = (Number(lat) - this.center.lat) * this.mLat;
+      const p = this.rotatePoint(dxRot, dyRot, -this.rotationAngle);
+      const x = Math.round(Math.max(10, Math.min(this.canvasWidth - 10, (p.dxRot / this.widthMeters + 0.5) * this.canvasWidth)));
+      const y = Math.round(Math.max(10, Math.min(this.canvasHeight - 10, (0.5 - p.dyRot / this.heightMeters) * this.canvasHeight)));
+      return { x, y };
+    },
+
+    svgToGps(x, y) {
+      const localDx = (Number(x) / this.canvasWidth - 0.5) * this.widthMeters;
+      const localDy = (0.5 - Number(y) / this.canvasHeight) * this.heightMeters;
+      const p = this.rotatePoint(localDx, localDy, this.rotationAngle);
+      const lat = Number((this.center.lat + p.dyRot / this.mLat).toFixed(6));
+      const lng = Number((this.center.lng + p.dxRot / this.mLng).toFixed(6));
+      return { lat, lng };
+    },
+
+    calculateLocation(beacons) {
+      if (!Array.isArray(beacons) || beacons.length === 0) return null;
+
+      const valid = beacons.filter(b => b.x !== undefined && b.y !== undefined && (b.distance !== undefined || b.rssi !== undefined));
+      if (valid.length === 0) return null;
+
+      valid.forEach(b => {
+        if (b.distanceMeter === undefined) {
+          b.distanceMeter = (b.distance !== undefined) ? Number(b.distance) : this.rssiToDistance(b.rssi, b.txPower || -59, b.n || 2.2);
+        }
+        b.distancePixels = b.distanceMeter * this.PIXELS_PER_METER;
+      });
+
+      valid.sort((a, b) => a.distanceMeter - b.distanceMeter);
+
+      if (valid.length === 1) {
+        return { x: valid[0].x, y: valid[0].y, accuracy: valid[0].distanceMeter, method: 'PROXIMITY_1_POINT' };
+      }
+
+      if (valid.length === 2) {
+        const w1 = 1 / Math.max(0.1, valid[0].distanceMeter);
+        const w2 = 1 / Math.max(0.1, valid[1].distanceMeter);
+        const x = Math.round((w1 * valid[0].x + w2 * valid[1].x) / (w1 + w2));
+        const y = Math.round((w1 * valid[0].y + w2 * valid[1].y) / (w1 + w2));
+        return { x, y, accuracy: (valid[0].distanceMeter + valid[1].distanceMeter) / 2, method: 'WEIGHTED_2_POINTS' };
+      }
+
+      // Multilateration từ 3 điểm trở lên (Linear Least Squares)
+      const N = valid.length;
+      const p0 = valid[0];
+      const x0 = p0.x, y0 = p0.y, r0 = p0.distancePixels;
+
+      let AtA_00 = 0, AtA_01 = 0, AtA_10 = 0, AtA_11 = 0;
+      let AtB_0 = 0, AtB_1 = 0;
+
+      for (let i = 1; i < N; i++) {
+        const pi = valid[i];
+        const xi = pi.x, yi = pi.y, ri = pi.distancePixels;
+        const row0 = 2 * (xi - x0);
+        const row1 = 2 * (yi - y0);
+        const bVal = (r0 * r0 - ri * ri) + (xi * xi - x0 * x0) + (yi * yi - y0 * y0);
+        const w = 1 / Math.max(1.0, ri * ri);
+
+        AtA_00 += row0 * row0 * w;
+        AtA_01 += row0 * row1 * w;
+        AtA_10 += row1 * row0 * w;
+        AtA_11 += row1 * row1 * w;
+
+        AtB_0 += row0 * bVal * w;
+        AtB_1 += row1 * bVal * w;
+      }
+
+      const det = AtA_00 * AtA_11 - AtA_01 * AtA_10;
+
+      // Trọng tâm WCL mốc an toàn
+      let sumW = 0, sumWx = 0, sumWy = 0;
+      for (let i = 0; i < N; i++) {
+        const b = valid[i];
+        const w = 1 / Math.max(0.1, b.distanceMeter * b.distanceMeter);
+        sumW += w;
+        sumWx += w * b.x;
+        sumWy += w * b.y;
+      }
+      const wclX = sumWx / sumW;
+      const wclY = sumWy / sumW;
+
+      let finalX, finalY;
+      if (Math.abs(det) < 1e-5) {
+        finalX = wclX;
+        finalY = wclY;
+      } else {
+        const rawX = (AtB_0 * AtA_11 - AtB_1 * AtA_01) / det;
+        const rawY = (AtA_00 * AtB_1 - AtA_10 * AtB_0) / det;
+        if (rawX < -20 || rawX > 820 || rawY < -20 || rawY > 520) {
+          finalX = wclX;
+          finalY = wclY;
+        } else {
+          finalX = 0.85 * rawX + 0.15 * wclX;
+          finalY = 0.85 * rawY + 0.15 * wclY;
+        }
+      }
+
+      finalX = Math.max(40, Math.min(760, Math.round(finalX)));
+      finalY = Math.max(30, Math.min(470, Math.round(finalY)));
+
+      return {
+        x: finalX,
+        y: finalY,
+        method: N === 3 ? 'TRILATERATION_3_POINTS' : `MULTILATERATION_${N}_POINTS`,
+        beaconCount: N
+      };
+    }
+  },
+
+  // 10. BỘ LỌC DUNG HỢP CẢM BIẾN BLE + MPU TRÊN TRÌNH DUYỆT
+  createSensorFusionTracker(initialX = 380, initialY = 260, initialYaw = 0) {
+    let curX = initialX;
+    let curY = initialY;
+    let curYaw = initialYaw;
+    let pCov = 1.0;
+    const PIXELS_PER_METER = 20.0;
+
+    return {
+      getPosition() {
+        return { x: curX, y: curY, yaw: curYaw };
+      },
+      setPosition(x, y, yaw) {
+        if (x !== undefined) curX = x;
+        if (y !== undefined) curY = y;
+        if (yaw !== undefined) curYaw = yaw;
+        pCov = 0.1;
+      },
+      // Bước dự đoán từ MPU6050 (Yaw la bàn + bước chân)
+      stepMpu(yaw, stepLengthMeter = 0.7) {
+        if (yaw !== undefined && !isNaN(yaw)) curYaw = Number(yaw);
+        const rad = (curYaw * Math.PI) / 180.0;
+        const moveDist = stepLengthMeter * PIXELS_PER_METER;
+        curX += moveDist * Math.sin(rad);
+        curY += -moveDist * Math.cos(rad);
+        curX = Math.max(40, Math.min(760, curX));
+        curY = Math.max(30, Math.min(470, curY));
+        pCov += 0.08;
+        return { x: curX, y: curY, yaw: curYaw };
+      },
+      // Bước hiệu chỉnh từ BLE Trilateration (Giao thoa 3+ điểm)
+      correctBle(bleX, bleY, accuracy = 1.5) {
+        const rNoise = Math.max(0.1, accuracy * 0.2);
+        const K = pCov / (pCov + rNoise);
+        curX = curX + K * (bleX - curX);
+        curY = curY + K * (bleY - curY);
+        pCov = (1 - K) * pCov;
+        curX = Math.max(40, Math.min(760, Math.round(curX * 10) / 10));
+        curY = Math.max(30, Math.min(470, Math.round(curY * 10) / 10));
+        return { x: curX, y: curY, yaw: curYaw, K };
+      }
+    };
+  }
+
 };

@@ -16,7 +16,7 @@ class SiteModel {
   }
 
   getCenter() {
-    return this.siteData.center || { lat: 20.99965, lng: 105.84280 };
+    return this.siteData.center || { lat: 20.997715, lng: 105.844730 };
   }
 
   saveSiteData({ siteCode, siteName, locationName, center, zoom, zones, pois, artifacts, tourRoute }, dbService) {

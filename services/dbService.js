@@ -15,8 +15,8 @@ const HubSchema = new mongoose.Schema({
   group: { type: String, default: '-' },
   user: { type: String, default: '-' },
   location: { type: String, default: 'Dock Sạc A' },
-  lat: { type: Number, default: 21.00010 },
-  lng: { type: Number, default: 105.84245 },
+  lat: { type: Number, default: 20.997715 },
+  lng: { type: Number, default: 105.844730 },
   x: { type: Number, default: 380 },
   y: { type: Number, default: 260 },
   alt: { type: Number, default: 0 },
@@ -321,28 +321,41 @@ class DatabaseService {
   }
 
   gpsToSvgRoom(lat, lng) {
-    const latMin = 20.99980;
-    const latMax = 21.00030;
-    const lngMin = 105.84210;
-    const lngMax = 105.84280;
+    const centerLat = 20.997715;
+    const centerLng = 105.844730;
+    const widthMeters = 18.9;
+    const heightMeters = 13.9;
+    const rotationAngle = 75.0;
+    const mLat = 111320;
+    const mLng = 111320 * Math.cos(centerLat * Math.PI / 180);
+    const rad = -rotationAngle * Math.PI / 180;
 
-    const normX = (lng - lngMin) / (lngMax - lngMin);
-    const x = Math.round(Math.max(40, Math.min(760, 50 + normX * 700)));
-
-    const normY = (lat - latMin) / (latMax - latMin);
-    const y = Math.round(Math.max(40, Math.min(460, 450 - normY * 400)));
-
+    const dxRot = (Number(lng) - centerLng) * mLng;
+    const dyRot = (Number(lat) - centerLat) * mLat;
+    const dx = dxRot * Math.cos(rad) - dyRot * Math.sin(rad);
+    const dy = dxRot * Math.sin(rad) + dyRot * Math.cos(rad);
+    const x = Math.round(Math.max(10, Math.min(790, (dx / widthMeters + 0.5) * 800)));
+    const y = Math.round(Math.max(10, Math.min(490, (0.5 - dy / heightMeters) * 500)));
     return { x, y };
   }
 
-  async getAllDevices() {
+  async getAllDevices(inMemoryHubs = null) {
     if (this.isMongoConnected) {
       try {
         const devices = await this.HubModel.find({}).sort({ hubId: 1 });
         if (devices && devices.length > 0) {
           return devices.map(d => {
             const obj = d.toObject();
-            if (obj.x === undefined || obj.y === undefined || obj.x === null || obj.y === null) {
+            if (inMemoryHubs && inMemoryHubs[obj.hubId]) {
+              const mem = inMemoryHubs[obj.hubId];
+              if (mem.lat !== undefined) obj.lat = mem.lat;
+              if (mem.lng !== undefined) obj.lng = mem.lng;
+              if (mem.x !== undefined) obj.x = mem.x;
+              if (mem.y !== undefined) obj.y = mem.y;
+              if (mem.yaw !== undefined) obj.yaw = mem.yaw;
+              if (mem.battery !== undefined) obj.battery = mem.battery;
+              if (mem.isOnline !== undefined) obj.isOnline = mem.isOnline;
+            } else if (obj.x === undefined || obj.y === undefined || obj.x === null || obj.y === null) {
               const { x, y } = this.gpsToSvgRoom(obj.lat, obj.lng);
               obj.x = x;
               obj.y = y;
@@ -515,7 +528,45 @@ class DatabaseService {
     }, 1000);
   }
 
+  async updateHub(hub) {
+    if (!hub || !hub.hubId) return;
+    if (this.isMongoConnected) {
+      try {
+        await this.HubModel.updateOne(
+          { hubId: hub.hubId },
+          {
+            $set: {
+              name: hub.name,
+              serial: hub.serial,
+              status: hub.status,
+              battery: hub.battery,
+              location: hub.location,
+              lat: hub.lat,
+              lng: hub.lng,
+              x: hub.x,
+              y: hub.y,
+              alt: hub.alt,
+              yaw: hub.yaw,
+              pitch: hub.pitch,
+              roll: hub.roll,
+              lastSeen: hub.lastSeen || Date.now(),
+              isOnline: hub.isOnline
+            }
+          },
+          { upsert: true }
+        );
+      } catch (e) {
+        console.warn('[MongoDB] Lỗi lưu cập nhật Hub:', e.message);
+      }
+    }
+  }
+
   scheduleSave(state) {
+    if (this.isMongoConnected && state && state.hubs) {
+      Object.values(state.hubs).forEach(h => {
+        this.updateHub(h).catch(() => {});
+      });
+    }
     return this.queuePersist(state);
   }
 

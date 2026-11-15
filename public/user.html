@@ -1497,6 +1497,8 @@
     <circle cx="0" cy="0" r="12" fill="none" stroke="#22c55e" stroke-width="2.5" class="user-pulse-wave"/>
     <circle cx="0" cy="0" r="10" fill="#16a34a" stroke="#ffffff" stroke-width="2.2" filter="drop-shadow(0 2px 6px rgba(0,0,0,0.5))"/>
     <circle cx="0" cy="0" r="4" fill="#ffffff"/>
+    <!-- Mũi tên định hướng góc nhìn la bàn MPU6050 -->
+    <path id="user-heading-pointer" d="M -5 -11 L 0 -19 L 5 -11 Z" fill="#22c55e" stroke="#ffffff" stroke-width="1.2" transform="rotate(0)" style="transition: transform 0.2s ease;"/>
     <rect x="-34" y="-23" width="68" height="15" rx="4" fill="rgba(15, 23, 42, 0.92)" stroke="#22c55e" stroke-width="0.8"/>
     <text x="0" y="-13" font-size="8" font-weight="bold" fill="#86efac" text-anchor="middle">Vị trí của bạn</text>
   </g>
@@ -1793,7 +1795,7 @@
   <script>
     let map = null;
     let siteData = null;
-    let siteCenter = [21.00010, 105.84245];
+    let siteCenter = [20.997715, 105.844730];
     let siteZoom = 20;
     let zoneLayerGroup = null;
     let poiLayerGroup = null;
@@ -1905,22 +1907,28 @@
 
     
     function gpsToSvgRoom(lat, lng) {
-      const latMin = 20.99980;
-      const latMax = 21.00030;
-      const lngMin = 105.84210;
-      const lngMax = 105.84280;
-
-      const normX = (lng - lngMin) / (lngMax - lngMin);
-      const x = Math.round(Math.max(40, Math.min(760, 50 + normX * 700)));
-
-      const normY = (lat - latMin) / (latMax - latMin);
-      const y = Math.round(Math.max(40, Math.min(460, 450 - normY * 400)));
-
+      if (window.MapCommon && MapCommon.BleTrilateration && typeof MapCommon.BleTrilateration.gpsToSvg === 'function') {
+        return MapCommon.BleTrilateration.gpsToSvg(lat, lng);
+      }
+      const centerLat = 20.997715;
+      const centerLng = 105.844730;
+      const widthMeters = 18.9;
+      const heightMeters = 13.9;
+      const rotationAngle = 75.0;
+      const mLat = 111320;
+      const mLng = 111320 * Math.cos(centerLat * Math.PI / 180);
+      const rad = -rotationAngle * Math.PI / 180;
+      const dxRot = (Number(lng) - centerLng) * mLng;
+      const dyRot = (Number(lat) - centerLat) * mLat;
+      const dx = dxRot * Math.cos(rad) - dyRot * Math.sin(rad);
+      const dy = dxRot * Math.sin(rad) + dyRot * Math.cos(rad);
+      const x = Math.round(Math.max(10, Math.min(790, (dx / widthMeters + 0.5) * 800)));
+      const y = Math.round(Math.max(10, Math.min(490, (0.5 - dy / heightMeters) * 500)));
       return { x, y };
     }
 
 
-    async function renderUserHubElements() {
+    async function renderUserHubElements(options = {}) {
       try {
         const res = await fetch('/api/devices');
         const json = await res.json();
@@ -1963,16 +1971,18 @@
         localStorage.setItem('2guide_current_hub_id', myHubId);
       }
 
-      // Đồng bộ vị trí người dùng theo Hub được chọn
+      // Đồng bộ vị trí người dùng theo Hub được chọn (CHỈ KHI YÊU CẦU FORCE, BẢO LƯU VỊ TRÍ HIỆN TẠI)
       const currentHub = userFiveHubs.find(h => (h.id || h.hubId) === myHubId);
       if (currentHub) {
-        userSvgPos = { x: currentHub.x, y: currentHub.y };
-        myHubData.lat = currentHub.lat;
-        myHubData.lng = currentHub.lng;
         myHubData.battery = currentHub.battery;
-        const userMarker = document.getElementById('user-location-marker');
-        if (userMarker) {
-          userMarker.setAttribute('transform', `translate(${userSvgPos.x}, ${userSvgPos.y})`);
+        if (options && options.forcePositionReset === true) {
+          userSvgPos = { x: currentHub.x, y: currentHub.y };
+          myHubData.lat = currentHub.lat;
+          myHubData.lng = currentHub.lng;
+          const userMarker = document.getElementById('user-location-marker');
+          if (userMarker) {
+            userMarker.setAttribute('transform', `translate(${userSvgPos.x}, ${userSvgPos.y})`);
+          }
         }
       }
 
@@ -1988,18 +1998,34 @@
         }).join('');
       }
 
-      updateUserUi();
+      updateUserUi({ skipPositionReset: true });
     }
 
     function rerollUserHubs() {
       userFiveHubs = getOrGenerateFiveRandomHubs(true);
       myHubId = userFiveHubs[0].id;
       localStorage.setItem('2guide_current_hub_id', myHubId);
-      renderUserHubElements();
+      renderUserHubElements({ forcePositionReset: true });
       updateUserPositionByHub(true);
-      renderUserHubElements();
-        updateUserUi({ pan: true });
       showVoiceGuideToast(`🎲 Đã đổi 5 Hub ngẫu nhiên mới: ${userFiveHubs.map(h => h.id).join(', ')}`);
+    }
+
+    function showVoiceGuideToast(msg) {
+      let toast = document.getElementById('user-voice-toast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'user-voice-toast';
+        toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(15,23,42,0.92);backdrop-filter:blur(8px);color:#fff;padding:10px 18px;border-radius:30px;font-size:13px;font-weight:600;box-shadow:0 10px 25px rgba(0,0,0,0.3);z-index:9999;transition:all 0.3s ease;pointer-events:none;display:flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,0.15);';
+        document.body.appendChild(toast);
+      }
+      toast.textContent = msg;
+      toast.style.opacity = '1';
+      toast.style.transform = 'translateX(-50%) translateY(0)';
+      clearTimeout(toast._timer);
+      toast._timer = setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(-50%) translateY(10px)';
+      }, 3000);
     }
 
     function getHubIndoorCoordinates(hubId) {
@@ -2057,8 +2083,8 @@
 
     let myHubData = {
       hubId: myHubId,
-      lat: 21.00010,
-      lng: 105.84245,
+      lat: 20.997715,
+      lng: 105.844730,
       yaw: 0,
       battery: 100
     };
@@ -2223,8 +2249,8 @@
         }
       }
 
-      // Cập nhật tọa độ và vị trí marker người dùng tức thì theo mã Hub (tránh ghi đè khi vừa nhận vị trí realtime)
-      if (!options || !options.skipPositionReset) {
+      // Cập nhật tọa độ và vị trí marker người dùng tức thì theo mã Hub CHỈ KHI có cờ forcePositionReset
+      if (options && options.forcePositionReset === true) {
         updateUserPositionByHub(options && options.pan === true);
       }
     }
@@ -2278,7 +2304,7 @@
 
     // Mở hộp thoại Đổi Hub ID
     function openChangeHubModal() {
-      renderUserHubElements();
+      renderUserHubElements({ skipPositionReset: true });
       const modal = document.getElementById('hub-modal');
       const input = document.getElementById('input-custom-hub-id');
       if (input) {
@@ -2315,12 +2341,27 @@
           window.history.replaceState(null, '', url);
         }
 
-        // Cập nhật giao diện và di chuyển vị trí tức thì đến đúng tọa độ của Hub
-        updateUserUi({ pan: true });
+        // Cập nhật mức pin từ danh sách Hub nếu có
+        if (userFiveHubs && Array.isArray(userFiveHubs)) {
+          const matched = userFiveHubs.find(h => (h.id || h.hubId) === clean);
+          if (matched && matched.battery !== undefined) {
+            myHubData.battery = matched.battery;
+          }
+        }
 
-        // Cập nhật thẻ nổi hiển thị vị trí mới
-        if (typeof panToUserLocation === 'function') {
-          panToUserLocation();
+        // Cập nhật giao diện mà TUYỆT ĐỐI KHÔNG reset vị trí
+        updateUserUi({ skipPositionReset: true });
+
+        // Cập nhật chip active trong modal
+        const chipsWrap = document.getElementById('quick-hub-chips-container');
+        if (chipsWrap && userFiveHubs) {
+          chipsWrap.innerHTML = userFiveHubs.map(h => {
+            const isCurrent = (h.id || h.hubId) === myHubId;
+            const bg = isCurrent ? '#0284c7' : '#f8fafc';
+            const color = isCurrent ? '#ffffff' : '#0f172a';
+            const border = isCurrent ? '#0284c7' : '#cbd5e1';
+            return `<button type="button" class="quick-hub-chip" onclick="selectQuickHub('${h.id || h.hubId}')" style="background: ${bg}; color: ${color}; border-color: ${border};">${h.id || h.hubId} (${h.battery}%)</button>`;
+          }).join('');
         }
 
         // Gửi thông báo đăng ký lại qua WebSocket nếu đang kết nối
@@ -2332,7 +2373,25 @@
           }));
         }
 
+        // Gửi đồng bộ telemetry vị trí hiện tại lên server cho Hub vừa đổi
+        if (myHubData && myHubData.lat && myHubData.lng) {
+          fetch('/api/telemetry', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              hubId: myHubId,
+              lat: myHubData.lat,
+              lng: myHubData.lng,
+              yaw: myHubData.yaw || 0,
+              battery: myHubData.battery !== undefined ? myHubData.battery : 100,
+              x: userSvgPos ? userSvgPos.x : undefined,
+              y: userSvgPos ? userSvgPos.y : undefined
+            })
+          }).catch(e => console.warn('Lỗi đồng bộ vị trí khi đổi Hub:', e));
+        }
+
         closeHubModal();
+        showVoiceGuideToast(`✅ Đã kết nối với thiết bị ${myHubId} (giữ nguyên vị trí hiện tại)`);
       }
     }
 
@@ -2435,16 +2494,45 @@
 
             const isMatch = (incomingId === myNormalized) || 
                             (myNormalized === 'NEU001' && incomingId === 'HL-01') ||
-                            (myNormalized === 'HL-01' && incomingId === 'NEU001');
+                            (myNormalized === 'HL-01' && incomingId === 'NEU001') ||
+                            (myNormalized === 'HL-18' && (incomingId === 'NEU001' || incomingId === 'HL-01')) ||
+                            (incomingId === 'HL-18' && (myNormalized === 'NEU001' || myNormalized === 'HL-01'));
 
             if (isMatch) {
               if (msg.lat !== undefined && !isNaN(msg.lat)) myHubData.lat = Number(msg.lat);
               if (msg.lng !== undefined && !isNaN(msg.lng)) myHubData.lng = Number(msg.lng);
-              if (msg.yaw !== undefined && !isNaN(msg.yaw)) myHubData.yaw = Number(msg.yaw);
+              if (msg.yaw !== undefined && !isNaN(msg.yaw)) {
+                myHubData.yaw = Number(msg.yaw);
+                const pointer = document.getElementById('user-heading-pointer');
+                if (pointer) pointer.setAttribute('transform', `rotate(${myHubData.yaw || 0})`);
+              }
               if (msg.battery !== undefined && !isNaN(msg.battery)) myHubData.battery = Number(msg.battery);
 
-              if (targetX !== undefined && targetY !== undefined) {
+              // Nhận dữ liệu gia tốc 3 trục MPU6050
+              const incomingAccel = msg.accel || (msg.hub ? msg.hub.accel : undefined);
+              if (incomingAccel) {
+                myHubData.accel = incomingAccel;
+              }
+
+              // Nhận diện bước đi PDR (từ isStep hoặc gia tốc tổng hợp |a| > 1.32g)
+              const isStepTrigger = !!msg.isStep || (incomingAccel && !!incomingAccel.isStep);
+              if (isStepTrigger) {
+                // Luôn luôn tịnh tiến vị trí bước chân theo góc yaw hiện tại!
+                const rad = ((myHubData.yaw || 0) * Math.PI) / 180.0;
+                targetX = Math.max(40, Math.min(760, (userSvgPos.x || 380) + 14 * Math.sin(rad)));
+                targetY = Math.max(30, Math.min(470, (userSvgPos.y || 260) - 14 * Math.cos(rad)));
                 userSvgPos = { x: targetX, y: targetY };
+              } else {
+                // Đứng yên (1G tĩnh hoặc xoay la bàn): BẢO LƯU VỊ TRÍ TUYỆT ĐỐI 100%, KHÔNG HỀ BỊ GIẬT!
+                if (userSvgPos && userSvgPos.x !== undefined && userSvgPos.y !== undefined) {
+                  targetX = userSvgPos.x;
+                  targetY = userSvgPos.y;
+                } else if (targetX !== undefined && targetY !== undefined) {
+                  userSvgPos = { x: targetX, y: targetY };
+                }
+              }
+
+              if (targetX !== undefined && targetY !== undefined) {
 
                 // 1. Cập nhật vị trí mới vào bộ nhớ userFiveHubs để không bao giờ bị trả lại vị trí cũ
                 if (userFiveHubs && Array.isArray(userFiveHubs)) {
@@ -2560,6 +2648,8 @@
         zone: 'Cung Điện Phía Đông',
         x: 745,
         y: 258,
+        lat: 20.997785,
+        lng: 105.844752,
         major: 1,
         minor: 977,
         uuid: 'E2C56DB5-DFFB-48D2-B060-D0F5A71096E0',
@@ -2573,6 +2663,8 @@
         zone: 'Cổng Bắc & Hành Lang Vòm',
         x: 550,
         y: 25,
+        lat: 20.997760,
+        lng: 105.844680,
         major: 1,
         minor: 977,
         uuid: 'E2C56DB5-DFFB-48D2-B060-D0F5A71096E0',
@@ -2586,6 +2678,8 @@
         zone: 'Tiền Sảnh Trung Tâm',
         x: 310,
         y: 340,
+        lat: 20.997690,
+        lng: 105.844748,
         major: 1,
         minor: 977,
         uuid: 'E2C56DB5-DFFB-48D2-B060-D0F5A71096E0',
@@ -2931,7 +3025,7 @@
       if ('speechSynthesis' in window) window.speechSynthesis.cancel();
       setupIndoorPanZoom();
       initIndoorInteractions();
-      await renderUserHubElements();
+      await renderUserHubElements({ forcePositionReset: true });
       updateUserPositionByHub(false);
       // Căn giữa ngay trước mặt vị trí của người dùng khi mới vào trang
       const cW = window.innerWidth;
@@ -3146,11 +3240,19 @@
             MapCommon.speakText(`Bạn đang tiếp cận ${nearestBleBeacon.name}. ${nearestBleBeacon.description || ''}`);
           }
 
-          // 2. Gửi ngầm gói tin BLE qua WebSocket lên Máy chủ & Ban Quản Lý
+          // 2. Gửi gói tin dung hợp cảm biến BLE + MPU lên Máy chủ & Ban Quản Lý
           if (ws && ws.readyState === WebSocket.OPEN) {
             ws.send(JSON.stringify({
-              type: 'BLE_BEACON_DETECTED',
+              type: 'BLE_MPU_FUSION',
               hubId: myHubId,
+              yaw: myHubData.yaw || 0,
+              beacons: ACTIVE_BEACONS.map(b => ({
+                beaconId: b.id,
+                rssi: b.rssi,
+                distance: b.distance,
+                x: b.x,
+                y: b.y
+              })),
               ble: {
                 beaconId: nearestBleBeacon.id,
                 beaconName: nearestBleBeacon.name,
@@ -3227,9 +3329,9 @@
         switchTab('map');
       }
       if (map) {
-        map.flyTo([21.00010, 105.84245], 20, { duration: 1.2 });
+        map.flyTo([20.997715, 105.844730], 20, { duration: 1.2 });
         L.popup()
-          .setLatLng([21.00010, 105.84245])
+          .setLatLng([20.997715, 105.844730])
           .setContent(`
             <div style="padding: 6px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
               <div style="font-size: 10.5px; text-transform: uppercase; font-weight: 800; color: #d97706; letter-spacing: 0.5px; margin-bottom: 2px;">
@@ -3356,8 +3458,8 @@
           },
           body: JSON.stringify({
             question: q,
-            lat: myHubData.lat || 20.99965,
-            lng: myHubData.lng || 105.84280,
+            lat: myHubData.lat || 20.997715,
+            lng: myHubData.lng || 105.844730,
             hubId: myHubId
           })
         });
@@ -3537,7 +3639,58 @@
     window.addEventListener('DOMContentLoaded', () => {
       initMap();
     });
-  </script>
+  
+    // Hỗ trợ phím điều hướng mô phỏng bước đi quán tính MPU (Sensor Fusion PDR)
+    window.addEventListener('keydown', (e) => {
+      if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+      let moved = false;
+      const stepPx = 14; // ~0.7m thực tế
+      if (!myHubData.yaw) myHubData.yaw = 0;
+
+      if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
+        const rad = (myHubData.yaw * Math.PI) / 180.0;
+        userSvgPos.x = Math.max(40, Math.min(760, userSvgPos.x + stepPx * Math.sin(rad)));
+        userSvgPos.y = Math.max(30, Math.min(470, userSvgPos.y - stepPx * Math.cos(rad)));
+        moved = true;
+      } else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
+        const rad = (myHubData.yaw * Math.PI) / 180.0;
+        userSvgPos.x = Math.max(40, Math.min(760, userSvgPos.x - stepPx * Math.sin(rad)));
+        userSvgPos.y = Math.max(30, Math.min(470, userSvgPos.y + stepPx * Math.cos(rad)));
+        moved = true;
+      } else if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+        myHubData.yaw = (myHubData.yaw - 15 + 360) % 360;
+        const pointer = document.getElementById('user-heading-pointer');
+        if (pointer) pointer.setAttribute('transform', `rotate(${myHubData.yaw})`);
+        moved = true;
+      } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+        myHubData.yaw = (myHubData.yaw + 15) % 360;
+        const pointer = document.getElementById('user-heading-pointer');
+        if (pointer) pointer.setAttribute('transform', `rotate(${myHubData.yaw})`);
+        moved = true;
+      }
+
+      if (moved) {
+        const userMarker = document.getElementById('user-location-marker');
+        if (userMarker) {
+          userMarker.setAttribute('transform', `translate(${userSvgPos.x}, ${userSvgPos.y})`);
+        }
+        if (typeof panToIndoorTarget === 'function') {
+          panToIndoorTarget(userSvgPos.x, userSvgPos.y, indoorScale || 1.25);
+        }
+        if (ws && ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({
+            type: 'BLE_MPU_FUSION',
+            hubId: myHubId,
+            yaw: myHubData.yaw,
+            isStep: true,
+            x: userSvgPos.x,
+            y: userSvgPos.y
+          }));
+        }
+      }
+    });
+
+</script>
 
   <!-- MODAL ĐỔI MÃ THIẾT BỊ HUB / TAG (HL-01, HL-02...) -->
   <div id="hub-modal" class="ai-modal-overlay" onclick="closeHubModal(event)" style="display: none; align-items: center; justify-content: center; z-index: 1000; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);">

@@ -120,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
       'X-Device-Secret': verifiedSecretKey
     };
 
-    const map = MapCommon.initMap('sim-map', [20.99965, 105.84280], 18);
+    const map = MapCommon.initMap('sim-map', [20.997715, 105.844730], 20);
     setTimeout(() => {
       map.invalidateSize();
     }, 200);

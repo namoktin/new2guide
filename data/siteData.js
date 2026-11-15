@@ -9,8 +9,8 @@ module.exports = {
   "englishName": "University Campus",
   "locationName": "Khu Di Tích Nhà Tổng Thống",
   "center": {
-    "lat": 21.0001,
-    "lng": 105.84245
+    "lat": 20.997715,
+    "lng": 105.844730
   },
   "zoom": 20,
   "minZoom": 16,
@@ -23,32 +23,43 @@ module.exports = {
       "color": "#d97706",
       "floor": 1,
       "blueprintUrl": "/maps/Nha_tong_thong_blueprint.svg",
+      "rotation": 75,
+      "dimensionMeters": {
+        "width": 18.9,
+        "height": 13.9
+      },
       "bounds": [
         [
-          20.99992,
-          105.84215
+          20.997616,
+          105.844642
         ],
         [
-          21.00028,
-          105.84275
+          20.997813,
+          105.844818
         ]
       ],
+      "corners": {
+        "nw": [20.997649, 105.844642],
+        "ne": [20.997813, 105.844689],
+        "se": [20.997780, 105.844818],
+        "sw": [20.997616, 105.844771]
+      },
       "polygon": [
         [
-          21.00028,
-          105.84215
+          20.997649,
+          105.844642
         ],
         [
-          21.00028,
-          105.84275
+          20.997813,
+          105.844689
         ],
         [
-          20.99992,
-          105.84275
+          20.997780,
+          105.844818
         ],
         [
-          20.99992,
-          105.84215
+          20.997616,
+          105.844771
         ]
       ]
     }
@@ -62,8 +73,10 @@ module.exports = {
       "zoneId": "ZONE_NHA_TONG_THONG",
       "zoneName": "Nhà Tổng Thống",
       "floor": 1,
-      "lat": 21.000094,
-      "lng": 105.842709,
+      "x": 745,
+      "y": 258,
+      "lat": 20.997785,
+      "lng": 105.844752,
       "beaconId": "BEACONTAG-1",
       "uuid": "E2C56DB5-DFFB-48D2-B060-D0F5A71096E0",
       "major": 1,
@@ -80,8 +93,10 @@ module.exports = {
       "zoneId": "ZONE_NHA_TONG_THONG",
       "zoneName": "Nhà Tổng Thống",
       "floor": 1,
-      "lat": 21.000262,
-      "lng": 105.842563,
+      "x": 550,
+      "y": 25,
+      "lat": 20.997760,
+      "lng": 105.844680,
       "beaconId": "BEACONTAG-2",
       "uuid": "E2C56DB5-DFFB-48D2-B060-D0F5A71096E0",
       "major": 1,
@@ -98,8 +113,10 @@ module.exports = {
       "zoneId": "ZONE_NHA_TONG_THONG",
       "zoneName": "Nhà Tổng Thống",
       "floor": 1,
-      "lat": 21.000035,
-      "lng": 105.842383,
+      "x": 310,
+      "y": 340,
+      "lat": 20.997690,
+      "lng": 105.844748,
       "beaconId": "BEACONTAG-3",
       "uuid": "E2C56DB5-DFFB-48D2-B060-D0F5A71096E0",
       "major": 1,
@@ -121,8 +138,8 @@ module.exports = {
       "svgId": "elem-1794647947024",
       "x": 97.5,
       "y": 80,
-      "lat": 21.00015,
-      "lng": 105.8423,
+      "lat": 20.997664,
+      "lng": 105.844668,
       "icon": "🪑",
       "description": "Bàn làm việc chạm khắc vân gỗ gõ đỏ nguyên khối theo phong cách cổ điển thập niên 1960. Nơi ký kết các sắc lệnh bang giao và chỉ đạo các cuộc họp tối mật của Tổng Thống.",
       "audioGuide": "Đây là Bàn làm việc Tổng Thống, được chế tác thủ công bằng gỗ gõ đỏ nguyên khối quý hiếm thập niên 1960. Nơi đây từng diễn ra nhiều cuộc họp kín và ký kết các sắc lệnh lịch sử quan trọng.",
@@ -143,8 +160,8 @@ module.exports = {
       "svgId": "elem-1794647957226",
       "x": 715,
       "y": 427.5,
-      "lat": 21.00008,
-      "lng": 105.8427,
+      "lat": 20.997768,
+      "lng": 105.844794,
       "icon": "🏛️",
       "description": "Bàn hội nghị hình bầu dục mặt đá cẩm thạch cổ vân rêu kết hợp khung gỗ gụ. Nơi tổ chức các phiên họp nội các cấp cao và đón tiếp các phái đoàn ngoại giao quốc tế.",
       "audioGuide": "Bàn họp hội nghị bầu dục mặt đá cẩm thạch cổ vân rêu quý hiếm, quy cách 12 ghế đại biểu ngoại giao. Mặt đá nguyên khối được gia công tỉ mỉ chống đạn và cách âm.",
@@ -165,8 +182,8 @@ module.exports = {
       "svgId": "elem-1794647921492",
       "x": 250,
       "y": 230,
-      "lat": 21.00012,
-      "lng": 105.84242,
+      "lat": 20.997686,
+      "lng": 105.844716,
       "icon": "🏛️",
       "description": "Cột trụ chịu lực kiến trúc kiên cố bằng đá granite nguyên khối, kết hợp kết cấu bê tông dự ứng lực chống rung chấn và bom đạn của dinh thự.",
       "audioGuide": "Cột trụ chịu lực trung tâm phía Bắc bằng đá hoa cương Granite nguyên khối kiên cố, một trong hai trụ cột cốt lõi giữ vững gian phòng.",
@@ -187,8 +204,8 @@ module.exports = {
       "svgId": "elem-1794647978990-0",
       "x": 250,
       "y": 115,
-      "lat": 21.00018,
-      "lng": 105.84242,
+      "lat": 20.997693,
+      "lng": 105.844686,
       "icon": "🏛️",
       "description": "Cột trụ đối xứng trục đông - tây, nối liền kết cấu đại sảnh tiếp đón khách ngoại giao với không gian làm việc chính.",
       "audioGuide": "Cột trụ chịu lực phía Nam đối xứng, tạo điểm nhấn kết cấu không gian vòm giữa tiền sảnh và phòng làm việc chính.",

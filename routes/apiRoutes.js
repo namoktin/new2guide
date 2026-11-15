@@ -176,4 +176,132 @@ router.post('/rentals/rent', rentalController.createRental.bind(rentalController
 router.post('/rentals/return', rentalController.returnRental.bind(rentalController));
 router.get('/rentals/active', rentalController.getActiveRentals.bind(rentalController));
 
+
+// API Dung Hợp Cảm Biến BLE + MPU (Xác định vị trí bản thân chuẩn xác cao)
+const sensorFusionService = require('../services/sensorFusionService');
+
+router.post('/location/fuse', (req, res) => {
+  try {
+    const { hubId, mpu, beacons, yaw, isStep, stepLength, speed, updateHub } = req.body;
+    const targetHubId = (typeof normalizeHubId === 'function') ? normalizeHubId(hubId || 'HL-18') : (hubId || 'HL-18');
+
+    const result = sensorFusionService.fuse(targetHubId, {
+      mpu: mpu || { yaw, isStep, stepLength, speed },
+      beacons: beacons
+    });
+
+    if (updateHub !== false) {
+      const updatedHub = hubModel.updateTelemetry(targetHubId, {
+        lat: result.lat,
+        lng: result.lng,
+        x: result.x,
+        y: result.y,
+        yaw: result.yaw,
+        pitch: result.pitch,
+        roll: result.roll,
+        ble: {
+          method: result.method,
+          accuracy: result.accuracy,
+          totalSteps: result.totalSteps,
+          fused: true
+        }
+      });
+      if (updatedHub) {
+        socketManager.broadcastTelemetry(updatedHub);
+      }
+    }
+
+    return res.json(result);
+  } catch (err) {
+    console.error('[API Location Fuse] Lỗi:', err);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+
+// ==========================================
+// 9. ĐỊNH VỊ BLE ĐA ĐIỂM (TRILATERATION & MULTILATERATION DYNAMIC)
+// ==========================================
+const bleLocationService = require('../services/bleLocationService');
+const hubModel = require('../models/hubModel');
+const socketManager = require('../websocket/socketManager');
+const { normalizeHubId } = require('../config/appConfig');
+
+// API định vị chính xác từ 3 điểm Beacon trở lên (Hỗ trợ mở rộng N trạm động)
+router.post('/ble/locate', (req, res) => {
+  try {
+    const { beacons, hubId, updateHub } = req.body;
+    if (!beacons || !Array.isArray(beacons) || beacons.length === 0) {
+      return res.status(400).json({ success: false, error: 'Thiếu mảng dữ liệu quét sóng Beacon (beacons)' });
+    }
+
+    const result = bleLocationService.calculateLocation(beacons);
+    if (!result.success) {
+      return res.status(422).json(result);
+    }
+
+    // Nếu yêu cầu cập nhật vị trí Hub và phát tán thời gian thực
+    if (updateHub && hubId) {
+      const cleanHubId = (typeof normalizeHubId === 'function') ? normalizeHubId(hubId) : hubId;
+      const updatedHub = hubModel.updateTelemetry(cleanHubId, {
+        lat: result.lat,
+        lng: result.lng,
+        x: result.x,
+        y: result.y,
+        ble: {
+          method: result.method,
+          accuracy: result.accuracy,
+          beaconCount: result.beaconCount,
+          usedBeacons: result.usedBeacons
+        }
+      });
+      if (updatedHub) {
+        socketManager.broadcastTelemetry(updatedHub);
+      }
+      result.hubUpdated = cleanHubId;
+    }
+
+    return res.json(result);
+  } catch (err) {
+    console.error('[API BLE Locate] Lỗi:', err);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Lấy danh sách toàn bộ Beacon đang đăng ký trong hệ thống
+router.get('/ble/beacons', (req, res) => {
+  return res.json({
+    success: true,
+    total: bleLocationService.getAllBeacons().length,
+    data: bleLocationService.getAllBeacons()
+  });
+});
+
+// Đăng ký thêm trạm Beacon mới linh hoạt vào hệ thống (Không gán cứng)
+router.post('/ble/beacons', (req, res) => {
+  try {
+    const beacon = req.body;
+    const registered = bleLocationService.registerBeacon(beacon);
+    if (!registered) {
+      return res.status(400).json({ success: false, error: 'Dữ liệu Beacon không hợp lệ' });
+    }
+    return res.json({
+      success: true,
+      message: `Đã đăng ký thành công trạm Beacon ${registered.id}`,
+      data: registered,
+      totalBeacons: bleLocationService.getAllBeacons().length
+    });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Xóa trạm Beacon
+router.delete('/ble/beacons/:id', (req, res) => {
+  const bId = req.params.id;
+  const deleted = bleLocationService.unregisterBeacon(bId);
+  return res.json({ success: deleted, message: deleted ? `Đã xóa trạm Beacon ${bId}` : 'Không tìm thấy trạm Beacon' });
+});
+
 module.exports = router;
+

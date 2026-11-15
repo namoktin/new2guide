@@ -1531,10 +1531,16 @@
     <circle cx="0" cy="0" r="12" fill="none" stroke="#22c55e" stroke-width="2.5" class="user-pulse-wave"/>
     <circle cx="0" cy="0" r="10" fill="#16a34a" stroke="#ffffff" stroke-width="2.2" filter="drop-shadow(0 2px 6px rgba(0,0,0,0.5))"/>
     <circle cx="0" cy="0" r="4" fill="#ffffff"/>
-    <!-- Mũi tên định hướng góc nhìn la bàn MPU6050 (hiệu chuẩn góc xoay 75° Nhà Tổng Thống) -->
-    <path id="user-heading-pointer" d="M -5 -11 L 0 -19 L 5 -11 Z" fill="#22c55e" stroke="#ffffff" stroke-width="1.2" transform="rotate(75)" style="transition: transform 0.2s ease;"/>
-    <rect x="-34" y="-23" width="68" height="15" rx="4" fill="rgba(15, 23, 42, 0.92)" stroke="#22c55e" stroke-width="0.8"/>
-    <text x="0" y="-13" font-size="8" font-weight="bold" fill="#86efac" text-anchor="middle">Vị trí của bạn</text>
+    <!-- Mũi tên và nón định hướng góc nhìn la bàn MPU6050 (hiệu chuẩn góc xoay 75° Nhà Tổng Thống) -->
+    <g id="user-heading-pointer" transform="rotate(75)" style="transition: transform 0.2s ease;">
+      <!-- Nón tầm nhìn mini bán kính 22px -->
+      <path d="M 0 0 L -8 -22 A 22 22 0 0 1 8 -22 Z" fill="rgba(34, 197, 94, 0.28)" stroke="rgba(34, 197, 94, 0.55)" stroke-width="0.7"/>
+      <!-- Mũi tên chỉ hướng nổi bật -->
+      <path d="M -5 -11 L 0 -22 L 5 -11 Z" fill="#22c55e" stroke="#ffffff" stroke-width="1.3" filter="drop-shadow(0 1px 4px rgba(0,0,0,0.35))"/>
+    </g>
+    <!-- Nhãn chữ 'Vị trí của bạn' được dịch lên trên (y: -34) để lộ hoàn toàn hướng nhìn không bị che khuất -->
+    <rect x="-34" y="-35" width="68" height="15" rx="4" fill="rgba(15, 23, 42, 0.92)" stroke="#22c55e" stroke-width="0.8" filter="drop-shadow(0 2px 5px rgba(0,0,0,0.25))"/>
+    <text x="0" y="-25" font-size="8" font-weight="bold" fill="#86efac" text-anchor="middle">Vị trí của bạn</text>
   </g>
 
   <!-- LỚP 4 MÁY HUB KHÁC TRONG PHÒNG -->

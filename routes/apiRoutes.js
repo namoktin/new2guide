@@ -168,6 +168,8 @@ router.get('/finance/overview', financeController.getOverview.bind(financeContro
 router.get('/finance/transactions', financeController.getTransactions.bind(financeController));
 router.get('/finance/chart', financeController.getUsageChart.bind(financeController));
 router.get('/devices', financeController.getAllDevices.bind(financeController));
+router.post('/devices/reset', financeController.resetDevices.bind(financeController));
+router.get('/devices/reset', financeController.resetDevices.bind(financeController));
 
 // ==========================================
 // 8. NGHIỆP VỤ THUÊ MÁY (ĐẨY LÊN MONGODB)

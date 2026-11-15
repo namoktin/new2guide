@@ -1421,6 +1421,18 @@
       filter: drop-shadow(0 0 20px #00f0ff) !important;
     }
 
+    @keyframes bouncePin {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-9px); }
+    }
+    @keyframes locatorPulse {
+      0% { r: 14px; opacity: 1; stroke-width: 3px; }
+      100% { r: 44px; opacity: 0; stroke-width: 0.5px; }
+    }
+    .locator-pulse-circle {
+      animation: locatorPulse 1.8s infinite ease-out;
+    }
+
   
     /* Quick Hub Chip & Modal */
     .quick-hub-chip {
@@ -1495,23 +1507,28 @@
                 var w = window.innerWidth || 800;
                 var h = window.innerHeight || 500;
                 var s = w < 600 ? 1.15 : 1.25;
-                var tx = 380, ty = 260;
-                var lastPos = localStorage.getItem('2guide_last_user_pos');
-                if (lastPos) {
-                  try {
-                    var parsed = JSON.parse(lastPos);
-                    if (parsed && typeof parsed.x === 'number' && typeof parsed.y === 'number') {
-                      tx = parsed.x;
-                      ty = parsed.y;
-                    }
-                  } catch(e) {}
-                }
+                var defaultCoords = {
+                  'HL-18': { x: 380, y: 260, yaw: 68 },
+                  'HL-37': { x: 680, y: 240, yaw: 105 },
+                  'HL-44': { x: 270, y: 310, yaw: 144 },
+                  'HL-45': { x: 530, y: 110, yaw: 270 },
+                  'HL-48': { x: 450, y: 380, yaw: 288 },
+                  'HL-01': { x: 380, y: 260, yaw: 68 }
+                };
                 var p = new URLSearchParams(window.location.search);
-                var hid = p.get('hubId') || p.get('hub') || localStorage.getItem('2guide_current_hub_id') || 'HL-01';
-                if (!lastPos) {
-                  if (hid === 'HL-02') { tx = 380; ty = 170; }
-                  else if (hid === 'HL-03') { tx = 680; ty = 240; }
+                var hid = p.get('hubId') || p.get('hub') || localStorage.getItem('2guide_current_hub_id') || 'HL-18';
+                if (!defaultCoords[hid]) hid = 'HL-18';
+                var targetDef = defaultCoords[hid];
+                var tx = targetDef.x, ty = targetDef.y, tyaw = targetDef.yaw;
+
+                var posMap = {};
+                try { posMap = JSON.parse(localStorage.getItem('2guide_hub_positions') || '{}'); } catch(e) {}
+                if (posMap[hid] && typeof posMap[hid].x === 'number') {
+                  tx = posMap[hid].x;
+                  ty = posMap[hid].y;
+                  if (typeof posMap[hid].yaw === 'number') tyaw = posMap[hid].yaw;
                 }
+
                 var px = w / 2 - tx * s;
                 var py = h / 2 - ty * s;
                 var wrap = document.getElementById('map-wrapper');
@@ -1520,6 +1537,10 @@
                   wrap.style.transition = 'none';
                   wrap.style.transform = 'translate(' + px + 'px, ' + py + 'px) scale(' + s + ')';
                 }
+                window._initialTx = tx;
+                window._initialTy = ty;
+                window._initialYaw = tyaw;
+                window._initialHubId = hid;
               } catch(e) {}
             })();
           </script>
@@ -1542,12 +1563,46 @@
     <rect x="-34" y="-35" width="68" height="15" rx="4" fill="rgba(15, 23, 42, 0.92)" stroke="#22c55e" stroke-width="0.8" filter="drop-shadow(0 2px 5px rgba(0,0,0,0.25))"/>
     <text x="0" y="-25" font-size="8" font-weight="bold" fill="#86efac" text-anchor="middle">Vị trí của bạn</text>
   </g>
+  <script>
+    (function() {
+      try {
+        var tx = window._initialTx !== undefined ? window._initialTx : 380;
+        var ty = window._initialTy !== undefined ? window._initialTy : 260;
+        var yaw = window._initialYaw !== undefined ? window._initialYaw : 68;
+        var svgYaw = (yaw + 75.0 + 360.0) % 360.0;
+        var m = document.getElementById('user-location-marker');
+        if (m) {
+          m.style.transition = 'none';
+          m.setAttribute('transform', 'translate(' + tx + ', ' + ty + ')');
+        }
+        var ptr = document.getElementById('user-heading-pointer');
+        if (ptr) {
+          ptr.style.transition = 'none';
+          ptr.setAttribute('transform', 'rotate(' + svgYaw + ')');
+        }
+      } catch(e) {}
+    })();
+  </script>
 
-  <!-- LỚP 4 MÁY HUB KHÁC TRONG PHÒNG -->
-  <g id="user-other-hubs-layer"></g>
+  <!-- LỚP 4 MÁY HUB KHÁC TRONG PHÒNG (MẶC ĐỊNH ẨN KHI KHÔNG XEM) -->
+  <g id="user-other-hubs-layer" style="display: none;"></g>
+  <!-- LỚP CHỈ ĐIỂM VỊ TRÍ HIỆN VẬT TỪ PHẦN GIỚI THIỆU -->
+  <g id="artifact-locator-layer"></g>
   <!-- INTERACTIVE OBJECT BADGES (CLEARED) -->
   <g id="interactive-badges" class="select-none"></g>
 </svg>
+          <script>
+            (function() {
+              try {
+                var savedYaw = localStorage.getItem('2guide_last_user_yaw');
+                if (savedYaw !== null && !isNaN(savedYaw)) {
+                  var svgYaw = (Number(savedYaw) + 75.0 + 360.0) % 360.0;
+                  var ptr = document.getElementById('user-heading-pointer');
+                  if (ptr) ptr.setAttribute('transform', 'rotate(' + svgYaw + ')');
+                }
+              } catch(e) {}
+            })();
+          </script>
           </div>
         </div>
       </div>
@@ -1624,7 +1679,7 @@
         <div class="story-cards-list" id="story-cards-container">
 
           <!-- THẺ 1: BÀN LÀM VIỆC TỔNG THỐNG -->
-          <div class="story-card" data-keywords="bàn làm việc tổng thống gỗ gõ đỏ thập niên 1960 sắc lệnh">
+          <div class="story-card" style="cursor: pointer;" onclick="viewArtifactOnMap('desk')" data-keywords="bàn làm việc tổng thống gỗ gõ đỏ thập niên 1960 sắc lệnh">
             <div class="story-card-img-wrap">
               <img src="https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?auto=format&fit=crop&w=800&q=80" alt="Bàn Làm Việc Tổng Thống" class="story-card-img" />
               <span class="card-badge-priority">P0 • HIỆN VẬT LỊCH SỬ</span>
@@ -1636,10 +1691,10 @@
                 Bàn làm việc chạm khắc vân gỗ gõ đỏ nguyên khối theo phong cách cổ điển thập niên 1960. Nơi ký kết các sắc lệnh bang giao và chỉ đạo các cuộc họp tối mật của Tổng Thống.
               </p>
               <div class="card-footer-actions">
-                <button class="btn-card-action" onclick="playAudioGuide('Bàn Làm Việc Tổng Thống')">
+                <button class="btn-card-action" onclick="event.stopPropagation(); playAudioGuide('Bàn Làm Việc Tổng Thống')">
                   <i class="fa-solid fa-circle-play"></i> Nghe thuyết minh
                 </button>
-                <button class="btn-card-action secondary" onclick="viewOnMap(20.997664, 105.844668, 'Bàn Làm Việc Tổng Thống')">
+                <button class="btn-card-action secondary" onclick="event.stopPropagation(); viewArtifactOnMap('desk')">
                   <i class="fa-solid fa-location-dot"></i> Xem trên bản đồ
                 </button>
               </div>
@@ -1647,7 +1702,7 @@
           </div>
 
           <!-- THẺ 2: BÀN HỌP HỘI NGHỊ BẦU DỤC (MẶT ĐÁ CỔ) -->
-          <div class="story-card" data-keywords="bàn họp hội nghị bầu dục mặt đá cổ cẩm thạch 12 ghế ngoại giao">
+          <div class="story-card" style="cursor: pointer;" onclick="viewArtifactOnMap('table')" data-keywords="bàn họp hội nghị bầu dục mặt đá cổ cẩm thạch 12 ghế ngoại giao">
             <div class="story-card-img-wrap">
               <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80" alt="Bàn Họp Hội Nghị Bầu Dục Mặt Đá Cổ" class="story-card-img" />
               <span class="card-badge-priority">P0 • NỘI THẤT NGOẠI GIAO</span>
@@ -1659,10 +1714,10 @@
                 Bàn hội nghị hình bầu dục mặt đá cẩm thạch cổ vân rêu kết hợp khung gỗ gụ. Nơi tổ chức các phiên họp nội các cấp cao và đón tiếp các phái đoàn ngoại giao quốc tế với quy cách 12 ghế.
               </p>
               <div class="card-footer-actions">
-                <button class="btn-card-action" onclick="playAudioGuide('Bàn Họp Hội Nghị Bầu Dục (Mặt Đá Cổ)')">
+                <button class="btn-card-action" onclick="event.stopPropagation(); playAudioGuide('Bàn Họp Hội Nghị Bầu Dục (Mặt Đá Cổ)')">
                   <i class="fa-solid fa-circle-play"></i> Nghe thuyết minh
                 </button>
-                <button class="btn-card-action secondary" onclick="viewOnMap(20.997768, 105.844794, 'Bàn Họp Hội Nghị Bầu Dục Mặt Đá Cổ')">
+                <button class="btn-card-action secondary" onclick="event.stopPropagation(); viewArtifactOnMap('table')">
                   <i class="fa-solid fa-location-dot"></i> Xem trên bản đồ
                 </button>
               </div>
@@ -1670,7 +1725,7 @@
           </div>
 
           <!-- THẺ 3: CỘT TRỤ CHỊU LỰC TRUNG TÂM (BẮC) -->
-          <div class="story-card" data-keywords="cột trụ chịu lực trung tâm bắc đá granite hoa cương kết cấu">
+          <div class="story-card" style="cursor: pointer;" onclick="viewArtifactOnMap('pillar1')" data-keywords="cột trụ chịu lực trung tâm bắc đá granite hoa cương kết cấu">
             <div class="story-card-img-wrap">
               <img src="https://images.unsplash.com/photo-1541123437800-1bb1317badc2?auto=format&fit=crop&w=800&q=80" alt="Cột Trụ Chịu Lực Trung Tâm (Bắc)" class="story-card-img" />
               <span class="card-badge-priority">P1 • KẾT CẤU CHỊU LỰC</span>
@@ -1682,10 +1737,10 @@
                 Cột trụ chịu lực kiến trúc kiên cố bằng đá granite nguyên khối, kết hợp kết cấu bê tông dự ứng lực chống rung chấn và bom đạn của dinh thự. Chiều cao 4.2m, đường kính 0.8m.
               </p>
               <div class="card-footer-actions">
-                <button class="btn-card-action" onclick="playAudioGuide('Cột Trụ Chịu Lực Trung Tâm (Bắc)')">
+                <button class="btn-card-action" onclick="event.stopPropagation(); playAudioGuide('Cột Trụ Chịu Lực Trung Tâm (Bắc)')">
                   <i class="fa-solid fa-circle-play"></i> Nghe thuyết minh
                 </button>
-                <button class="btn-card-action secondary" onclick="viewOnMap(20.997686, 105.844716, 'Cột Trụ Chịu Lực Trung Tâm (Bắc)')">
+                <button class="btn-card-action secondary" onclick="event.stopPropagation(); viewArtifactOnMap('pillar1')">
                   <i class="fa-solid fa-location-dot"></i> Xem trên bản đồ
                 </button>
               </div>
@@ -1693,7 +1748,7 @@
           </div>
 
           <!-- THẺ 4: CỘT TRỤ CHỊU LỰC TIỀN SẢNH (NAM) -->
-          <div class="story-card" data-keywords="cột trụ chịu lực tiền sảnh nam đá granite đối xứng sảnh đón tiếp">
+          <div class="story-card" style="cursor: pointer;" onclick="viewArtifactOnMap('pillar2')" data-keywords="cột trụ chịu lực tiền sảnh nam đá granite đối xứng sảnh đón tiếp">
             <div class="story-card-img-wrap">
               <img src="https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=800&q=80" alt="Cột Trụ Chịu Lực Tiền Sảnh (Nam)" class="story-card-img" />
               <span class="card-badge-priority">P1 • KIẾN TRÚC ĐỐI XỨNG</span>
@@ -1705,10 +1760,10 @@
                 Cột trụ đối xứng trục đông - tây, nối liền kết cấu đại sảnh tiếp đón khách ngoại giao với không gian làm việc chính của Nhà Tổng Thống.
               </p>
               <div class="card-footer-actions">
-                <button class="btn-card-action" onclick="playAudioGuide('Cột Trụ Chịu Lực Tiền Sảnh (Nam)')">
+                <button class="btn-card-action" onclick="event.stopPropagation(); playAudioGuide('Cột Trụ Chịu Lực Tiền Sảnh (Nam)')">
                   <i class="fa-solid fa-circle-play"></i> Nghe thuyết minh
                 </button>
-                <button class="btn-card-action secondary" onclick="viewOnMap(20.997693, 105.844686, 'Cột Trụ Chịu Lực Tiền Sảnh (Nam)')">
+                <button class="btn-card-action secondary" onclick="event.stopPropagation(); viewArtifactOnMap('pillar2')">
                   <i class="fa-solid fa-location-dot"></i> Xem trên bản đồ
                 </button>
               </div>
@@ -1827,83 +1882,52 @@
       return s;
     }
 
-    let userSvgPos = { x: 380, y: 260 };
+    const urlParams = new URLSearchParams(window.location.search);
+    let storedHubId = localStorage.getItem('2guide_current_hub_id');
+    if (storedHubId === 'NEU001' || storedHubId === 'HL-01') storedHubId = 'HL-18';
+
+    let myHubId = normalizeHubId(
+      urlParams.get('hubId') ||
+      urlParams.get('hub') ||
+      storedHubId ||
+      'HL-18'
+    );
+    if (!['HL-18', 'HL-37', 'HL-44', 'HL-45', 'HL-48'].includes(myHubId)) {
+      myHubId = 'HL-18';
+    }
+    localStorage.setItem('2guide_current_hub_id', myHubId);
+
+    // Tọa độ thực địa chuẩn của 5 máy Hub trong phòng Nhà Tổng Thống (Khớp 100% với Ban Quản Lý & Google Maps)
+    const INDOOR_HUB_COORDINATES = {
+      'HL-18': { x: 380, y: 260, lat: 20.997710, lng: 105.844731, yaw: 68, battery: 95, area: 'Khu vực Trung tâm gian phòng Tổng Thống' },
+      'HL-37': { x: 680, y: 240, lat: 20.997773, lng: 105.844744, yaw: 105, battery: 85, area: 'Khu vực Cung Đông (gần Bàn Họp Đá Cổ)' },
+      'HL-44': { x: 270, y: 310, lat: 20.997684, lng: 105.844738, yaw: 144, battery: 78, area: 'Khu vực Tiền sảnh Tây Nam (gần Cột Trụ Nam)' },
+      'HL-45': { x: 530, y: 110, lat: 20.997751, lng: 105.844701, yaw: 270, battery: 96, area: 'Khu vực Cổng Bắc & Hành lang vòm' },
+      'HL-48': { x: 450, y: 380, lat: 20.997717, lng: 105.844767, yaw: 288, battery: 64, area: 'Khu vực Tiền sảnh đón tiếp phía Nam' }
+    };
+
+    // Xác định tọa độ người dùng theo đúng Hub được chọn (loại bỏ việc dùng chung tọa độ Hub cũ)
+    let userSvgPos = (window._initialTx !== undefined && window._initialTy !== undefined)
+      ? { x: window._initialTx, y: window._initialTy }
+      : { x: (INDOOR_HUB_COORDINATES[myHubId] || {x: 380}).x, y: (INDOOR_HUB_COORDINATES[myHubId] || {y: 260}).y };
     try {
-      const savedPos = localStorage.getItem('2guide_last_user_pos');
-      if (savedPos) {
-        const p = JSON.parse(savedPos);
-        if (p && typeof p.x === 'number' && typeof p.y === 'number') {
-          userSvgPos = { x: p.x, y: p.y };
-        }
+      const posMap = JSON.parse(localStorage.getItem('2guide_hub_positions') || '{}');
+      if (posMap[myHubId] && typeof posMap[myHubId].x === 'number') {
+        userSvgPos = { x: posMap[myHubId].x, y: posMap[myHubId].y };
       }
     } catch(e) {}
 
-    // Tọa độ thực địa của các máy Hub trong phòng Nhà Tổng Thống (Khớp 100% với Ban Quản Lý)
-    const INDOOR_HUB_COORDINATES = {
-      'HL-01': { x: 380, y: 260, area: 'Khu vực trung tâm gian phòng Tổng Thống' },
-      'HL-02': { x: 380, y: 170, area: 'Khu vực hành lang giữa, gần Cột Trụ Bắc' },
-      'HL-03': { x: 680, y: 240, area: 'Khu vực Cung Đông (gần Trạm Beacon 1 & Bàn Họp)' },
-      'HL-04': { x: 550, y: 350, area: 'Khu vực Cửa Vòm Đông Nam' },
-      'HL-05': { x: 620, y: 140, area: 'Khu vực Gian trưng bày phía Đông' },
-      'HL-08': { x: 500, y: 90,  area: 'Khu vực phía Bắc (gần Bàn Làm Việc Tổng Thống)' },
-      'HL-12': { x: 270, y: 310, area: 'Khu vực Tiền sảnh Tây Nam (gần Cột Trụ Nam)' },
-      'HL-00': { x: 380, y: 260, area: 'Khu vực trung tâm gian phòng Tổng Thống' }
-    };
-
-    
     // ========================================================
-    // QUẢN LÝ 5 MÁY HUB NGẪU NHIÊN SỐ BẤT KỲ (ĐỒNG BỘ BQL & DB)
+    // QUẢN LÝ 5 MÁY HUB CHUẨN CƠ SỞ DỮ LIỆU
     // ========================================================
-    function getOrGenerateFiveRandomHubs(forceNew = false) {
-      if (!forceNew) {
-        try {
-          const saved = localStorage.getItem('2guide_5_random_hubs');
-          if (saved) {
-            const parsed = JSON.parse(saved);
-            if (Array.isArray(parsed) && parsed.length === 5) return parsed;
-          }
-        } catch(e) {}
-      }
-
-      // Sinh 5 số ngẫu nhiên không trùng từ 1 đến 50
-      const numbers = [];
-      while (numbers.length < 5) {
-        const r = Math.floor(Math.random() * 50) + 1;
-        if (!numbers.includes(r)) numbers.push(r);
-      }
-      numbers.sort((a, b) => a - b);
-
-      const spots = [
-        { x: 380, y: 260, area: 'Khu vực Trung tâm gian phòng Tổng Thống' },
-        { x: 680, y: 240, area: 'Khu vực Cung Đông (gần Bàn Họp Đá Cổ)' },
-        { x: 270, y: 310, area: 'Khu vực Tiền sảnh Tây Nam (gần Cột Trụ Nam)' },
-        { x: 530, y: 110, area: 'Khu vực Cổng Bắc & Hành lang vòm' },
-        { x: 450, y: 380, area: 'Khu vực Tiền sảnh đón tiếp phía Nam' }
+    function getOrGenerateFiveRandomHubs() {
+      return [
+        { id: 'HL-18', hubId: 'HL-18', shortNum: '18', x: 380, y: 260, lat: 20.997710, lng: 105.844731, yaw: 68, battery: 95, area: 'Khu vực Trung tâm gian phòng Tổng Thống', status: 'Sẵn sàng' },
+        { id: 'HL-37', hubId: 'HL-37', shortNum: '37', x: 680, y: 240, lat: 20.997773, lng: 105.844744, yaw: 105, battery: 85, area: 'Khu vực Cung Đông (gần Bàn Họp Đá Cổ)', status: 'Sẵn sàng' },
+        { id: 'HL-44', hubId: 'HL-44', shortNum: '44', x: 270, y: 310, lat: 20.997684, lng: 105.844738, yaw: 144, battery: 78, area: 'Khu vực Tiền sảnh Tây Nam (gần Cột Trụ Nam)', status: 'Sẵn sàng' },
+        { id: 'HL-45', hubId: 'HL-45', shortNum: '45', x: 530, y: 110, lat: 20.997751, lng: 105.844701, yaw: 270, battery: 96, area: 'Khu vực Cổng Bắc & Hành lang vòm', status: 'Sẵn sàng' },
+        { id: 'HL-48', hubId: 'HL-48', shortNum: '48', x: 450, y: 380, lat: 20.997717, lng: 105.844767, yaw: 288, battery: 64, area: 'Khu vực Tiền sảnh đón tiếp phía Nam', status: 'Sẵn sàng' }
       ];
-
-      const batteries = [92, 85, 78, 96, 64];
-
-      const hubs = numbers.map((num, idx) => {
-        const shortNum = String(num).padStart(2, '0');
-        const hubId = 'HL-' + shortNum;
-        const spot = spots[idx];
-        return {
-          id: hubId,
-          number: num,
-          shortNum: shortNum,
-          x: spot.x,
-          y: spot.y,
-          area: spot.area,
-          battery: batteries[idx] || (70 + (num % 25)),
-          status: 'online'
-        };
-      });
-
-      try {
-        localStorage.setItem('2guide_5_random_hubs', JSON.stringify(hubs));
-      } catch(e) {}
-
-      return hubs;
     }
 
     let userFiveHubs = [];
@@ -1953,6 +1977,7 @@
               y: hY,
               lat: h.lat,
               lng: h.lng,
+              yaw: h.yaw !== undefined ? Number(h.yaw) : 0,
               area: h.location || 'Khu vực phòng Tổng Thống',
               battery: h.battery !== undefined ? h.battery : 100,
               status: h.status || 'Sẵn sàng'
@@ -1978,6 +2003,15 @@
       const currentHub = userFiveHubs.find(h => (h.id || h.hubId) === myHubId);
       if (currentHub) {
         myHubData.battery = currentHub.battery;
+        if (currentHub.yaw !== undefined && !isNaN(currentHub.yaw)) {
+          myHubData.yaw = Number(currentHub.yaw);
+          try { localStorage.setItem('2guide_last_user_yaw', myHubData.yaw); } catch(e) {}
+        }
+        const pointer = document.getElementById('user-heading-pointer');
+        if (pointer) {
+          const svgYaw = ((myHubData.yaw || 0) + 75.0 + 360.0) % 360.0;
+          pointer.setAttribute('transform', `rotate(${svgYaw})`);
+        }
         if (options && options.forcePositionReset === true) {
           userSvgPos = { x: currentHub.x, y: currentHub.y };
           myHubData.lat = currentHub.lat;
@@ -2004,13 +2038,20 @@
       updateUserUi({ skipPositionReset: true });
     }
 
-    function rerollUserHubs() {
-      userFiveHubs = getOrGenerateFiveRandomHubs(true);
-      myHubId = userFiveHubs[0].id;
-      localStorage.setItem('2guide_current_hub_id', myHubId);
-      renderUserHubElements({ forcePositionReset: true });
-      updateUserPositionByHub(true);
-      showVoiceGuideToast(`🎲 Đã đổi 5 Hub ngẫu nhiên mới: ${userFiveHubs.map(h => h.id).join(', ')}`);
+    async function rerollUserHubs() {
+      try {
+        const res = await fetch('/api/devices/reset', { method: 'POST' });
+        const json = await res.json();
+        if (json.success) {
+          try { localStorage.removeItem('2guide_hub_positions'); } catch(e) {}
+          await renderUserHubElements({ forcePositionReset: true });
+          updateUserPositionByHub(false);
+          renderOtherHubsOnSvg();
+          showVoiceGuideToast(`🔄 Đã đặt lại 5 Hub về tọa độ chuẩn đồng bộ!`);
+        }
+      } catch (err) {
+        console.error('Lỗi reset 5 Hub:', err);
+      }
     }
 
     function showVoiceGuideToast(msg) {
@@ -2033,33 +2074,47 @@
 
     function getHubIndoorCoordinates(hubId) {
       const cleanId = normalizeHubId(hubId);
-      if (!userFiveHubs || userFiveHubs.length === 0) {
-        userFiveHubs = getOrGenerateFiveRandomHubs();
-      }
-      const matchedHub = userFiveHubs.find(h => (h.id || h.hubId) === cleanId);
-      if (matchedHub) {
-        return { x: matchedHub.x, y: matchedHub.y, area: matchedHub.area, battery: matchedHub.battery };
-      }
       if (INDOOR_HUB_COORDINATES[cleanId]) {
         return INDOOR_HUB_COORDINATES[cleanId];
       }
-      const numMatch = cleanId.match(/\d+/);
-      const n = numMatch ? parseInt(numMatch[0], 10) : 1;
-      const angle = (n * 137.5) * (Math.PI / 180);
-      const radius = 60 + (n % 4) * 40;
-      const x = Math.round(Math.max(100, Math.min(700, 400 + Math.cos(angle) * radius)));
-      const y = Math.round(Math.max(80, Math.min(420, 250 + Math.sin(angle) * (radius * 0.7))));
-      return { x, y, area: `Khu vực di chuyển thiết bị ${cleanId}` };
+      if (userFiveHubs && userFiveHubs.length > 0) {
+        const matchedHub = userFiveHubs.find(h => (h.id || h.hubId) === cleanId);
+        if (matchedHub) return matchedHub;
+      }
+      return { x: 380, y: 260, yaw: 68, battery: 95, area: 'Khu vực Trung tâm gian phòng Tổng Thống' };
     }
 
     function updateUserPositionByHub(smoothPan = true) {
-      const coord = getHubIndoorCoordinates(myHubId);
-      userSvgPos = { x: coord.x, y: coord.y };
-      try { localStorage.setItem('2guide_last_user_pos', JSON.stringify(userSvgPos)); } catch(e) {}
+      let posMap = {};
+      try { posMap = JSON.parse(localStorage.getItem('2guide_hub_positions') || '{}'); } catch(e) {}
       
+      const serverOrStandard = (userFiveHubs && userFiveHubs.find(h => (h.id || h.hubId) === myHubId)) || getHubIndoorCoordinates(myHubId);
+      
+      if (posMap[myHubId] && typeof posMap[myHubId].x === 'number') {
+        userSvgPos = { x: posMap[myHubId].x, y: posMap[myHubId].y };
+      } else {
+        userSvgPos = { x: serverOrStandard.x, y: serverOrStandard.y };
+      }
+
+      if (serverOrStandard.lat) myHubData.lat = serverOrStandard.lat;
+      if (serverOrStandard.lng) myHubData.lng = serverOrStandard.lng;
+      if (serverOrStandard.battery !== undefined) myHubData.battery = serverOrStandard.battery;
+
       const userMarker = document.getElementById('user-location-marker');
       if (userMarker) {
+        userMarker.style.transition = smoothPan ? 'transform 0.4s ease-out' : 'none';
         userMarker.setAttribute('transform', `translate(${userSvgPos.x}, ${userSvgPos.y})`);
+      }
+
+      if (serverOrStandard.yaw !== undefined && !isNaN(serverOrStandard.yaw)) {
+        myHubData.yaw = Number(serverOrStandard.yaw);
+        try { localStorage.setItem('2guide_last_user_yaw', myHubData.yaw); } catch(e) {}
+        const pointer = document.getElementById('user-heading-pointer');
+        if (pointer) {
+          const svgYaw = ((myHubData.yaw || 0) + 75.0 + 360.0) % 360.0;
+          pointer.style.transition = smoothPan ? 'transform 0.2s ease' : 'none';
+          pointer.setAttribute('transform', `rotate(${svgYaw})`);
+        }
       }
       
       try {
@@ -2073,24 +2128,56 @@
       }
     }
 
-    const urlParams = new URLSearchParams(window.location.search);
-    let storedHubId = localStorage.getItem('2guide_current_hub_id');
-    if (storedHubId === 'NEU001') storedHubId = 'HL-01'; // Reset legacy NEU001 to HL-01
+    // Biến điều khiển hiển thị các Hub khác (Mặc định: ẨN khi không xem)
+    let showOtherHubs = false;
 
-    let myHubId = normalizeHubId(
-      urlParams.get('hubId') ||
-      urlParams.get('hub') ||
-      storedHubId ||
-      'HL-01'
-    );
-    localStorage.setItem('2guide_current_hub_id', myHubId);
+    function renderOtherHubsOnSvg() {
+      const container = document.getElementById('user-other-hubs-layer');
+      if (!container) return;
+      if (!showOtherHubs) {
+        container.style.display = 'none';
+        container.innerHTML = '';
+        return;
+      }
+      container.style.display = 'inline';
+      if (!userFiveHubs || userFiveHubs.length === 0) return;
 
+      const others = userFiveHubs.filter(h => (h.id || h.hubId) !== myHubId);
+      container.innerHTML = others.map(h => {
+        const hId = h.id || h.hubId;
+        const x = h.x;
+        const y = h.y;
+        const yaw = Number(h.yaw || 0);
+        const svgYaw = (yaw + 75.0 + 360.0) % 360.0;
+        const bat = h.battery !== undefined ? h.battery : 100;
+        return `
+          <g id="user-other-hub-${hId}" transform="translate(${x}, ${y})" style="cursor: pointer;" onclick="selectQuickHub('${hId}')">
+            <circle cx="0" cy="0" r="9" fill="#0284c7" stroke="#ffffff" stroke-width="2" filter="drop-shadow(0 2px 4px rgba(0,0,0,0.35))"/>
+            <g id="user-other-pointer-${hId}" transform="rotate(${svgYaw})" style="transition: transform 0.2s ease;">
+              <path d="M 0 -9 L -4 -16 L 4 -16 Z" fill="#0284c7" stroke="#ffffff" stroke-width="0.8"/>
+            </g>
+            <circle cx="0" cy="0" r="3" fill="#ffffff"/>
+            <rect x="-24" y="-28" width="48" height="13" rx="3" fill="rgba(15, 23, 42, 0.88)" stroke="#38bdf8" stroke-width="0.6"/>
+            <text x="0" y="-19" font-size="7.5" font-weight="bold" fill="#bae6fd" text-anchor="middle">${hId} (${bat}%)</text>
+          </g>
+        `;
+      }).join('');
+    }
+
+    function toggleOtherHubsVisibility() {
+      showOtherHubs = !showOtherHubs;
+      renderOtherHubsOnSvg();
+      showVoiceGuideToast(showOtherHubs ? '👁️ Đang hiển thị vị trí các máy Hub khác' : '🙈 Đã ẩn các máy Hub khác');
+    }
+
+    const savedLastYaw = localStorage.getItem('2guide_last_user_yaw');
+    const initDef = INDOOR_HUB_COORDINATES[myHubId] || { lat: 20.997710, lng: 105.844731, yaw: 68, battery: 95 };
     let myHubData = {
       hubId: myHubId,
-      lat: 20.997715,
-      lng: 105.844730,
-      yaw: 0,
-      battery: 100
+      lat: initDef.lat,
+      lng: initDef.lng,
+      yaw: (savedLastYaw !== null && !isNaN(savedLastYaw)) ? Number(savedLastYaw) : initDef.yaw,
+      battery: initDef.battery
     };
     let myHubMarker = null;
     let userVisionCone = null;
@@ -2334,7 +2421,7 @@
       const input = document.getElementById('input-custom-hub-id');
       const val = input ? input.value : '';
       const clean = normalizeHubId(val);
-      if (clean) {
+      if (clean && ['HL-18', 'HL-37', 'HL-44', 'HL-45', 'HL-48'].includes(clean)) {
         myHubId = clean;
         localStorage.setItem('2guide_current_hub_id', myHubId);
         
@@ -2345,15 +2432,43 @@
           window.history.replaceState(null, '', url);
         }
 
-        // Cập nhật mức pin từ danh sách Hub nếu có
-        if (userFiveHubs && Array.isArray(userFiveHubs)) {
-          const matched = userFiveHubs.find(h => (h.id || h.hubId) === clean);
-          if (matched && matched.battery !== undefined) {
-            myHubData.battery = matched.battery;
-          }
+        // Lấy tọa độ chuẩn xác của chính Hub vừa chọn
+        let posMap = {};
+        try { posMap = JSON.parse(localStorage.getItem('2guide_hub_positions') || '{}'); } catch(e) {}
+        const targetHub = (userFiveHubs && userFiveHubs.find(h => (h.id || h.hubId) === myHubId)) || INDOOR_HUB_COORDINATES[myHubId] || { x: 380, y: 260, yaw: 68, battery: 95 };
+
+        if (posMap[myHubId] && typeof posMap[myHubId].x === 'number') {
+          userSvgPos = { x: posMap[myHubId].x, y: posMap[myHubId].y };
+        } else {
+          userSvgPos = { x: targetHub.x, y: targetHub.y };
         }
 
-        // Cập nhật giao diện mà TUYỆT ĐỐI KHÔNG reset vị trí
+        myHubData.lat = targetHub.lat;
+        myHubData.lng = targetHub.lng;
+        myHubData.battery = targetHub.battery !== undefined ? targetHub.battery : 95;
+        if (targetHub.yaw !== undefined) {
+          myHubData.yaw = Number(targetHub.yaw);
+          try { localStorage.setItem('2guide_last_user_yaw', myHubData.yaw); } catch(e) {}
+        }
+
+        // Di chuyển ngay lập tức vị trí bản thân trên SVG (tắt transition để không bị giật/trượt)
+        const userMarker = document.getElementById('user-location-marker');
+        if (userMarker) {
+          userMarker.style.transition = 'none';
+          userMarker.setAttribute('transform', `translate(${userSvgPos.x}, ${userSvgPos.y})`);
+        }
+        const pointer = document.getElementById('user-heading-pointer');
+        if (pointer) {
+          const svgYaw = ((myHubData.yaw || 0) + 75.0 + 360.0) % 360.0;
+          pointer.style.transition = 'none';
+          pointer.setAttribute('transform', `rotate(${svgYaw})`);
+        }
+
+        // Căn giữa camera ngay lập tức vào Hub mới
+        panToIndoorTarget(userSvgPos.x, userSvgPos.y, indoorScale || 1.25, false);
+
+        // Cập nhật giao diện và vẽ lại các Hub khác
+        renderOtherHubsOnSvg();
         updateUserUi({ skipPositionReset: true });
 
         // Cập nhật chip active trong modal
@@ -2368,7 +2483,7 @@
           }).join('');
         }
 
-        // Gửi thông báo đăng ký lại qua WebSocket nếu đang kết nối
+        // Gửi thông báo đăng ký lại qua WebSocket
         if (ws && ws.readyState === WebSocket.OPEN) {
           ws.send(JSON.stringify({
             type: 'REGISTER_USER',
@@ -2377,25 +2492,8 @@
           }));
         }
 
-        // Gửi đồng bộ telemetry vị trí hiện tại lên server cho Hub vừa đổi
-        if (myHubData && myHubData.lat && myHubData.lng) {
-          fetch('/api/telemetry', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              hubId: myHubId,
-              lat: myHubData.lat,
-              lng: myHubData.lng,
-              yaw: myHubData.yaw || 0,
-              battery: myHubData.battery !== undefined ? myHubData.battery : 100,
-              x: userSvgPos ? userSvgPos.x : undefined,
-              y: userSvgPos ? userSvgPos.y : undefined
-            })
-          }).catch(e => console.warn('Lỗi đồng bộ vị trí khi đổi Hub:', e));
-        }
-
         closeHubModal();
-        showVoiceGuideToast(`✅ Đã kết nối với thiết bị ${myHubId} (giữ nguyên vị trí hiện tại)`);
+        showVoiceGuideToast(`✅ Đã chuyển sang thiết bị ${myHubId}`);
       }
     }
 
@@ -2507,6 +2605,7 @@
               if (msg.lng !== undefined && !isNaN(msg.lng)) myHubData.lng = Number(msg.lng);
               if (msg.yaw !== undefined && !isNaN(msg.yaw)) {
                 myHubData.yaw = Number(msg.yaw);
+                try { localStorage.setItem('2guide_last_user_yaw', myHubData.yaw); } catch(e) {}
                 const pointer = document.getElementById('user-heading-pointer');
                 if (pointer) {
                   const svgYaw = ((myHubData.yaw || 0) + 75.0 + 360.0) % 360.0;
@@ -2521,28 +2620,53 @@
                 myHubData.accel = incomingAccel;
               }
 
-              // Nhận diện bước đi PDR (từ isStep hoặc gia tốc tổng hợp |a| > 1.32g)
+              // Nhận diện sự kiện Reset tọa độ gốc hoặc bước đi PDR
+              const isResetTrigger = !!msg.isReset || (msg.hub && !!msg.hub.isReset);
               const isStepTrigger = !!msg.isStep || (incomingAccel && !!incomingAccel.isStep);
-              if (isStepTrigger) {
-                // Luôn luôn tịnh tiến vị trí bước chân theo góc yaw phòng chuẩn xác (khớp góc xoay 75° Nhà Tổng Thống)
+
+              if (isResetTrigger && targetX !== undefined && targetY !== undefined) {
+                // SỰ KIỆN RESET: Đặt lại chính xác 100% tọa độ gốc chuẩn
+                userSvgPos = { x: targetX, y: targetY };
+                try {
+                  const posMap = JSON.parse(localStorage.getItem('2guide_hub_positions') || '{}');
+                  posMap[myHubId] = { x: targetX, y: targetY, yaw: myHubData.yaw };
+                  localStorage.setItem('2guide_hub_positions', JSON.stringify(posMap));
+                } catch(e) {}
+              } else if (isStepTrigger) {
+                // Tịnh tiến vị trí bước chân theo góc yaw phòng chuẩn xác (khớp góc xoay 75° Nhà Tổng Thống)
                 const svgYaw = ((myHubData.yaw || 0) + 75.0 + 360.0) % 360.0;
                 const rad = (svgYaw * Math.PI) / 180.0;
                 targetX = Math.max(40, Math.min(760, (userSvgPos.x || 380) + 14 * Math.sin(rad)));
                 targetY = Math.max(30, Math.min(470, (userSvgPos.y || 260) - 14 * Math.cos(rad)));
                 userSvgPos = { x: targetX, y: targetY };
+                try {
+                  const posMap = JSON.parse(localStorage.getItem('2guide_hub_positions') || '{}');
+                  posMap[myHubId] = { x: targetX, y: targetY, yaw: myHubData.yaw };
+                  localStorage.setItem('2guide_hub_positions', JSON.stringify(posMap));
+                } catch(e) {}
               } else {
-                // Đứng yên (1G tĩnh hoặc xoay la bàn): BẢO LƯU VỊ TRÍ TUYỆT ĐỐI 100%, KHÔNG HỀ BỊ GIẬT!
-                if (userSvgPos && userSvgPos.x !== undefined && userSvgPos.y !== undefined) {
+                // Đứng yên: Nếu server gửi tọa độ x, y trực tiếp thay đổi từ test.html (khoảng cách > 4px), cập nhật theo server!
+                if (targetX !== undefined && targetY !== undefined) {
+                  const dist = Math.hypot(targetX - (userSvgPos.x || 380), targetY - (userSvgPos.y || 260));
+                  if (dist > 4) {
+                    userSvgPos = { x: targetX, y: targetY };
+                    try {
+                      const posMap = JSON.parse(localStorage.getItem('2guide_hub_positions') || '{}');
+                      posMap[myHubId] = { x: targetX, y: targetY, yaw: myHubData.yaw };
+                      localStorage.setItem('2guide_hub_positions', JSON.stringify(posMap));
+                    } catch(e) {}
+                  } else {
+                    targetX = userSvgPos.x;
+                    targetY = userSvgPos.y;
+                  }
+                } else {
                   targetX = userSvgPos.x;
                   targetY = userSvgPos.y;
-                } else if (targetX !== undefined && targetY !== undefined) {
-                  userSvgPos = { x: targetX, y: targetY };
                 }
               }
 
               if (targetX !== undefined && targetY !== undefined) {
-
-                // 1. Cập nhật vị trí mới vào bộ nhớ userFiveHubs để không bao giờ bị trả lại vị trí cũ
+                // 1. Cập nhật vị trí mới vào bộ nhớ userFiveHubs
                 if (userFiveHubs && Array.isArray(userFiveHubs)) {
                   const cur = userFiveHubs.find(h => (h.id || h.hubId) === myNormalized);
                   if (cur) {
@@ -2564,7 +2688,7 @@
                 // 3. Di chuyển marker trên SVG phòng Nhà Tổng Thống
                 const userMarker = document.getElementById('user-location-marker');
                 if (userMarker) {
-                  userMarker.style.transition = 'transform 0.5s cubic-bezier(0.2, 0.9, 0.3, 1)';
+                  userMarker.style.transition = 'transform 0.4s cubic-bezier(0.2, 0.9, 0.3, 1)';
                   userMarker.setAttribute('transform', `translate(${targetX}, ${targetY})`);
                 }
                 if (typeof panToIndoorTarget === 'function') {
@@ -2575,21 +2699,30 @@
               updateUserUi({ skipPositionReset: true });
               renderUserMarkerAndCone();
             } else {
-              // Chỉ cập nhật nếu thiết bị thuộc đoàn tham quan của mình (Mục tiêu: không hiện thiết bị ngoài đoàn)
-              const member = groupMembers.find(m => normalizeHubId(m.hubId) === incomingId);
-              if (member) {
-                if (msg.lat !== undefined && !isNaN(msg.lat)) member.lat = Number(msg.lat);
-                if (msg.lng !== undefined && !isNaN(msg.lng)) member.lng = Number(msg.lng);
-                if (msg.battery !== undefined && !isNaN(msg.battery)) member.battery = Number(msg.battery);
-                
-                if (targetX !== undefined && targetY !== undefined) {
-                  let teamPin = document.getElementById(`user-hub-pin-${incomingId}`);
-                  if (teamPin) {
-                    teamPin.style.transition = 'transform 0.5s cubic-bezier(0.2, 0.9, 0.3, 1)';
-                    teamPin.setAttribute('transform', `translate(${targetX}, ${targetY})`);
+              // Cập nhật vị trí và góc xoay cho 1 trong 4 Hub còn lại trong phòng
+              if (userFiveHubs && Array.isArray(userFiveHubs)) {
+                const other = userFiveHubs.find(h => (h.id || h.hubId) === incomingId);
+                if (other) {
+                  if (targetX !== undefined) other.x = targetX;
+                  if (targetY !== undefined) other.y = targetY;
+                  if (msg.lat) other.lat = Number(msg.lat);
+                  if (msg.lng) other.lng = Number(msg.lng);
+                  if (msg.yaw !== undefined) other.yaw = Number(msg.yaw);
+                  if (msg.battery !== undefined) other.battery = Number(msg.battery);
+
+                  if (showOtherHubs) {
+                    const otherPin = document.getElementById(`user-other-hub-${incomingId}`);
+                    if (otherPin && other.x !== undefined && other.y !== undefined) {
+                      otherPin.style.transition = 'transform 0.4s ease';
+                      otherPin.setAttribute('transform', `translate(${other.x}, ${other.y})`);
+                      const otherPtr = document.getElementById(`user-other-pointer-${incomingId}`);
+                      if (otherPtr && other.yaw !== undefined) {
+                        const sYaw = ((other.yaw || 0) + 75.0 + 360.0) % 360.0;
+                        otherPtr.setAttribute('transform', `rotate(${sYaw})`);
+                      }
+                    }
                   }
                 }
-                renderGroupMembers();
               }
             }
           }
@@ -3043,6 +3176,7 @@
 
       await renderUserHubElements({ forcePositionReset: true });
       updateUserPositionByHub(false);
+      renderOtherHubsOnSvg();
 
       // Căn chỉnh lại chuẩn xác theo vị trí Hub thực tế mà vẫn tắt transition
       panToIndoorTarget(userSvgPos.x, userSvgPos.y, initialScale, false);
@@ -3366,18 +3500,64 @@
       }
     }
 
-    // Từ thẻ Câu chuyện bấm "Xem trên bản đồ"
-    function viewOnMap(lat, lng, title) {
+    // Từ thẻ Giới thiệu bấm vào hiện vật -> Chỉ rõ vị trí hiện vật trên bản đồ
+    let artifactPinTimer = null;
+    function viewArtifactOnMap(itemId) {
+      // 1. Chuyển ngay sang Tab "Bản đồ"
       switchTab('map');
+
+      // 2. Tìm hiện vật trong INTERACTIVE_ITEMS
+      const item = INTERACTIVE_ITEMS.find(it => it.id === itemId);
+      if (!item) return;
+
       setTimeout(() => {
-        if (map) {
-          map.flyTo([lat, lng], 18, { duration: 1.2 });
-          L.popup()
-            .setLatLng([lat, lng])
-            .setContent(`<strong>📍 ${title}</strong>`)
-            .openOn(map);
+        // 3. Highlight hiện vật và mở card thông tin chi tiết phía dưới
+        selectIndoorItem(item, true);
+
+        // 4. Tạo ghim chỉ điểm vị trí động (Animated Spotlight Pinpoint) trên SVG
+        const locLayer = document.getElementById('artifact-locator-layer');
+        if (locLayer) {
+          locLayer.innerHTML = `
+            <g id="active-spotlight-pin" transform="translate(${item.x}, ${item.y})" style="pointer-events: none;">
+              <!-- Vòng sóng tỏa nhiệt động màu cam vàng cảnh báo vị trí -->
+              <circle cx="0" cy="0" r="14" fill="none" stroke="#f59e0b" class="locator-pulse-circle" />
+              <circle cx="0" cy="0" r="14" fill="none" stroke="#f59e0b" class="locator-pulse-circle" style="animation-delay: 0.6s;" />
+              <circle cx="0" cy="0" r="14" fill="none" stroke="#f59e0b" class="locator-pulse-circle" style="animation-delay: 1.2s;" />
+              <!-- Mũi tên chỉ xuống hiện vật đang nhấp nháy chuyển động -->
+              <g style="animation: bouncePin 0.9s infinite alternate ease-in-out;">
+                <path d="M 0 -8 L -10 -28 L 10 -28 Z" fill="#f59e0b" stroke="#ffffff" stroke-width="2" filter="drop-shadow(0 4px 10px rgba(0,0,0,0.45))"/>
+                <circle cx="0" cy="-28" r="4" fill="#ffffff"/>
+                <!-- Hộp nhãn nổi bật tên hiện vật -->
+                <rect x="-85" y="-56" width="170" height="24" rx="7" fill="rgba(15, 23, 42, 0.95)" stroke="#f59e0b" stroke-width="1.5" filter="drop-shadow(0 6px 16px rgba(0,0,0,0.6))"/>
+                <text x="0" y="-40" font-size="10.5" font-weight="800" fill="#fde68a" text-anchor="middle">📍 ${item.name}</text>
+              </g>
+            </g>
+          `;
+
+          clearTimeout(artifactPinTimer);
+          artifactPinTimer = setTimeout(() => {
+            if (locLayer) locLayer.innerHTML = '';
+          }, 8000);
         }
-      }, 250);
+
+        showVoiceGuideToast(`📍 Đang chỉ vị trí: ${item.name}`);
+      }, 150);
+    }
+
+    // Từ thẻ Câu chuyện bấm "Xem trên bản đồ"
+    function viewOnMap(lat, lng, title, itemId) {
+      if (itemId) {
+        viewArtifactOnMap(itemId);
+        return;
+      }
+      if (title) {
+        const t = title.toLowerCase();
+        if (t.includes('làm việc') || t.includes('bàn làm')) return viewArtifactOnMap('desk');
+        if (t.includes('bầu dục') || t.includes('đá cổ') || t.includes('bàn họp')) return viewArtifactOnMap('table');
+        if (t.includes('bắc') || t.includes('trung tâm')) return viewArtifactOnMap('pillar1');
+        if (t.includes('nam') || t.includes('tiền sảnh')) return viewArtifactOnMap('pillar2');
+      }
+      switchTab('map');
     }
 
     // Nghe thuyết minh
@@ -3677,6 +3857,7 @@
         moved = true;
       } else if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
         myHubData.yaw = (myHubData.yaw - 15 + 360) % 360;
+        try { localStorage.setItem('2guide_last_user_yaw', myHubData.yaw); } catch(e) {}
         const pointer = document.getElementById('user-heading-pointer');
         if (pointer) {
           const svgYaw = (myHubData.yaw + 75.0 + 360.0) % 360.0;
@@ -3685,6 +3866,7 @@
         moved = true;
       } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
         myHubData.yaw = (myHubData.yaw + 15) % 360;
+        try { localStorage.setItem('2guide_last_user_yaw', myHubData.yaw); } catch(e) {}
         const pointer = document.getElementById('user-heading-pointer');
         if (pointer) {
           const svgYaw = (myHubData.yaw + 75.0 + 360.0) % 360.0;
@@ -3704,6 +3886,14 @@
         if (ws && ws.readyState === WebSocket.OPEN) {
           ws.send(JSON.stringify({
             type: 'BLE_MPU_FUSION',
+            hubId: myHubId,
+            yaw: myHubData.yaw,
+            isStep: true,
+            x: userSvgPos.x,
+            y: userSvgPos.y
+          }));
+          ws.send(JSON.stringify({
+            type: 'HUB_LOCATION_UPDATE',
             hubId: myHubId,
             yaw: myHubData.yaw,
             isStep: true,
@@ -3733,12 +3923,7 @@
       </div>
 
       <div style="margin-bottom: 16px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-          <label style="display: block; font-size: 12px; font-weight: 700; color: #475569; margin: 0;">5 Máy Hub ngẫu nhiên trong phòng:</label>
-          <button type="button" onclick="rerollUserHubs()" style="border: none; background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px;">
-            <i class="fa-solid fa-dice"></i> Đổi 5 Hub
-          </button>
-        </div>
+        <label style="display: block; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 8px;">5 Máy Hub trong phòng Nhà Tổng Thống:</label>
         <div id="quick-hub-chips-container" style="display: flex; gap: 8px; flex-wrap: wrap;"></div>
       </div>
 

@@ -5,6 +5,7 @@
  */
 
 const express = require('express');
+const path = require('path');
 const router = express.Router();
 const viewController = require('../controllers/viewController');
 const { ADMIN_SECRET_PATH, EDITOR_SECRET_PATH } = require('../config/appConfig');
@@ -15,6 +16,11 @@ router.get('/user', viewController.renderUser);
 
 // 1b. Khám phá Nhà tù Hỏa Lò (Giao diện Canva: Bản đồ & Câu chuyện)
 router.get(['/hoa-lo', '/hoa-lo.html', '/kham-pha', '/story'], viewController.renderHoaLo);
+
+// 1c. Bản đồ Thực địa Google Maps & Vi Vị Trí User
+router.get(['/google-map', '/google_map', '/google-map.html', '/google_map.html'], (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/google-map.html'));
+});
 
 // 2. Cổng Quản lý Thiết Bị Ban Quản Lý (Giao diện Canva Manager mới - Truy cập trực tiếp, KHÔNG MẬT KHẨU)
 router.get(['/admin', '/quanly', '/manager', '/manager-demo', '/manager-demo.html', ADMIN_SECRET_PATH], viewController.renderManagerDemo);

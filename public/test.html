@@ -668,8 +668,9 @@
           <button type="button" class="btn btn-secondary btn-sm" style="padding: 2px 7px; font-size: 0.72rem;" onclick="setTestHubId('HL-18')">HL-18</button>
           <button type="button" class="btn btn-secondary btn-sm" style="padding: 2px 7px; font-size: 0.72rem;" onclick="setTestHubId('HL-37')">HL-37</button>
           <button type="button" class="btn btn-secondary btn-sm" style="padding: 2px 7px; font-size: 0.72rem;" onclick="setTestHubId('HL-44')">HL-44</button>
+          <button type="button" class="btn btn-secondary btn-sm" style="padding: 2px 7px; font-size: 0.72rem;" onclick="setTestHubId('HL-45')">HL-45</button>
           <button type="button" class="btn btn-secondary btn-sm" style="padding: 2px 7px; font-size: 0.72rem;" onclick="setTestHubId('HL-48')">HL-48</button>
-          <button type="button" class="btn btn-secondary btn-sm" style="padding: 2px 7px; font-size: 0.72rem;" onclick="setTestHubId('NEU001')">NEU001</button>
+          <button type="button" class="btn btn-warning btn-sm" style="padding: 2px 8px; font-size: 0.72rem; font-weight: 700;" onclick="resetAllTestHubs()"><i class="fa-solid fa-rotate-left"></i> Reset 5 Hub</button>
         </div>
         <span class="input-label">Pin %:</span>
         <input type="number" id="cfg-battery" class="input-field" style="width: 65px;" value="95" min="1" max="100" />
@@ -1402,8 +1403,8 @@ $GNGGA,084532.00,2059.9790,N,10550.5680,E,1,14,0.8,15.2,M,0.0,M,,*5C
         if (json.success && json.data && json.data.hub) {
           const h = json.data.hub;
           if (h.lat && h.lng) {
-            gpsLat.value = Number(h.lat).toFixed(5);
-            gpsLng.value = Number(h.lng).toFixed(5);
+            gpsLat.value = Number(h.lat).toFixed(6);
+            gpsLng.value = Number(h.lng).toFixed(6);
             updateNmeaPreview();
           }
           if (h.yaw !== undefined) {
@@ -1531,6 +1532,10 @@ $GNGGA,084532.00,${latDeg}${latMin},N,${lngDeg}${lngMin},E,1,${sats},0.8,15.2,M,
       gpsLng.value = lng;
       updateNmeaPreview();
       log('ATGM336H', `Đã chọn vị trí "${name}": Lat ${lat}, Lng ${lng}`, 'log-tag-gps');
+      // Tự động gửi Telemetry ngay để các màn hình bản đồ (Google Maps, BQL, User) đồng bộ tức thì
+      if (btnGpsSendTelemetry) {
+        btnGpsSendTelemetry.click();
+      }
     };
 
     window.getRealGeolocation = () => {
@@ -1699,11 +1704,47 @@ $GNGGA,084532.00,${latDeg}${latMin},N,${lngDeg}${lngMin},E,1,${sats},0.8,15.2,M,
       });
     }
 
+    const TEST_STANDARD_HUBS = {
+      'HL-18': { lat: 20.997710, lng: 105.844731, yaw: 68, battery: 95 },
+      'HL-37': { lat: 20.997773, lng: 105.844744, yaw: 105, battery: 85 },
+      'HL-44': { lat: 20.997684, lng: 105.844738, yaw: 144, battery: 78 },
+      'HL-45': { lat: 20.997751, lng: 105.844701, yaw: 270, battery: 96 },
+      'HL-48': { lat: 20.997717, lng: 105.844767, yaw: 288, battery: 64 }
+    };
+
     window.setTestHubId = function(newId) {
       const el = document.getElementById('cfg-hub-id');
       if (el) el.value = newId;
-      log('CẤU HÌNH', `Đã chuyển sang kiểm thử thiết bị ${newId}. Đang đồng bộ lại socket...`, 'log-tag-gps');
+
+      const info = TEST_STANDARD_HUBS[newId];
+      if (info) {
+        const batEl = document.getElementById('cfg-battery');
+        if (batEl) batEl.value = info.battery;
+        if (gpsLat) gpsLat.value = info.lat;
+        if (gpsLng) gpsLng.value = info.lng;
+        if (imuYawSlider) {
+          imuYawSlider.value = info.yaw;
+          if (imuYawVal) imuYawVal.textContent = info.yaw + '°';
+        }
+        if (typeof updateCompassHeading === 'function') updateCompassHeading(info.yaw);
+      }
+
+      log('CẤU HÌNH', `Đã chuyển sang kiểm thử thiết bị ${newId}. Đã nạp tọa độ (${info ? info.lat + ', ' + info.lng : ''}) và góc xoay ${info ? info.yaw : 0}°.`, 'log-tag-gps');
       if (typeof connectEsp32DeviceWs === 'function') connectEsp32DeviceWs();
+    };
+
+    window.resetAllTestHubs = async function() {
+      try {
+        const res = await fetch('/api/devices/reset', { method: 'POST' });
+        const json = await res.json();
+        if (json.success) {
+          const curId = (document.getElementById('cfg-hub-id')?.value || 'HL-18').trim();
+          window.setTestHubId(curId);
+          log('HỆ THỐNG', '✅ Đã đặt lại 5 Hub về tọa độ chuẩn đồng bộ trên Server & Database!', 'log-tag-gps');
+        }
+      } catch (err) {
+        log('LỖI', 'Không thể gọi reset API: ' + err.message, 'log-tag-gps');
+      }
     };
 
     function simulateSingleStep() {
@@ -3257,8 +3298,8 @@ $GNGGA,084532.00,${latDeg}${latMin},N,${lngDeg}${lngMin},E,1,${sats},0.8,15.2,M,
         log('ESP32 WS', `[XÁC THỰC THÀNH CÔNG] Server phê duyệt thiết bị phần cứng Hub ${data.hubId}! Mã bảo mật hợp lệ.`, 'log-tag-gps');
         if (data.hub) {
           if (!window.hasTestMovedLocally && data.hub.lat && data.hub.lng) {
-            gpsLat.value = Number(data.hub.lat).toFixed(5);
-            gpsLng.value = Number(data.hub.lng).toFixed(5);
+            gpsLat.value = Number(data.hub.lat).toFixed(6);
+            gpsLng.value = Number(data.hub.lng).toFixed(6);
             updateNmeaPreview();
           }
           if (!window.hasTestMovedLocally && data.hub.yaw !== undefined) {
@@ -3356,8 +3397,8 @@ $GNGGA,084532.00,${latDeg}${latMin},N,${lngDeg}${lngMin},E,1,${sats},0.8,15.2,M,
             const newLat = parseFloat(lat);
             const newLng = parseFloat(lng);
             if (!isNaN(newLat) && !isNaN(newLng)) {
-              gpsLat.value = newLat.toFixed(5);
-              gpsLng.value = newLng.toFixed(5);
+              gpsLat.value = newLat.toFixed(6);
+              gpsLng.value = newLng.toFixed(6);
               updateNmeaPreview();
               if (typeof syncSpatialFromGazeOrGps === 'function') {
                 syncSpatialFromGazeOrGps();

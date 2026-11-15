@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Bản Đồ Google Maps & Giám Sát Thiết Bị Hub — Nhà Tổng Thống</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;1,600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+  <!-- Leaflet CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      background-color: #0b0f19;
+      color: #0f172a;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+      width: 100vw;
+      height: 100vh;
+      user-select: none;
+    }
+    #map {
+      width: 100vw;
+      height: 100vh;
+      background: #090c15;
+      z-index: 10;
+    }
+    .leaflet-container {
+      font-family: inherit;
+      background: #090c15 !important;
+    }
+
+    /* Pulse wave for primary user */
+    @keyframes userPulse {
+      0% { transform: scale(0.6); opacity: 1; }
+      100% { transform: scale(2.4); opacity: 0; }
+    }
+    .user-pulse-ring {
+      animation: userPulse 2s cubic-bezier(0.2, 0.8, 0.4, 1) infinite;
+    }
+
+    /* Beacon pulse waves */
+    @keyframes beaconPulse {
+      0% { transform: scale(0.4); opacity: 0.9; }
+      100% { transform: scale(2.6); opacity: 0; }
+    }
+    .beacon-pulse-wave-1 {
+      animation: beaconPulse 2.4s cubic-bezier(0.2, 0.7, 0.3, 1) infinite;
+    }
+    .beacon-pulse-wave-2 {
+      animation: beaconPulse 2.4s cubic-bezier(0.2, 0.7, 0.3, 1) infinite 0.8s;
+    }
+
+    /* Hub pulse wave */
+    @keyframes hubPulse {
+      0% { transform: scale(0.8); opacity: 0.8; }
+      100% { transform: scale(1.9); opacity: 0; }
+    }
+    .hub-pulse-ring {
+      animation: hubPulse 2.2s cubic-bezier(0.2, 0.8, 0.4, 1) infinite;
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
+    ::-webkit-scrollbar-thumb { background: rgba(56, 189, 248, 0.4); border-radius: 999px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(56, 189, 248, 0.7); }
+  </style>
+</head>
+<body class="w-screen h-screen relative overflow-hidden">
+
+  <!-- ==================== TOP NAVIGATION & CONTROL BAR ==================== -->
+  <header class="absolute top-0 left-0 right-0 z-40 p-3 md:p-4 flex flex-wrap items-center justify-between gap-3 pointer-events-none">
+    
+    <!-- BRAND & SITE PILL -->
+    <div class="pointer-events-auto flex items-center gap-3 bg-slate-900/90 backdrop-blur-xl border border-white/15 px-4 py-2.5 rounded-2xl shadow-2xl transition">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-amber-700 border border-amber-300/40 flex items-center justify-center text-xl shadow-lg shrink-0">
+        🏛️
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="text-xs md:text-sm font-extrabold text-white tracking-wide">
+            BẢN ĐỒ THỰC ĐỊA GOOGLE MAPS
+          </h1>
+          <span id="ws-status-badge" class="text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-400/40 flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+            <span id="ws-status-text">Đang Kết Nối Realtime...</span>
+          </span>
+        </div>
+        <p class="text-[10px] text-gray-300">Nhà Tổng Thống • Đồng bộ Thiết bị Hub & Telemetry từ Test / ESP32</p>
+      </div>
+    </div>
+
+    <!-- QUICK ACTIONS & LAYER SWITCHERS -->
+    <div class="pointer-events-auto flex items-center gap-2 flex-wrap">
+      
+      <!-- SELECT ACTIVE HUB (THIẾT BỊ THEO DÕI) -->
+      <div class="flex items-center gap-1.5 bg-slate-900/90 backdrop-blur-xl border border-white/15 px-3 py-1.5 rounded-2xl shadow-xl text-xs">
+        <span class="text-cyan-300 font-bold text-[11px] flex items-center gap-1">
+          <i class="fa-solid fa-walkie-talkie"></i> Theo dõi:
+        </span>
+        <select id="select-active-hub" onchange="onSelectActiveHub(this.value)" class="bg-slate-800 text-white font-mono font-bold text-xs px-2 py-1 rounded-xl border border-cyan-400/40 outline-none cursor-pointer">
+          <option value="HL-18">HL-18 (Mặc định Test)</option>
+          <option value="HL-37">HL-37</option>
+          <option value="HL-44">HL-44</option>
+          <option value="HL-45">HL-45</option>
+          <option value="HL-48">HL-48</option>
+        </select>
+      </div>
+
+      <!-- LAYER TOGGLE: BLUEPRINT OPACITY -->
+      <div class="flex items-center gap-2 bg-slate-900/90 backdrop-blur-xl border border-white/15 px-3 py-1.5 rounded-2xl shadow-xl text-xs">
+        <span class="text-amber-300 font-bold text-[11px] flex items-center gap-1">
+          <i class="fa-solid fa-layer-group"></i> Bản vẽ:
+        </span>
+        <input type="range" id="slider-opacity" min="0" max="100" value="85" oninput="setBlueprintOpacity(this.value)" class="w-20 md:w-28 accent-amber-400 cursor-pointer">
+        <span id="label-opacity" class="text-gray-300 font-mono text-[10px] w-7">85%</span>
+      </div>
+
+      <!-- MAP TYPE TOGGLE (SATELLITE / ROADMAP) -->
+      <button onclick="toggleMapType()" id="btn-map-type" class="bg-slate-900/90 hover:bg-slate-800 text-cyan-300 border border-white/15 px-3.5 py-2 rounded-2xl text-xs font-bold shadow-xl transition flex items-center gap-1.5 cursor-pointer">
+        <i class="fa-solid fa-satellite" id="icon-map-type"></i>
+        <span id="text-map-type">Vệ Tinh</span>
+      </button>
+
+      <!-- FLY TO MY LOCATION -->
+      <button onclick="flyToMyLocation()" class="bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-400/50 px-3.5 py-2 rounded-2xl text-xs font-bold shadow-xl transition flex items-center gap-1.5 cursor-pointer">
+        <i class="fa-solid fa-crosshairs"></i>
+        <span>Vị Trí Của Tôi</span>
+      </button>
+
+      <!-- FIT ROOM BOUNDS -->
+      <button onclick="fitRoomBounds()" class="bg-slate-900/90 hover:bg-slate-800 text-amber-300 border border-white/15 px-3.5 py-2 rounded-2xl text-xs font-bold shadow-xl transition flex items-center gap-1.5 cursor-pointer" title="Căn trọn phòng Nhà Tổng Thống">
+        <i class="fa-solid fa-expand"></i>
+        <span>Toàn Cảnh</span>
+      </button>
+
+      <!-- SIMULATE USERS MOVING -->
+      <button onclick="toggleSimulateMovement()" id="btn-sim-move" class="bg-blue-600/90 hover:bg-blue-500 text-white border border-blue-400/50 px-3.5 py-2 rounded-2xl text-xs font-bold shadow-xl transition flex items-center gap-1.5 cursor-pointer">
+        <i class="fa-solid fa-person-walking" id="icon-sim-move"></i>
+        <span id="text-sim-move">Mô Phỏng Đi Lại</span>
+      </button>
+
+      <!-- RESET TO STANDARD POSITIONS -->
+      <button onclick="resetAllHubsToStandard()" class="bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-400 px-3.5 py-2 rounded-2xl text-xs font-bold shadow-xl transition flex items-center gap-1.5 cursor-pointer" title="Đặt lại vị trí tất cả 5 Hub về tọa độ chuẩn">
+        <i class="fa-solid fa-arrows-rotate"></i>
+        <span>Đặt Lại Tọa Độ Gốc</span>
+      </button>
+
+      <!-- SWITCH BACK TO 2D ROOM SVG -->
+      <a href="index.html" class="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white px-3.5 py-2 rounded-2xl text-xs font-black shadow-xl transition flex items-center gap-1.5">
+        <i class="fa-solid fa-vector-square"></i>
+        <span>Về Bản Đồ Phòng 2D</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- ==================== TELEMETRY FLASH TOAST ==================== -->
+  <div id="telemetry-toast" class="fixed top-20 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 opacity-0 pointer-events-none transform -translate-y-2">
+    <div class="bg-slate-950/95 border border-cyan-400/80 rounded-2xl px-4 py-2 shadow-2xl flex items-center gap-2.5 text-xs text-cyan-300 font-mono">
+      <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+      <span id="telemetry-toast-text">Nhận Telemetry từ Test Tool...</span>
+    </div>
+  </div>
+
+  <!-- ==================== LEAFLET MAP CONTAINER ==================== -->
+  <div id="map"></div>
+
+  <!-- ==================== BOTTOM LEFT: REALTIME USERS PANEL ==================== -->
+  <div class="absolute bottom-6 left-6 z-40 w-84 max-w-[calc(100vw-3rem)] bg-slate-900/95 backdrop-blur-xl border border-white/15 rounded-3xl shadow-2xl p-4 text-white transition-all">
+    <div class="flex items-center justify-between border-b border-white/10 pb-2.5 mb-2.5">
+      <div class="flex items-center gap-2">
+        <span class="text-base text-cyan-400"><i class="fa-solid fa-users"></i></span>
+        <div>
+          <h3 class="text-xs font-black tracking-wide uppercase text-gray-200">Danh Sách Thiết Bị Hub & User</h3>
+          <p class="text-[10px] text-gray-400">Đồng bộ cơ sở dữ liệu thời gian thực</p>
+        </div>
+      </div>
+      <span id="badge-user-count" class="px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-mono text-[10px] font-bold border border-cyan-400/30">
+        5 Hubs
+      </span>
+    </div>
+
+    <!-- USERS LIST -->
+    <div id="users-list" class="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+      <!-- Injected via JavaScript -->
+    </div>
+
+    <!-- PDR KEYBOARD CONTROLS TIP -->
+    <div class="mt-3 pt-2.5 border-t border-white/10 flex items-center justify-between text-[10px] text-gray-400">
+      <span class="flex items-center gap-1.5">
+        <span class="px-1.5 py-0.5 rounded bg-white/10 font-mono text-gray-200 border border-white/10">W</span>
+        <span class="px-1.5 py-0.5 rounded bg-white/10 font-mono text-gray-200 border border-white/10">A</span>
+        <span class="px-1.5 py-0.5 rounded bg-white/10 font-mono text-gray-200 border border-white/10">S</span>
+        <span class="px-1.5 py-0.5 rounded bg-white/10 font-mono text-gray-200 border border-white/10">D</span>
+        / Mũi tên: Bước đi
+      </span>
+      <span class="text-cyan-400 font-semibold cursor-pointer hover:underline" onclick="stepUserForward()">+1 Bước</span>
+    </div>
+  </div>
+
+  <!-- ==================== BOTTOM RIGHT: POI & BEACON DETAIL CARD ==================== -->
+  <div id="poi-sheet" class="absolute bottom-6 right-6 z-40 w-84 max-w-[calc(100vw-3rem)] bg-white/95 backdrop-blur-xl border border-slate-200 rounded-3xl p-4 shadow-2xl transition-all duration-300 translate-y-32 opacity-0 pointer-events-none text-slate-900">
+    <div class="flex items-start justify-between gap-3">
+      <div class="flex items-center gap-2.5">
+        <span id="poi-icon" class="text-2xl w-10 h-10 rounded-2xl bg-amber-100 border border-amber-300 flex items-center justify-center shrink-0">🏛️</span>
+        <div>
+          <span id="poi-badge" class="text-[9px] font-extrabold uppercase tracking-wider text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">Hiện Vật</span>
+          <h4 id="poi-title" class="text-xs md:text-sm font-extrabold text-slate-900 mt-0.5 leading-tight">Bàn Làm Việc Tổng Thống</h4>
+        </div>
+      </div>
+      <button onclick="closePoiSheet()" class="w-7 h-7 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-800 flex items-center justify-center text-xs font-bold shrink-0">✕</button>
+    </div>
+    
+    <p id="poi-desc" class="text-[11px] text-slate-600 mt-2 leading-relaxed">
+      Bàn làm việc chạm khắc vân gỗ gõ đỏ nguyên khối theo phong cách cổ điển thập niên 1960.
+    </p>
+
+    <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between gap-2">
+      <div class="text-[10px] text-slate-500 font-mono" id="poi-gps">
+        20.997664, 105.844668
+      </div>
+      <button onclick="playPoiAudio()" id="btn-poi-audio" class="px-3 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-[11px] font-bold shadow-md transition flex items-center gap-1.5 cursor-pointer">
+        <i class="fa-solid fa-volume-high"></i>
+        <span>Thuyết Minh</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ==================== ROTATED IMAGE OVERLAY PLUGIN ==================== -->
+  <script>
+    // Leaflet.ImageOverlay.Rotated Plugin
+    L.ImageOverlay.Rotated = L.ImageOverlay.extend({
+      initialize: function (image, topleft, topright, bottomleft, options) {
+        if (typeof(image) === 'string') {
+          this._url = image;
+        } else {
+          this._rawImage = image;
+        }
+        this._topLeft = L.latLng(topleft);
+        this._topRight = L.latLng(topright);
+        this._bottomLeft = L.latLng(bottomleft);
+        L.setOptions(this, options);
+      },
+
+      onAdd: function (map) {
+        if (!this._image) {
+          this._initImage();
+          if (this.options.opacity < 1) {
+            this._updateOpacity();
+          }
+        }
+        if (this.options.interactive) {
+          L.DomUtil.addClass(this._rawImage, 'leaflet-interactive');
+          this.addInteractiveTarget(this._rawImage);
+        }
+        map.on('zoomend resetview move', this._reset, this);
+        this.getPane().appendChild(this._image);
+        this._reset();
+      },
+
+      onRemove: function(map) {
+        map.off('zoomend resetview move', this._reset, this);
+        L.ImageOverlay.prototype.onRemove.call(this, map);
+      },
+
+      _initImage: function () {
+        var img = this._rawImage;
+        if (this._url) {
+          img = L.DomUtil.create('img');
+          img.style.display = 'none';
+          if (this.options.crossOrigin) {
+            img.crossOrigin = '';
+          }
+          img.src = this._url;
+          this._rawImage = img;
+        }
+        L.DomUtil.addClass(img, 'leaflet-image-layer');
+
+        var div = this._image = L.DomUtil.create('div',
+          'leaflet-image-layer ' + (this._zoomAnimated ? 'leaflet-zoom-animated' : ''));
+
+        this._updateZIndex();
+        div.appendChild(img);
+
+        div.onselectstart = L.Util.falseFn;
+        div.onmousemove = L.Util.falseFn;
+
+        var self = this;
+        img.onload = function() {
+          self._reset();
+          img.style.display = 'block';
+          self.fire('load');
+        };
+
+        if (img.complete) {
+          setTimeout(function() {
+            self._reset();
+            img.style.display = 'block';
+          }, 50);
+        }
+
+        img.alt = this.options.alt || '';
+      },
+
+      _reset: function () {
+        var div = this._image;
+        if (!this._map || !div || !this._rawImage) {
+          return;
+        }
+
+        var pxTopLeft = this._map.latLngToLayerPoint(this._topLeft);
+        var pxTopRight = this._map.latLngToLayerPoint(this._topRight);
+        var pxBottomLeft = this._map.latLngToLayerPoint(this._bottomLeft);
+
+        var pxBottomRight = pxTopRight.subtract(pxTopLeft).add(pxBottomLeft);
+        var pxBounds = L.bounds([pxTopLeft, pxTopRight, pxBottomLeft, pxBottomRight]);
+        var size = pxBounds.getSize();
+        var pxTopLeftInDiv = pxTopLeft.subtract(pxBounds.min);
+
+        this._bounds = L.latLngBounds(
+          this._map.layerPointToLatLng(pxBounds.min),
+          this._map.layerPointToLatLng(pxBounds.max)
+        );
+
+        L.DomUtil.setPosition(div, pxBounds.min);
+
+        div.style.width = size.x + 'px';
+        div.style.height = size.y + 'px';
+
+        var imgW = this._rawImage.naturalWidth || this._rawImage.width || 800;
+        var imgH = this._rawImage.naturalHeight || this._rawImage.height || 500;
+        if (!imgW || !imgH) return;
+
+        var vectorX = pxTopRight.subtract(pxTopLeft);
+        var vectorY = pxBottomLeft.subtract(pxTopLeft);
+
+        this._rawImage.style.transformOrigin = '0 0';
+        this._rawImage.style.transform = "matrix(" +
+          (vectorX.x / imgW) + ', ' + (vectorX.y / imgW) + ', ' +
+          (vectorY.x / imgH) + ', ' + (vectorY.y / imgH) + ', ' +
+          pxTopLeftInDiv.x + ', ' + pxTopLeftInDiv.y + ')';
+      },
+
+      reposition: function(topleft, topright, bottomleft) {
+        this._topLeft = L.latLng(topleft);
+        this._topRight = L.latLng(topright);
+        this._bottomLeft = L.latLng(bottomleft);
+        this._reset();
+      },
+
+      setUrl: function (url) {
+        this._url = url;
+        if (this._rawImage) {
+          this._rawImage.src = url;
+        }
+        return this;
+      }
+    });
+
+    L.imageOverlay.rotated = function(imgSrc, topleft, topright, bottomleft, options) {
+      return new L.ImageOverlay.Rotated(imgSrc, topleft, topright, bottomleft, options);
+    };
+  </script>
+
+  <!-- ==================== MAIN MAP LOGIC & SENSOR FUSION ==================== -->
+  <script>
+    // 1. Tọa độ chuẩn Nhà Tổng Thống (Khớp 100% với hệ thống 2Guide)
+    const SITE_CONFIG = {
+      name: "Nhà Tổng Thống",
+      center: [20.997715, 105.844730],
+      rotationDeg: 75.0,
+      widthMeters: 18.9,
+      heightMeters: 13.9,
+      canvasW: 800,
+      canvasH: 500,
+      corners: {
+        nw: [20.997649, 105.844642],
+        ne: [20.997813, 105.844689],
+        se: [20.997780, 105.844818],
+        sw: [20.997616, 105.844771]
+      }
+    };
+
+    const mLat = 111320;
+    const mLng = 111320 * Math.cos(SITE_CONFIG.center[0] * Math.PI / 180);
+
+    // Chuyển đổi SVG (x, y) sang GPS (lat, lng) trên Google Maps
+    function svgToGps(x, y) {
+      const localDx = (Number(x) / SITE_CONFIG.canvasW - 0.5) * SITE_CONFIG.widthMeters;
+      const localDy = (0.5 - Number(y) / SITE_CONFIG.canvasH) * SITE_CONFIG.heightMeters;
+      const rad = SITE_CONFIG.rotationDeg * Math.PI / 180;
+      const dxRot = localDx * Math.cos(rad) - localDy * Math.sin(rad);
+      const dyRot = localDx * Math.sin(rad) + localDy * Math.cos(rad);
+      const lat = Number((SITE_CONFIG.center[0] + dyRot / mLat).toFixed(6));
+      const lng = Number((SITE_CONFIG.center[1] + dxRot / mLng).toFixed(6));
+      return { lat, lng };
+    }
+
+    // Chuyển đổi GPS (lat, lng) sang SVG (x, y)
+    function gpsToSvg(lat, lng) {
+      const dx = (Number(lng) - SITE_CONFIG.center[1]) * mLng;
+      const dy = (Number(lat) - SITE_CONFIG.center[0]) * mLat;
+      const rad = -SITE_CONFIG.rotationDeg * Math.PI / 180;
+      const dxRot = dx * Math.cos(rad) - dy * Math.sin(rad);
+      const dyRot = dx * Math.sin(rad) + dy * Math.cos(rad);
+      const x = Math.round((dxRot / SITE_CONFIG.widthMeters + 0.5) * SITE_CONFIG.canvasW);
+      const y = Math.round((0.5 - dyRot / SITE_CONFIG.heightMeters) * SITE_CONFIG.canvasH);
+      return { x, y };
+    }
+
+    // 2. Khởi tạo bản đồ Leaflet
+    const map = L.map('map', {
+      center: SITE_CONFIG.center,
+      zoom: 21,
+      minZoom: 16,
+      maxZoom: 22,
+      zoomControl: false,
+      attributionControl: false
+    });
+
+    // Zoom control ở góc dưới bên phải
+    L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+    // Lớp Google Maps Vệ Tinh (Hybrid)
+    const layerGoogleSatellite = L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+      maxZoom: 22,
+      attribution: 'Google Maps'
+    }).addTo(map);
+
+    // Lớp Google Maps Đường Phố (Roadmap)
+    const layerGoogleRoadmap = L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+      maxZoom: 22,
+      attribution: 'Google Maps'
+    });
+
+    let currentMapType = 'satellite';
+    function toggleMapType() {
+      if (currentMapType === 'satellite') {
+        map.removeLayer(layerGoogleSatellite);
+        layerGoogleRoadmap.addTo(map);
+        currentMapType = 'roadmap';
+        document.getElementById('icon-map-type').className = 'fa-solid fa-map';
+        document.getElementById('text-map-type').textContent = 'Đường Phố';
+      } else {
+        map.removeLayer(layerGoogleRoadmap);
+        layerGoogleSatellite.addTo(map);
+        currentMapType = 'satellite';
+        document.getElementById('icon-map-type').className = 'fa-solid fa-satellite';
+        document.getElementById('text-map-type').textContent = 'Vệ Tinh';
+      }
+    }
+
+    // 3. Phủ bản vẽ Blueprint Kiến Trúc lên Google Maps
+    const blueprintUrl = (window.location.protocol === 'file:') ? 'Nha_tong_thong_blueprint.svg' : '/maps/Nha_tong_thong_blueprint.svg';
+    const blueprintOverlay = L.imageOverlay.rotated(
+      blueprintUrl,
+      SITE_CONFIG.corners.nw,
+      SITE_CONFIG.corners.ne,
+      SITE_CONFIG.corners.sw,
+      {
+        opacity: 0.85,
+        interactive: false,
+        zIndex: 400
+      }
+    ).addTo(map);
+
+    function setBlueprintOpacity(val) {
+      const op = Math.max(0, Math.min(100, Number(val))) / 100.0;
+      blueprintOverlay.setOpacity(op);
+      document.getElementById('label-opacity').textContent = `${Math.round(op * 100)}%`;
+    }
+
+    // Khung viền kiến trúc WGS84
+    const roomPolygon = L.polygon([
+      SITE_CONFIG.corners.nw,
+      SITE_CONFIG.corners.ne,
+      SITE_CONFIG.corners.se,
+      SITE_CONFIG.corners.sw
+    ], {
+      color: '#f59e0b',
+      weight: 2.2,
+      fillColor: '#f59e0b',
+      fillOpacity: 0.05,
+      dashArray: '6 4'
+    }).addTo(map);
+
+    function fitRoomBounds() {
+      map.fitBounds(roomPolygon.getBounds(), { padding: [60, 60], maxZoom: 21 });
+    }
+
+    // 4. Danh sách 3 Trạm Beacon BLE
+    const BEACONS_DATA = [
+      { id: "BEACONTAG-1", name: "Trạm 1: Cung Đông", x: 745, y: 258, lat: 20.997785, lng: 105.844752, desc: "Trạm phát sóng iBeacon Cung điện phía Đông. Tự động nhận diện du khách và kích hoạt thuyết minh." },
+      { id: "BEACONTAG-2", name: "Trạm 2: Cổng Bắc", x: 550, y: 25, lat: 20.997760, lng: 105.844680, desc: "Trạm vi định vị BLE Beacon tại vòm cửa phía Bắc." },
+      { id: "BEACONTAG-3", name: "Trạm 3: Tiền Sảnh", x: 310, y: 340, lat: 20.997690, lng: 105.844748, desc: "Trạm vi định vị BLE Beacon tại trung tâm tiền sảnh đón tiếp." }
+    ];
+
+    BEACONS_DATA.forEach(b => {
+      const beaconHtml = `
+        <div style="position: relative; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+          <div class="beacon-pulse-wave-1" style="position: absolute; inset: 0; border-radius: 999px; border: 2px solid #00f0ff; pointer-events: none;"></div>
+          <div class="beacon-pulse-wave-2" style="position: absolute; inset: 0; border-radius: 999px; border: 1.5px solid #00f0ff; pointer-events: none;"></div>
+          <div style="width: 14px; height: 14px; border-radius: 999px; background: #00f0ff; border: 2.5px solid #ffffff; box-shadow: 0 0 12px #00f0ff;"></div>
+          <div style="position: absolute; top: -16px; left: 50%; transform: translateX(-50%); background: rgba(15,23,42,0.92); color: #00f0ff; font-size: 8px; font-weight: 800; padding: 1px 5px; border-radius: 4px; border: 0.5px solid #00f0ff; white-space: nowrap; pointer-events: none;">
+            ${b.id}
+          </div>
+        </div>
+      `;
+      const icon = L.divIcon({ html: beaconHtml, className: '', iconSize: [36, 36], iconAnchor: [18, 18] });
+      const marker = L.marker([b.lat, b.lng], { icon, zIndexOffset: 500 }).addTo(map);
+      marker.on('click', () => {
+        showPoiCard({
+          icon: '📡',
+          badge: 'Trạm Vi Định Vị BLE',
+          title: b.name,
+          desc: b.desc,
+          gps: `${b.lat}, ${b.lng}`,
+          audioText: `Bạn đang ở gần ${b.name}, thiết bị iBeacon đang phát sóng dẫn đường.`
+        });
+      });
+    });
+
+    // 5. Hiện vật lịch sử (POIs)
+    const ARTIFACTS_DATA = [
+      { id: "ART_BAN_LAM_VIEC", name: "Bàn Làm Việc Tổng Thống", icon: "🪑", x: 97.5, y: 80, lat: 20.997664, lng: 105.844668, desc: "Bàn làm việc chạm khắc vân gỗ gõ đỏ nguyên khối theo phong cách cổ điển thập niên 1960. Nơi ký kết các sắc lệnh bang giao lịch sử." },
+      { id: "ART_BAN_HOP_DA_CO", name: "Bàn Họp Bầu Dục Mặt Đá Cổ", icon: "🏛️", x: 715, y: 427.5, lat: 20.997768, lng: 105.844794, desc: "Bàn hội nghị hình bầu dục mặt đá cẩm thạch cổ vân rêu, quy cách 12 ghế đại biểu ngoại giao cấp cao." },
+      { id: "ART_COT_TRU_BAC", name: "Cột Trụ Chịu Lực (Bắc)", icon: "🏛️", x: 250, y: 230, lat: 20.997686, lng: 105.844716, desc: "Cột trụ đá granite hoa cương nguyên khối kiên cố, chống rung chấn và bom đạn." },
+      { id: "ART_COT_TRU_NAM", name: "Cột Trụ Chịu Lực (Nam)", icon: "🏛️", x: 250, y: 115, lat: 20.997693, lng: 105.844686, desc: "Cột trụ đối xứng trục đông - tây, tạo điểm nhấn kết cấu không gian vòm giữa tiền sảnh và phòng chính." }
+    ];
+
+    ARTIFACTS_DATA.forEach(art => {
+      const artHtml = `
+        <div style="position: relative; cursor: pointer; text-align: center;">
+          <div style="width: 28px; height: 28px; border-radius: 10px; background: rgba(255,255,255,0.96); border: 2px solid #d97706; display: flex; align-items: center; justify-content: center; font-size: 13px; box-shadow: 0 4px 12px rgba(0,0,0,0.35);">
+            ${art.icon}
+          </div>
+          <div style="position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: rgba(15,23,42,0.9); color: #fbbf24; font-size: 8px; font-weight: 800; padding: 1px 4px; border-radius: 3px; white-space: nowrap; pointer-events: none;">
+            ${art.name.split(' ')[0]} ${art.name.split(' ')[1] || ''}
+          </div>
+        </div>
+      `;
+      const icon = L.divIcon({ html: artHtml, className: '', iconSize: [28, 28], iconAnchor: [14, 14] });
+      const marker = L.marker([art.lat, art.lng], { icon, zIndexOffset: 600 }).addTo(map);
+      marker.on('click', () => {
+        showPoiCard({
+          icon: art.icon,
+          badge: 'Hiện Vật Lịch Sử',
+          title: art.name,
+          desc: art.desc,
+          gps: `${art.lat}, ${art.lng}`,
+          audioText: `${art.name}. ${art.desc}`
+        });
+      });
+    });
+
+    // 6. Quản lý Danh Sách Toàn Bộ Hubs Thực Tế
+    // Mặc định nạp 5 Hub chuẩn từ Database (HL-18, HL-37, HL-44, HL-45, HL-48)
+    let allHubs = [
+      { hubId: "HL-18", name: "Hub Khách (HL-18)", x: 380, y: 260, lat: 20.997710, lng: 105.844731, yaw: 68.0, battery: 95, status: "Trực tuyến" },
+      { hubId: "HL-37", name: "Hub Cung Đông (HL-37)", x: 680, y: 240, lat: 20.997773, lng: 105.844744, yaw: 105.0, battery: 85, status: "Trực tuyến" },
+      { hubId: "HL-44", name: "Hub Tiền Sảnh Nam (HL-44)", x: 270, y: 310, lat: 20.997684, lng: 105.844738, yaw: 144.0, battery: 78, status: "Trực tuyến" },
+      { hubId: "HL-45", name: "Hub Cổng Bắc (HL-45)", x: 530, y: 110, lat: 20.997751, lng: 105.844701, yaw: 270.0, battery: 96, status: "Trực tuyến" },
+      { hubId: "HL-48", name: "Hub Tiền Sảnh Đón Tiếp (HL-48)", x: 450, y: 380, lat: 20.997717, lng: 105.844767, yaw: 288.0, battery: 64, status: "Trực tuyến" }
+    ];
+
+    // Hub đang được chọn làm "Vị trí của tôi" (Bảo lưu khi F5)
+    let myActiveHubId = localStorage.getItem('2guide_google_map_active_hub') || "HL-18";
+    const hubMarkers = new Map();
+
+    function onSelectActiveHub(newHubId) {
+      myActiveHubId = newHubId;
+      try { localStorage.setItem('2guide_google_map_active_hub', myActiveHubId); } catch(e) {}
+      console.log(`[Google Map] Đã chọn theo dõi Hub: ${myActiveHubId}`);
+      renderAllHubsMarkers();
+      flyToMyLocation();
+    }
+
+    // Tạo HTML cho marker theo dõi chính ("Vị trí của bạn")
+    function createPrimaryUserHtml(hubId, yaw) {
+      return `
+        <div style="position: relative; width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; pointer-events: none;">
+          <!-- Nón tầm nhìn 360 độ và Mũi tên định hướng xoay theo yaw -->
+          <svg style="position: absolute; width: 64px; height: 64px; transform: rotate(${yaw}deg); transition: transform 0.25s ease;" viewBox="-32 -32 64 64">
+            <!-- Nón tầm nhìn -->
+            <path d="M 0 0 L -12 -28 A 28 28 0 0 1 12 -28 Z" fill="rgba(34, 197, 94, 0.28)" stroke="rgba(34, 197, 94, 0.6)" stroke-width="0.8"/>
+            <!-- Mũi tên xanh lá nổi bật -->
+            <path d="M -6 -12 L 0 -26 L 6 -12 Z" fill="#22c55e" stroke="#ffffff" stroke-width="1.4" filter="drop-shadow(0 1px 3px rgba(0,0,0,0.5))"/>
+          </svg>
+
+          <!-- Vòng sóng tỏa tròn Pulse Wave -->
+          <div class="user-pulse-ring" style="position: absolute; width: 26px; height: 26px; border-radius: 999px; background: rgba(34, 197, 94, 0.4); border: 2px solid #22c55e;"></div>
+
+          <!-- Chấm tròn trung tâm -->
+          <div style="position: relative; width: 14px; height: 14px; border-radius: 999px; background: #16a34a; border: 2.5px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.6);"></div>
+
+          <!-- Nhãn chữ 'Vị trí của bạn (Mã Hub)' dịch lên trên (-34px) để lộ hoàn toàn hướng nhìn -->
+          <div style="position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: rgba(15, 23, 42, 0.94); color: #86efac; font-size: 8px; font-weight: 800; padding: 2px 6px; border-radius: 5px; border: 1px solid #22c55e; white-space: nowrap; box-shadow: 0 3px 8px rgba(0,0,0,0.4);">
+            Vị trí của bạn (${hubId})
+          </div>
+        </div>
+      `;
+    }
+
+    // Tạo HTML cho marker các Hub khác trong phòng
+    function createOtherHubHtml(hubId, yaw, battery) {
+      return `
+        <div style="position: relative; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+          <!-- Mũi tên chỉ hướng nhỏ -->
+          <svg style="position: absolute; width: 44px; height: 44px; transform: rotate(${yaw}deg); transition: transform 0.25s ease;" viewBox="-22 -22 44 44">
+            <path d="M -3 -8 L 0 -17 L 3 -8 Z" fill="#38bdf8" stroke="#ffffff" stroke-width="1"/>
+          </svg>
+          <div class="hub-pulse-ring" style="position: absolute; inset: 6px; border-radius: 999px; background: rgba(56, 189, 248, 0.35); border: 1.5px solid #38bdf8;"></div>
+          <div style="width: 16px; height: 16px; border-radius: 999px; background: #0284c7; border: 2px solid #ffffff; display: flex; align-items: center; justify-content: center; color: white; font-size: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.5);">
+            <i class="fa-solid fa-person-walking"></i>
+          </div>
+          <!-- Nhãn tên Hub phía trên -->
+          <div style="position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: rgba(15, 23, 42, 0.9); color: #38bdf8; font-size: 8px; font-weight: 800; padding: 1px 4px; border-radius: 4px; border: 0.5px solid #38bdf8; white-space: nowrap;">
+            ${hubId} ${battery || ''}%
+          </div>
+        </div>
+      `;
+    }
+
+    // Vẽ và cập nhật toàn bộ Marker Hubs trên bản đồ Leaflet
+    function renderAllHubsMarkers() {
+      allHubs.forEach(h => {
+        // Đảm bảo có tọa độ GPS hợp lệ
+        if (h.lat === undefined || h.lng === undefined) {
+          const gps = svgToGps(h.x, h.y);
+          h.lat = gps.lat;
+          h.lng = gps.lng;
+        }
+
+        const isMe = (h.hubId === myActiveHubId);
+        const iconSize = isMe ? [64, 64] : [44, 44];
+        const iconAnchor = isMe ? [32, 32] : [22, 22];
+        const html = isMe ? createPrimaryUserHtml(h.hubId, h.yaw || 0) : createOtherHubHtml(h.hubId, h.yaw || 0, h.battery || 100);
+        const icon = L.divIcon({ html, className: '', iconSize, iconAnchor });
+        const zIndexOffset = isMe ? 1000 : 700;
+
+        if (hubMarkers.has(h.hubId)) {
+          const m = hubMarkers.get(h.hubId);
+          m.setLatLng([h.lat, h.lng]);
+          m.setIcon(icon);
+          m.setZIndexOffset(zIndexOffset);
+        } else {
+          const m = L.marker([h.lat, h.lng], { icon, zIndexOffset }).addTo(map);
+          m.on('click', () => {
+            showPoiCard({
+              icon: '🎧',
+              badge: isMe ? 'Thiết Bị Của Bạn' : 'Thiết Bị Khách Tham Quan',
+              title: `${h.hubId} — ${h.name || 'Máy Khách'}`,
+              desc: `Vị trí tọa độ (${h.x ? Math.round(h.x) : 0}, ${h.y ? Math.round(h.y) : 0}). Mức pin: ${h.battery || 100}%. Hướng nhìn: ${Math.round(h.yaw || 0)}°.`,
+              gps: `${h.lat.toFixed(6)}, ${h.lng.toFixed(6)}`,
+              audioText: `Thiết bị ${h.hubId}.`
+            });
+          });
+          hubMarkers.set(h.hubId, m);
+        }
+      });
+
+      renderUsersList();
+    }
+
+    // Cập nhật danh sách hiển thị các Hub trong hộp điều khiển góc trái
+    function renderUsersList() {
+      const listEl = document.getElementById('users-list');
+      if (!listEl) return;
+
+      let html = '';
+      allHubs.forEach(h => {
+        const isMe = (h.hubId === myActiveHubId);
+        const borderCls = isMe ? 'bg-emerald-950/60 border-emerald-500/50' : 'bg-white/5 border-white/10 hover:bg-white/10';
+        const dotCls = isMe ? 'bg-emerald-400 animate-ping' : 'bg-sky-400';
+        const titleColor = isMe ? 'text-emerald-300 font-black' : 'text-gray-200 font-bold';
+
+        html += `
+          <div onclick="focusHub('${h.hubId}')" class="p-2 rounded-2xl border ${borderCls} transition cursor-pointer flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full ${dotCls}"></span>
+              <div>
+                <div class="text-[11px] ${titleColor}">${h.hubId} • ${h.name || 'Khách'}</div>
+                <div class="text-[9px] text-gray-300 font-mono">${h.lat ? h.lat.toFixed(6) : ''}, ${h.lng ? h.lng.toFixed(6) : ''} | ${Math.round(h.yaw || 0)}°</div>
+              </div>
+            </div>
+            <div class="flex items-center gap-1.5">
+              ${isMe ? '<span class="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">Tôi</span>' : ''}
+              <span class="text-[9px] text-sky-300 font-mono font-bold">${h.battery || 100}%</span>
+            </div>
+          </div>
+        `;
+      });
+
+      listEl.innerHTML = html;
+      document.getElementById('badge-user-count').textContent = `${allHubs.length} Hubs`;
+
+      // Cập nhật thẻ Select nếu có thêm Hub mới
+      const selectEl = document.getElementById('select-active-hub');
+      if (selectEl) {
+        const curVal = selectEl.value;
+        let selectHtml = '';
+        allHubs.forEach(h => {
+          selectHtml += `<option value="${h.hubId}" ${h.hubId === myActiveHubId ? 'selected' : ''}>${h.hubId} ${h.hubId === myActiveHubId ? '(Đang theo dõi)' : ''}</option>`;
+        });
+        selectEl.innerHTML = selectHtml;
+      }
+    }
+
+    function focusHub(hubId) {
+      const h = allHubs.find(x => x.hubId === hubId);
+      if (h) {
+        map.flyTo([h.lat, h.lng], 22, { duration: 0.8 });
+      }
+    }
+
+    function flyToMyLocation() {
+      const me = allHubs.find(x => x.hubId === myActiveHubId) || allHubs[0];
+      if (me && me.lat && me.lng) {
+        map.flyTo([me.lat, me.lng], 22, { duration: 1.0 });
+      }
+    }
+
+    // 7. Nhận Telemetry Thời Gian Thực từ Server & Test Tool
+    function handleIncomingTelemetry(incomingData) {
+      const hId = (incomingData.hubId || (incomingData.hub && incomingData.hub.hubId) || '').toUpperCase();
+      if (!hId) return;
+
+      let hubObj = allHubs.find(x => x.hubId === hId);
+      if (!hubObj) {
+        // Tự động thêm Hub mới vào danh sách nếu chưa có
+        hubObj = {
+          hubId: hId,
+          name: `Hub ${hId}`,
+          status: "Trực tuyến",
+          battery: incomingData.battery || 100,
+          lat: 20.997715,
+          lng: 105.844730,
+          x: 380,
+          y: 260,
+          yaw: 0
+        };
+        allHubs.push(hubObj);
+      }
+
+      // 1. Cập nhật tọa độ GPS và SVG
+      if (incomingData.x !== undefined && incomingData.y !== undefined) {
+        hubObj.x = Number(incomingData.x);
+        hubObj.y = Number(incomingData.y);
+      }
+
+      let newLat = Number(incomingData.lat);
+      let newLng = Number(incomingData.lng);
+
+      if (!isNaN(newLat) && !isNaN(newLng) && newLat !== 0 && newLng !== 0) {
+        hubObj.lat = newLat;
+        hubObj.lng = newLng;
+        if (hubObj.x === undefined || hubObj.y === undefined) {
+          const s = gpsToSvg(newLat, newLng);
+          hubObj.x = s.x;
+          hubObj.y = s.y;
+        }
+      } else if (hubObj.x !== undefined && hubObj.y !== undefined) {
+        const g = svgToGps(hubObj.x, hubObj.y);
+        hubObj.lat = g.lat;
+        hubObj.lng = g.lng;
+      }
+
+      // 2. Cập nhật góc nhìn Yaw IMU
+      if (incomingData.yaw !== undefined && !isNaN(Number(incomingData.yaw))) {
+        hubObj.yaw = Number(incomingData.yaw);
+      }
+
+      // 3. Cập nhật mức Pin
+      if (incomingData.battery !== undefined) {
+        hubObj.battery = Number(incomingData.battery);
+      }
+
+      // 4. Vẽ lại Marker trên Leaflet ngay lập tức
+      renderAllHubsMarkers();
+
+      // Hiển thị Toast thông báo nhận Telemetry
+      showTelemetryToast(`📡 Nhận Telemetry từ ${hId}: (${hubObj.lat.toFixed(6)}, ${hubObj.lng.toFixed(6)}) • Hướng: ${Math.round(hubObj.yaw)}°`);
+
+      // Kiểm tra âm thanh nếu là Hub đang theo dõi
+      if (hId === myActiveHubId) {
+        checkNearestPoiAndTriggerAudio(hubObj);
+      }
+    }
+
+    async function resetAllHubsToStandard() {
+      try {
+        const res = await fetch('/api/devices/reset', { method: 'POST' });
+        const json = await res.json();
+        if (json.success) {
+          await fetchServerDevices();
+          flyToMyLocation();
+          showTelemetryToast('✅ Đã đặt lại 5 Hub về tọa độ chuẩn đồng bộ 100%!');
+        }
+      } catch(e) {
+        console.error('Lỗi reset hubs:', e);
+      }
+    }
+
+    let toastTimer = null;
+    function showTelemetryToast(msg) {
+      const toast = document.getElementById('telemetry-toast');
+      const text = document.getElementById('telemetry-toast-text');
+      if (!toast || !text) return;
+      text.textContent = msg;
+      toast.classList.remove('opacity-0', 'pointer-events-none', '-translate-y-2');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.add('opacity-0', 'pointer-events-none', '-translate-y-2');
+      }, 2500);
+    }
+
+    // 8. Tương tác Di Chuyển Phím Bấm (WASD / Mũi Tên & Click chuột)
+    function stepUserForward(stepMeters = 0.6) {
+      const me = allHubs.find(x => x.hubId === myActiveHubId) || allHubs[0];
+      if (!me) return;
+
+      const rad = ((me.yaw || 0) - SITE_CONFIG.rotationDeg) * Math.PI / 180;
+      const dxPx = Math.sin(rad) * (stepMeters * (SITE_CONFIG.canvasW / SITE_CONFIG.widthMeters));
+      const dyPx = -Math.cos(rad) * (stepMeters * (SITE_CONFIG.canvasH / SITE_CONFIG.heightMeters));
+
+      const newX = Math.max(30, Math.min(770, me.x + dxPx));
+      const newY = Math.max(30, Math.min(470, me.y + dyPx));
+      const newGps = svgToGps(newX, newY);
+
+      handleIncomingTelemetry({
+        hubId: me.hubId,
+        x: newX,
+        y: newY,
+        lat: newGps.lat,
+        lng: newGps.lng,
+        yaw: me.yaw
+      });
+    }
+
+    window.addEventListener('keydown', (e) => {
+      const me = allHubs.find(x => x.hubId === myActiveHubId) || allHubs[0];
+      if (!me) return;
+
+      const k = e.key.toLowerCase();
+      const stepPx = 14;
+      let nx = me.x, ny = me.y, nyaw = me.yaw;
+
+      if (k === 'w' || k === 'arrowup') {
+        ny = me.y - stepPx; nyaw = 0;
+      } else if (k === 's' || k === 'arrowdown') {
+        ny = me.y + stepPx; nyaw = 180;
+      } else if (k === 'a' || k === 'arrowleft') {
+        nx = me.x - stepPx; nyaw = 270;
+      } else if (k === 'd' || k === 'arrowright') {
+        nx = me.x + stepPx; nyaw = 90;
+      } else {
+        return;
+      }
+
+      nx = Math.max(30, Math.min(770, nx));
+      ny = Math.max(30, Math.min(470, ny));
+      const g = svgToGps(nx, ny);
+
+      handleIncomingTelemetry({
+        hubId: me.hubId,
+        x: nx,
+        y: ny,
+        lat: g.lat,
+        lng: g.lng,
+        yaw: nyaw
+      });
+    });
+
+    // Bấm vào bất kỳ điểm nào trên mặt bằng phòng để di chuyển Hub đang theo dõi tới đó
+    map.on('click', (e) => {
+      const me = allHubs.find(x => x.hubId === myActiveHubId) || allHubs[0];
+      if (!me) return;
+
+      const clickedSvg = gpsToSvg(e.latlng.lat, e.latlng.lng);
+      if (clickedSvg.x >= 20 && clickedSvg.x <= 780 && clickedSvg.y >= 20 && clickedSvg.y <= 480) {
+        const dx = clickedSvg.x - me.x;
+        const dy = clickedSvg.y - me.y;
+        let angle = (Math.atan2(dx, -dy) * 180 / Math.PI + SITE_CONFIG.rotationDeg + 360) % 360;
+
+        handleIncomingTelemetry({
+          hubId: me.hubId,
+          lat: Number(e.latlng.lat.toFixed(6)),
+          lng: Number(e.latlng.lng.toFixed(6)),
+          x: clickedSvg.x,
+          y: clickedSvg.y,
+          yaw: Math.round(angle)
+        });
+      }
+    });
+
+    // 9. Mô phỏng đi lại của các Hub
+    let simInterval = null;
+    let isSimulating = false;
+
+    function toggleSimulateMovement() {
+      if (isSimulating) {
+        clearInterval(simInterval);
+        isSimulating = false;
+        document.getElementById('btn-sim-move').className = 'bg-blue-600/90 hover:bg-blue-500 text-white border border-blue-400/50 px-3.5 py-2 rounded-2xl text-xs font-bold shadow-xl transition flex items-center gap-1.5 cursor-pointer';
+        document.getElementById('text-sim-move').textContent = 'Mô Phỏng Đi Lại';
+      } else {
+        isSimulating = true;
+        document.getElementById('btn-sim-move').className = 'bg-amber-600 hover:bg-amber-500 text-white border border-amber-400 px-3.5 py-2 rounded-2xl text-xs font-bold shadow-xl transition flex items-center gap-1.5 cursor-pointer animate-pulse';
+        document.getElementById('text-sim-move').textContent = 'Đang Mô Phỏng...';
+
+        simInterval = setInterval(() => {
+          allHubs.forEach(h => {
+            const angleRad = Math.random() * Math.PI * 2;
+            const dist = 6 + Math.random() * 10;
+            let nx = h.x + Math.cos(angleRad) * dist;
+            let ny = h.y + Math.sin(angleRad) * dist;
+
+            if (nx < 60 || nx > 740) nx = h.x - Math.cos(angleRad) * dist;
+            if (ny < 50 || ny > 450) ny = h.y - Math.sin(angleRad) * dist;
+
+            nx = Math.round(nx);
+            ny = Math.round(ny);
+            const g = svgToGps(nx, ny);
+
+            h.x = nx;
+            h.y = ny;
+            h.lat = g.lat;
+            h.lng = g.lng;
+            h.yaw = Math.round(angleRad * 180 / Math.PI);
+          });
+          renderAllHubsMarkers();
+        }, 1200);
+      }
+    }
+
+    // 10. Tự động kiểm tra khoảng cách tới Hiện vật & Kích hoạt Thuyết minh
+    let lastSpokenPoi = null;
+    function checkNearestPoiAndTriggerAudio(hub) {
+      if (!hub) return;
+      ARTIFACTS_DATA.forEach(art => {
+        const dxM = (hub.x - art.x) * (SITE_CONFIG.widthMeters / SITE_CONFIG.canvasW);
+        const dyM = (hub.y - art.y) * (SITE_CONFIG.heightMeters / SITE_CONFIG.canvasH);
+        const dist = Math.sqrt(dxM * dxM + dyM * dyM);
+
+        if (dist <= 1.8 && lastSpokenPoi !== art.id) {
+          lastSpokenPoi = art.id;
+          showPoiCard({
+            icon: art.icon,
+            badge: 'Tự Động Kích Hoạt (Cự ly < 1.8m)',
+            title: art.name,
+            desc: art.desc,
+            gps: `${art.lat}, ${art.lng}`,
+            audioText: `Bạn đang đứng trước ${art.name}. ${art.desc}`
+          });
+          speakText(`Bạn đang đứng trước ${art.name}`);
+        }
+      });
+    }
+
+    // 11. Hộp thông tin POI & Text to Speech
+    let currentPoiAudioText = "";
+    function showPoiCard(poi) {
+      document.getElementById('poi-icon').textContent = poi.icon || '🏛️';
+      document.getElementById('poi-badge').textContent = poi.badge || 'Hiện Vật';
+      document.getElementById('poi-title').textContent = poi.title || 'Di Tích';
+      document.getElementById('poi-desc').textContent = poi.desc || '';
+      document.getElementById('poi-gps').textContent = poi.gps || '';
+      currentPoiAudioText = poi.audioText || poi.desc || '';
+
+      const sheet = document.getElementById('poi-sheet');
+      sheet.classList.remove('translate-y-32', 'opacity-0', 'pointer-events-none');
+    }
+
+    function closePoiSheet() {
+      const sheet = document.getElementById('poi-sheet');
+      sheet.classList.add('translate-y-32', 'opacity-0', 'pointer-events-none');
+    }
+
+    function playPoiAudio() {
+      if (currentPoiAudioText) {
+        speakText(currentPoiAudioText);
+      }
+    }
+
+    function speakText(text) {
+      try {
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+          const ut = new SpeechSynthesisUtterance(text);
+          ut.lang = 'vi-VN';
+          ut.rate = 1.0;
+          window.speechSynthesis.speak(ut);
+        }
+      } catch(e) {}
+    }
+
+    // 12. Tải dữ liệu ban đầu từ REST API Server (/api/devices)
+    async function fetchServerDevices() {
+      try {
+        const res = await fetch('http://localhost:4000/api/devices');
+        const json = await res.json();
+        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+          allHubs = json.data.map(h => {
+            let lat = Number(h.lat) || 20.997715;
+            let lng = Number(h.lng) || 105.844730;
+            let x = Number(h.x);
+            let y = Number(h.y);
+
+            if (isNaN(x) || isNaN(y)) {
+              const s = gpsToSvg(lat, lng);
+              x = s.x; y = s.y;
+            }
+
+            return {
+              hubId: h.hubId,
+              name: h.name || `Hub ${h.hubId}`,
+              x,
+              y,
+              lat,
+              lng,
+              yaw: Number(h.yaw) || 0,
+              battery: Number(h.battery) || 100,
+              status: h.status || "Trực tuyến"
+            };
+          });
+          renderAllHubsMarkers();
+          console.log(`[Google Map] Đã nạp ${allHubs.length} Hubs thực tế từ Server:`, allHubs.map(x => x.hubId).join(', '));
+        }
+      } catch(e) {
+        console.warn('[Google Map] Không thể gọi API /api/devices, sử dụng cấu hình mặc định:', e);
+      }
+    }
+
+    // 13. WebSocket Realtime kết nối Server 2Guide
+    function initWebSocket() {
+      try {
+        const wsHost = (location.host && location.host.includes(':')) ? location.host : 'localhost:4000';
+        const wsProtocol = location.protocol === 'https:' ? 'wss://' : 'ws://';
+        const wsUrl = `${wsProtocol}${wsHost}/ws`;
+        
+        console.log(`[Google Map WS] Đang kết nối tới ${wsUrl}...`);
+        const ws = new WebSocket(wsUrl);
+
+        ws.onopen = () => {
+          console.log('[Google Map WS] Đã kết nối Realtime WebSocket thành công');
+          const badge = document.getElementById('ws-status-badge');
+          const txt = document.getElementById('ws-status-text');
+          if (badge) badge.className = 'text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-400/40 flex items-center gap-1';
+          if (txt) txt.textContent = 'Realtime Đã Kết Nối';
+
+          // Đăng ký nhận toàn bộ telemetry và cập nhật trạng thái từ server
+          ws.send(JSON.stringify({ type: 'REGISTER_ADMIN', secretKey: 'BQL_2026_SECRET' }));
+        };
+
+        ws.onmessage = (event) => {
+          try {
+            const msg = JSON.parse(event.data);
+            
+            // Xử lý gói tin nạp trạng thái ban đầu
+            if (msg.type === 'INIT_ADMIN_STATE' && Array.isArray(msg.hubs)) {
+              console.log('[Google Map WS] Nhận INIT_ADMIN_STATE từ server với', msg.hubs.length, 'Hubs');
+              msg.hubs.forEach(h => {
+                handleIncomingTelemetry(h);
+              });
+            }
+
+            // Xử lý gói tin Telemetry khi thay đổi bên test.html hoặc ESP32
+            if (msg.type === 'HUB_LOCATION_UPDATE' || msg.type === 'HUB_TELEMETRY') {
+              const h = msg.hub || msg;
+              handleIncomingTelemetry(h);
+            }
+          } catch(e) {
+            console.error('[Google Map WS] Lỗi parse message:', e);
+          }
+        };
+
+        ws.onclose = () => {
+          console.warn('[Google Map WS] Mất kết nối, tự động kết nối lại sau 3s...');
+          const badge = document.getElementById('ws-status-badge');
+          const txt = document.getElementById('ws-status-text');
+          if (badge) badge.className = 'text-[9px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold border border-amber-400/40 flex items-center gap-1';
+          if (txt) txt.textContent = 'Đang thử kết nối lại...';
+          setTimeout(initWebSocket, 3000);
+        };
+
+        ws.onerror = (err) => {
+          console.warn('[Google Map WS] Lỗi kết nối:', err);
+        };
+      } catch(e) {
+        console.error('[Google Map WS] Exception:', e);
+      }
+    }
+
+    // KHỞI ĐỘNG HỆ THỐNG BẢN ĐỒ
+    window.addEventListener('DOMContentLoaded', async () => {
+      renderAllHubsMarkers();
+      fitRoomBounds();
+      await fetchServerDevices();
+      initWebSocket();
+    });
+  </script>
+</body>
+</html>

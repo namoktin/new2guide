@@ -218,6 +218,23 @@ class SocketManager {
             }
           }
 
+          if (data.type === 'HUB_LOCATION_UPDATE') {
+            const targetHubId = normalizeHubId(data.hubId || ws.myHubId || ws.hubId || 'HL-18');
+            const updateParams = {};
+            if (data.lat !== undefined) updateParams.lat = Number(data.lat);
+            if (data.lng !== undefined) updateParams.lng = Number(data.lng);
+            if (data.x !== undefined) updateParams.x = Number(data.x);
+            if (data.y !== undefined) updateParams.y = Number(data.y);
+            if (data.yaw !== undefined) updateParams.yaw = Number(data.yaw);
+            if (data.battery !== undefined) updateParams.battery = Number(data.battery);
+            if (data.isStep !== undefined) updateParams.isStep = !!data.isStep;
+
+            const updatedHub = this.hubModel.updateTelemetry(targetHubId, updateParams);
+            if (updatedHub) {
+              this.broadcastTelemetry(updatedHub);
+            }
+          }
+
           if (data.type === 'BLE_BEACON_DETECTED' || data.type === 'BLE_BEACON_UPDATE') {
             const targetHubId = normalizeHubId(data.hubId || ws.myHubId || ws.hubId || 'NEU001');
             const bleInfo = data.ble || {

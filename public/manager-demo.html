@@ -1548,7 +1548,7 @@
     <div id="pane-devices" class="tab-content-pane">
       <div class="section-block">
         <span class="section-tag">KHO THIẾT BỊ BQL</span>
-        <h3 class="section-title">Quản lý kho & Trạng thái thiết bị thuyết minh (Hubs)</h3>
+        <h3 class="section-title">Quản lý kho & Trạng thái thiết bị thuyết minh</h3>
 
         <div class="data-table-card">
           <!-- Hàng Filter chips thuần tiếng Việt -->
@@ -1697,7 +1697,7 @@
                 <i class="fa-solid fa-satellite-dish"></i> 3 Trạm Beacon
               </button>
               <button class="map-layer-btn active" id="btn-mgr-hubs" onclick="toggleMgrHubs()">
-                <i class="fa-solid fa-walkie-talkie"></i> Thiết Bị (Hubs)
+                <i class="fa-solid fa-walkie-talkie"></i> Thiết Bị
               </button>
               
             </div>
@@ -1724,6 +1724,9 @@
               <button class="map-btn-action" onclick="fitMgrIndoorMap()">
                 <i class="fa-solid fa-crosshairs"></i> Căn giữa phòng
               </button>
+              <button class="map-btn-action secondary" onclick="resetAllHubsFromManager()" style="background: rgba(239, 68, 68, 0.08); color: #dc2626; border-color: rgba(239, 68, 68, 0.3);">
+                <i class="fa-solid fa-rotate-left"></i> Đặt lại tọa độ gốc
+              </button>
               <button class="map-btn-action secondary" onclick="window.open('/user', '_blank')">
                 <i class="fa-solid fa-arrow-up-right-from-square"></i> Xem Bản đồ Khách
               </button>
@@ -1741,36 +1744,23 @@
         <span class="section-tag">DOANH THU & KẾ TOÁN</span>
         <h3 class="section-title">Báo cáo tài chính & Sổ cái giao dịch cho thuê thiết bị</h3>
 
-        <!-- 4 THẺ CHỈ SỐ TÀI CHÍNH TÁCH BẠCH THEO MỤC 4.4 ĐẶC TẢ BQL -->
+        <!-- 4 THẺ CHỈ SỐ TÀI CHÍNH -->
         <div class="stat-cards-grid">
           <div class="stat-card">
-            <span class="stat-card-label">Doanh thu dịch vụ (SERVICE_REVENUE)</span>
+            <span class="stat-card-label">Doanh thu dịch vụ</span>
             <div class="stat-card-value" id="val-fin-service-revenue">68.500.000 <span class="stat-card-unit">đ</span></div>
-            <div class="stat-card-trend trend-up"><i class="fa-solid fa-arrow-trend-up"></i> +18.4% so tháng trước (1.370 lượt)</div>
           </div>
           <div class="stat-card">
-            <span class="stat-card-label">Tiền cọc đang tạm giữ (DEPOSIT_HELD)</span>
+            <span class="stat-card-label">Tiền cọc đang tạm giữ</span>
             <div class="stat-card-value" id="val-fin-deposit-held">12.500.000 <span class="stat-card-unit">đ</span></div>
-            <div class="stat-card-trend trend-neutral"><i class="fa-solid fa-shield-halved"></i> Bảo lãnh các đoàn đang tham quan</div>
           </div>
           <div class="stat-card">
-            <span class="stat-card-label">Tiền cọc đã hoàn trả (DEPOSIT_REFUNDED)</span>
+            <span class="stat-card-label">Tiền cọc đã hoàn trả</span>
             <div class="stat-card-value" id="val-fin-deposit-refunded">45.000.000 <span class="stat-card-unit">đ</span></div>
-            <div class="stat-card-trend trend-neutral"><i class="fa-solid fa-rotate-left"></i> Hoàn trả 100% khi nhận đủ máy</div>
           </div>
           <div class="stat-card">
-            <span class="stat-card-label">Phí phạt trễ / Bồi hoàn (FEES_PENALTY)</span>
+            <span class="stat-card-label">Phí phạt trễ / Bồi hoàn</span>
             <div class="stat-card-value" id="val-fin-fees-penalty">1.250.000 <span class="stat-card-unit">đ</span></div>
-            <div class="stat-card-trend trend-up"><i class="fa-solid fa-circle-check"></i> Đền bù mất phụ kiện tai nghe</div>
-          </div>
-        </div>
-
-        <!-- Lưu ý nghiệp vụ kế toán theo mục 4.4 -->
-        <div class="alert-banner info">
-          <i class="fa-solid fa-circle-info"></i>
-          <div>
-            <strong>Quy tắc hạch toán tài chính BQL (Mục 4.4 Đặc tả):</strong> 
-            Doanh thu dịch vụ được theo dõi độc lập. Tiền đặt cọc của du khách chỉ mang tính chất bảo đảm tài sản và được hoàn trả khi trả máy nguyên vẹn, <em>tuyệt đối không được tính tiền cọc hoàn lại là doanh thu dịch vụ</em>.
           </div>
         </div>
 
@@ -1778,12 +1768,8 @@
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
             <div style="display: flex; gap: 8px; align-items: center;">
               <h4 style="font-family: var(--font-serif); font-size: 18px; font-weight: 700;">Sổ cái giao dịch tài chính</h4>
-              <span class="status-badge ready" style="font-size: 11px;">Đối soát khớp 100%</span>
             </div>
             <div style="display: flex; gap: 10px;">
-              <button class="btn-action-secondary" onclick="showToast('Đã đối soát ca trực: Không có chênh lệch tồn quỹ!')">
-                <i class="fa-solid fa-scale-balanced"></i> Đối soát ca trực
-              </button>
               <button class="btn-action-primary" onclick="showToast('Đang kết xuất sổ cái giao dịch ra file Excel...')">
                 <i class="fa-solid fa-file-excel"></i> Xuất file Excel
               </button>
@@ -3179,6 +3165,19 @@
       updateMgrIndoorTransform(true);
     }
 
+    async function resetAllHubsFromManager() {
+      try {
+        const res = await fetch('/api/devices/reset', { method: 'POST' });
+        const json = await res.json();
+        if (json.success) {
+          await renderMgrIndoorHubs();
+          fitMgrIndoorMap(true);
+        }
+      } catch(e) {
+        console.error('Lỗi reset hubs từ BQL:', e);
+      }
+    }
+
     // ========================================================
     // ĐỒNG BỘ HIỆN VẬT QUẢN LÝ (KHỚP 100% VỚI KHÁCH THAM QUAN & MONGODB)
     // ========================================================
@@ -3321,6 +3320,7 @@
               y: hY,
               lat: h.lat,
               lng: h.lng,
+              yaw: h.yaw !== undefined ? Number(h.yaw) : 0,
               area: h.location || 'Khu vực Nhà Tổng Thống',
               battery: h.battery !== undefined ? h.battery : 100,
               status: h.status || 'Sẵn sàng'
@@ -3340,6 +3340,7 @@
           y: h.y,
           lat: h.lat,
           lng: h.lng,
+          yaw: h.yaw,
           battery: h.battery,
           area: h.area
         };
@@ -3350,14 +3351,20 @@
         const pinColor = isLow ? '#dc2626' : '#15803d';
         const badgeStroke = isLow ? '#ef4444' : '#22c55e';
         const textFill = isLow ? '#fca5a5' : '#86efac';
+        const svgYaw = ((h.yaw || 0) + 75.0 + 360.0) % 360.0;
 
         return `
           <g class="mgr-hub-pin" id="mgr-hub-pin-${h.hubId}" onclick="selectMgrHub('${h.hubId}')" transform="translate(${h.x}, ${h.y})" style="cursor: pointer; transition: transform 0.5s cubic-bezier(0.2, 0.9, 0.3, 1);">
+            <!-- Nón tầm nhìn và Mũi tên định hướng góc phòng -->
+            <g class="hub-heading-arrow" transform="rotate(${svgYaw})" style="transition: transform 0.3s ease;">
+              <path d="M 0 0 L -8 -20 A 20 20 0 0 1 8 -20 Z" fill="rgba(34, 197, 94, 0.25)" stroke="rgba(34, 197, 94, 0.5)" stroke-width="0.7"/>
+              <path d="M -4 -9 L 0 -19 L 4 -9 Z" fill="#22c55e" stroke="#ffffff" stroke-width="1.2"/>
+            </g>
             <circle cx="0" cy="0" r="14" fill="none" stroke="${pinColor}" stroke-width="1.5" opacity="0.4"/>
             <circle cx="0" cy="0" r="9" fill="${pinColor}" stroke="#ffffff" stroke-width="2"/>
             <text x="0" y="3" font-size="7" font-weight="bold" fill="#ffffff" text-anchor="middle" id="mgr-hub-text-${h.hubId}">${h.shortNum}</text>
-            <rect x="-24" y="-22" width="48" height="14" rx="4" fill="rgba(15, 23, 42, 0.92)" stroke="${badgeStroke}" stroke-width="0.8"/>
-            <text x="0" y="-12" font-size="6.8" font-weight="bold" fill="${textFill}" text-anchor="middle" id="mgr-hub-badge-${h.hubId}">${h.hubId} ${h.battery}%</text>
+            <rect x="-24" y="-35" width="48" height="14" rx="4" fill="rgba(15, 23, 42, 0.92)" stroke="${badgeStroke}" stroke-width="0.8"/>
+            <text x="0" y="-25" font-size="6.8" font-weight="bold" fill="${textFill}" text-anchor="middle" id="mgr-hub-badge-${h.hubId}">${h.hubId} ${h.battery}%</text>
           </g>
         `;
       }).join('');
@@ -3728,14 +3735,17 @@ function toggleHubMarkers() {
             const lng = Number(incomingHub.lng);
             const battery = Number(incomingHub.battery !== undefined ? incomingHub.battery : 100);
 
-            let targetX = incomingHub.x || msg.x;
-            let targetY = incomingHub.y || msg.y;
+            let targetX = (incomingHub.x !== undefined) ? Number(incomingHub.x) : (msg.x !== undefined ? Number(msg.x) : undefined);
+            let targetY = (incomingHub.y !== undefined) ? Number(incomingHub.y) : (msg.y !== undefined ? Number(msg.y) : undefined);
 
             // Nhận diện bước đi PDR (từ isStep hoặc gia tốc tổng hợp |a| > 1.32g)
             const incomingAccel = incomingHub.accel || msg.accel;
             const isStepEvent = !!msg.isStep || (incomingAccel && !!incomingAccel.isStep);
+            const isResetEvent = !!msg.isReset || !!incomingHub.isReset;
 
-            if (isStepEvent) {
+            if (isResetEvent && targetX !== undefined && targetY !== undefined) {
+              // RESET TỪ SERVER: Chấp nhận ngay tọa độ chuẩn của Hub
+            } else if (isStepEvent) {
               const curInfo = (mgrFiveHubs && Array.isArray(mgrFiveHubs)) ? mgrFiveHubs.find(h => (h.hubId || h.id) === cleanHubId) : null;
               const baseCoords = curInfo || MGR_INDOOR_HUB_COORDINATES[cleanHubId] || { x: 380, y: 260 };
               const curX = (curInfo && curInfo.x) ? curInfo.x : (baseCoords.x || 380);
@@ -3744,17 +3754,16 @@ function toggleHubMarkers() {
               const rad = (yawDeg * Math.PI) / 180.0;
               targetX = Math.max(40, Math.min(760, curX + 14 * Math.sin(rad)));
               targetY = Math.max(30, Math.min(470, curY - 14 * Math.cos(rad)));
-            } else {
-              // Khi đứng yên (isStepEvent = false): giữ nguyên tọa độ hiện tại của Hub
-              const curInfo = (mgrFiveHubs && Array.isArray(mgrFiveHubs)) ? mgrFiveHubs.find(h => (h.hubId || h.id) === cleanHubId) : null;
-              if (curInfo && curInfo.x !== undefined && curInfo.y !== undefined) {
-                targetX = curInfo.x;
-                targetY = curInfo.y;
-              } else if (targetX === undefined || targetY === undefined) {
-                if (typeof gpsToSvgRoom === 'function' && !isNaN(lat) && !isNaN(lng)) {
-                  const c = gpsToSvgRoom(lat, lng);
-                  targetX = c.x;
-                  targetY = c.y;
+            } else if (targetX === undefined || targetY === undefined) {
+              if (typeof gpsToSvgRoom === 'function' && !isNaN(lat) && !isNaN(lng)) {
+                const c = gpsToSvgRoom(lat, lng);
+                targetX = c.x;
+                targetY = c.y;
+              } else {
+                const curInfo = (mgrFiveHubs && Array.isArray(mgrFiveHubs)) ? mgrFiveHubs.find(h => (h.hubId || h.id) === cleanHubId) : null;
+                if (curInfo && curInfo.x !== undefined && curInfo.y !== undefined) {
+                  targetX = curInfo.x;
+                  targetY = curInfo.y;
                 }
               }
             }
@@ -3772,12 +3781,22 @@ function toggleHubMarkers() {
                 pinEl.setAttribute('transform', `translate(${targetX}, ${targetY})`);
                 const badgeEl = document.getElementById(`mgr-hub-badge-${cleanHubId}`);
                 if (badgeEl) badgeEl.textContent = `${cleanHubId} ${battery}%`;
+
+                // Cập nhật hướng xoay nón tầm nhìn và mũi tên
+                const rawYaw = incomingHub.yaw !== undefined ? incomingHub.yaw : msg.yaw;
+                if (rawYaw !== undefined && !isNaN(rawYaw)) {
+                  const svgYaw = (Number(rawYaw) + 75.0 + 360.0) % 360.0;
+                  const arrow = pinEl.querySelector('.hub-heading-arrow');
+                  if (arrow) arrow.setAttribute('transform', `rotate(${svgYaw})`);
+                }
               }
 
               if (MGR_INDOOR_HUB_COORDINATES[cleanHubId]) {
                 MGR_INDOOR_HUB_COORDINATES[cleanHubId].x = targetX;
                 MGR_INDOOR_HUB_COORDINATES[cleanHubId].y = targetY;
                 MGR_INDOOR_HUB_COORDINATES[cleanHubId].battery = battery;
+                const rawYaw = incomingHub.yaw !== undefined ? incomingHub.yaw : msg.yaw;
+                if (rawYaw !== undefined && !isNaN(rawYaw)) MGR_INDOOR_HUB_COORDINATES[cleanHubId].yaw = Number(rawYaw);
                 if (incomingAccel) MGR_INDOOR_HUB_COORDINATES[cleanHubId].accel = incomingAccel;
               }
 
@@ -3789,6 +3808,8 @@ function toggleHubMarkers() {
                   foundHub.battery = battery;
                   if (lat) foundHub.lat = lat;
                   if (lng) foundHub.lng = lng;
+                  const rawYaw = incomingHub.yaw !== undefined ? incomingHub.yaw : msg.yaw;
+                  if (rawYaw !== undefined && !isNaN(rawYaw)) foundHub.yaw = Number(rawYaw);
                   if (incomingAccel) foundHub.accel = incomingAccel;
                 }
               }

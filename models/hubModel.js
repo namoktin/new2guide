@@ -82,7 +82,8 @@ class HubModel {
       { x: 530, y: 110, lat: 20.997751, lng: 105.844701, area: 'Khu vực Cổng Bắc & Hành lang vòm' },
       { x: 450, y: 380, lat: 20.997717, lng: 105.844767, area: 'Khu vực Tiền sảnh đón tiếp phía Nam' }
     ];
-    const batteries = [92, 85, 78, 96, 64];
+    const batteries = [95, 85, 78, 96, 64];
+    const standardYaws = [68, 105, 144, 270, 288];
 
     for (let i = 0; i < 5; i++) {
       const hlId = `HL-${String(numbers[i]).padStart(2, '0')}`;
@@ -102,7 +103,7 @@ class HubModel {
         x: spot.x,
         y: spot.y,
         alt: 15.0,
-        yaw: (i * 72) % 360,
+        yaw: standardYaws[i],
         pitch: 0,
         roll: 0,
         startShiftBattery: 100,
@@ -241,16 +242,18 @@ class HubModel {
       target.lat = gps.lat;
       target.lng = gps.lng;
     } else if (lat !== undefined && lng !== undefined) {
-      // Chỉ tính lại x, y từ GPS nếu hub chưa từng có tọa độ x, y
-      if (target.x === undefined || target.y === undefined) {
+      const curLat = Number(target.lat) || 0;
+      const curLng = Number(target.lng) || 0;
+      const distLat = Math.abs(Number(lat) - curLat);
+      const distLng = Math.abs(Number(lng) - curLng);
+
+      // Nếu có tọa độ GPS mới được gửi tới (từ test.html hoặc module GPS phần cứng)
+      if (distLat > 0.000002 || distLng > 0.000002 || target.x === undefined || target.y === undefined) {
+        target.lat = Number(lat);
+        target.lng = Number(lng);
         const coords = this.calculateSvgRoomCoords(target.lat, target.lng);
         target.x = coords.x;
         target.y = coords.y;
-      } else {
-        // Đang đứng yên: Bảo lưu tuyệt đối x, y và đồng bộ ngược ra GPS tương ứng
-        const gps = this.calculateGpsFromSvg(target.x, target.y);
-        target.lat = gps.lat;
-        target.lng = gps.lng;
       }
     }
 
